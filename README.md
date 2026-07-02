@@ -1,4 +1,3 @@
-import os
 
 # Define files map
 project_files = {
