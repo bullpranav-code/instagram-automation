@@ -1,0 +1,48 @@
+{
+ "version": 1,
+ "folder": "Accent Academy - Voice",
+ "jobs": [
+  {
+   "id": "L03_S1",
+   "text": "രണ്ട് സെയിൽസ്‌പേഴ്സൺ ഒരേ ഫോൺ വിൽക്കുന്നു. ഒന്നാമൻ പറയുന്നു: \"ഇതിന് 5000 mAh ബാറ്ററി ഉണ്ട്.\" രണ്ടാമൻ പറയുന്നു: \"ഇത് രാവിലെ ചാർജ് ചെയ്താൽ രാത്രി വരെ ചാർജർ നോക്കേണ്ട.\" ആരുടെ കയ്യിൽ നിന്നാണ് നിങ്ങൾ വാങ്ങുക? രണ്ടാമന്റെ കയ്യിൽ നിന്ന്, അല്ലേ? ഇതാണ് ഇന്നത്തെ പാഠം.",
+   "style": "Calm, warm and clear, like a friendly Malayalam teacher. Moderate pace.",
+   "voice": "Sulafat"
+  },
+  {
+   "id": "L03_S2",
+   "text": "Feature എന്നാൽ പ്രോഡക്റ്റിന് എന്തുണ്ട് എന്നത്. Benefit എന്നാൽ അത് കസ്റ്റമറുടെ ജീവിതത്തിൽ എന്ത് മാറ്റം ഉണ്ടാക്കും എന്നത്. കസ്റ്റമർ വാങ്ങുന്നത് feature അല്ല, benefit ആണ്. ഡ്രിൽ മെഷീൻ വാങ്ങുന്നയാൾക്ക് വേണ്ടത് ഡ്രിൽ അല്ല, ചുമരിൽ ഒരു ദ്വാരമാണ്.",
+   "style": "Calm, warm and clear, like a friendly Malayalam teacher. Moderate pace.",
+   "voice": "Sulafat"
+  },
+  {
+   "id": "L03_S3",
+   "text": "ഒരു എളുപ്പവഴി പറഞ്ഞുതരാം. ഓരോ feature പറഞ്ഞ ശേഷവും സ്വയം ചോദിക്കുക: \"So what? അതുകൊണ്ട് കസ്റ്റമർക്ക് എന്ത് കിട്ടും?\" ഉത്തരം കിട്ടുന്നതാണ് benefit. ഉദാഹരണം: \"ഈ സ്കൂട്ടറിന് 50 കിലോമീറ്റർ മൈലേജ് ഉണ്ട്.\" So what? \"മാസം പെട്രോളിന് ചെലവാക്കുന്ന പണം കുറയും.\" അതാണ് കസ്റ്റമർ കേൾക്കാൻ ആഗ്രഹിക്കുന്നത്.",
+   "style": "Calm, warm and clear, like a friendly Malayalam teacher. Moderate pace.",
+   "voice": "Sulafat"
+  },
+  {
+   "id": "L03_S4",
+   "text": "നമുക്ക് ഒരുമിച്ച് ചെയ്യാം. ഒരു സ്പോക്കൺ ഇംഗ്ലീഷ് കോഴ്സ് എടുക്കാം. Feature: \"ദിവസവും ഒരു മണിക്കൂർ ലൈവ് ക്ലാസ്.\" Benefit: \"മൂന്ന് മാസം കഴിഞ്ഞ് ഇന്റർവ്യൂവിൽ പേടിയില്ലാതെ സംസാരിക്കാം.\" Feature: \"ക്ലാസ് റെക്കോർഡിങ് കിട്ടും.\" Benefit: \"ജോലി കഴിഞ്ഞ് വൈകിയാലും ഒരു ക്ലാസ് പോലും നഷ്ടപ്പെടില്ല.\" ഇപ്പോൾ വീഡിയോ പോസ് ചെയ്യുക, ഒരു feature കൂടി നിങ്ങൾ തന്നെ benefit ആക്കി നോക്കുക.",
+   "style": "Calm, warm and clear, like a friendly Malayalam teacher. Moderate pace.",
+   "voice": "Sulafat"
+  },
+  {
+   "id": "L03_S5",
+   "text": "ഒരു കാര്യം ശ്രദ്ധിക്കുക. എല്ലാ കസ്റ്റമർക്കും ഒരേ benefit അല്ല പ്രധാനം. ഒരു വിദ്യാർത്ഥിക്ക് ഫോണിന്റെ ക്യാമറ പ്രധാനമാകാം, ഒരു ബിസിനസുകാരന് ബാറ്ററി. അതുകൊണ്ടാണ് അടുത്ത പാഠത്തിൽ നമ്മൾ കസ്റ്റമറെ അറിയാൻ പഠിക്കുന്നത്. ശരിയായ ആൾക്ക് ശരിയായ benefit പറയുമ്പോഴാണ് സെയിൽ നടക്കുന്നത്.",
+   "style": "Calm, warm and clear, like a friendly Malayalam teacher. Moderate pace.",
+   "voice": "Sulafat"
+  },
+  {
+   "id": "L03_S6",
+   "text": "ഇന്നത്തെ ടാസ്ക്: നിങ്ങളുടെ കയ്യിലുള്ള ഏതെങ്കിലും ഒരു സാധനം എടുക്കുക. ഫോൺ, ബാഗ്, വാച്ച്, എന്തുമാകാം. അതിന്റെ 5 features എഴുതി, ഓരോന്നിനെയും \"So what?\" ചോദിച്ച് benefit ആക്കുക. വർക്ക്ഷീറ്റിൽ ഇതിനുള്ള കാർഡ് ഉണ്ട്. അടുത്ത പാഠത്തിൽ കാണാം.",
+   "style": "Calm, warm and clear, like a friendly Malayalam teacher. Moderate pace.",
+   "voice": "Sulafat"
+  },
+  {
+   "id": "PROMO_VO",
+   "voice": "Sulafat",
+   "style": "Confident, warm and inspiring, clear. Moderate pace.",
+   "text": "സെയിൽസ് പഠിക്കാൻ വലിയ ഡിഗ്രി വേണ്ട. ശരിയായ രീതി മതി. പത്ത് ചെറിയ പാഠങ്ങൾ, മലയാളത്തിൽ. പിന്നെ ഒരു യഥാർത്ഥ പ്രാക്ടിക്കൽ സെഷൻ. Sales Basics in Malayalam, Accent-ൽ. Choice is yours."
+  }
+ ]
+}
