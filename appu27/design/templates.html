@@ -1,0 +1,195 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Anton;src:url(../node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2)}
+@font-face{font-family:Baloo;font-weight:800;src:url(../node_modules/@fontsource/baloo-chettan-2/files/baloo-chettan-2-malayalam-800-normal.woff2)}
+@font-face{font-family:Baloo;font-weight:800;src:url(../node_modules/@fontsource/baloo-chettan-2/files/baloo-chettan-2-latin-800-normal.woff2);unicode-range:U+0000-00FF}
+@font-face{font-family:Pop;font-weight:600;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-600-normal.woff2)}
+@font-face{font-family:Pop;font-weight:800;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-800-normal.woff2)}
+:root{--y:#FFC629;--y2:#F7A600;--r:#E03A3E;--r2:#B8282C;--ink:#141414;--blue:#1E3A8A}
+*{box-sizing:border-box;margin:0}
+body{background:#222;padding:20px;display:flex;flex-wrap:wrap;gap:20px}
+.ab{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:Pop}
+.sun-y{background:repeating-conic-gradient(from 0deg at 50% 62%,var(--y) 0 7.5deg,var(--y2) 7.5deg 15deg)}
+.sun-r{background:repeating-conic-gradient(from 0deg at 50% 62%,var(--r) 0 7.5deg,var(--r2) 7.5deg 15deg)}
+.pill{position:absolute;left:64px;top:64px;display:flex;align-items:center;gap:12px;padding:12px 26px;border:4px solid var(--ink);border-radius:999px;font:800 30px Pop;letter-spacing:.04em;background:var(--y);color:var(--ink)}
+.pill:before{content:"";width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.pill.red{background:var(--r);color:#fff;border-color:#fff}.pill.red:before{background:#fff}
+.handle{position:absolute;right:64px;top:70px;font:800 30px Pop;color:var(--ink);background:#fff;border:4px solid var(--ink);border-radius:14px;padding:8px 18px}
+.h{font-family:Anton;color:#fff;-webkit-text-stroke:14px var(--ink);paint-order:stroke fill;text-shadow:10px 12px 0 var(--ink);line-height:.98;text-align:center;letter-spacing:.01em}
+.h.gold{color:var(--y)}
+.tag{display:inline-block;font:800 54px Baloo;padding:10px 34px 4px;border:5px solid var(--ink);border-radius:16px;transform:rotate(-2deg);box-shadow:8px 8px 0 var(--ink)}
+.tag.red{background:var(--r);color:#fff}.tag.white{background:#fff;color:var(--ink)}
+.center{position:absolute;left:0;right:0;text-align:center}
+.foot{position:absolute;left:0;right:0;bottom:0;height:96px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 64px;font:600 28px Pop}
+.foot b{font-weight:800;color:var(--y)}
+.foot small{font-size:20px;opacity:.6}
+.badge{width:190px;height:190px;border-radius:50%;border:8px solid var(--ink);display:grid;place-items:center;font:400 62px Anton;box-shadow:8px 10px 0 var(--ink)}
+.card{background:#fff;border:6px solid var(--ink);border-radius:28px;box-shadow:10px 12px 0 var(--ink)}
+.appu{position:absolute}
+.emoji{position:absolute;font-size:90px;filter:drop-shadow(4px 5px 0 rgba(0,0,0,.25))}
+</style></head><body>
+
+<!-- 1 · MATCHDAY PREVIEW -->
+<div class="ab sun-y" id="preview">
+  <div class="pill">MATCHDAY</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h" style="font-size:190px">BLASTERS</div></div>
+  <div class="center" style="top:385px"><div class="h gold" style="font-size:96px">vs</div></div>
+  <div class="center" style="top:490px"><div class="h" style="font-size:190px">MUMBAI</div></div>
+  <div class="center" style="top:720px"><span class="tag red">നാളെ കൊച്ചിയിൽ!</span></div>
+  <div class="badge" style="position:absolute;left:64px;top:1010px;background:#FFC629;color:#1E3A8A">KBFC</div>
+  <div class="badge" style="position:absolute;right:64px;top:1010px;background:#5DB3E6;color:#0E2240">MCFC</div>
+  <svg class="appu" data-mood="happy" style="left:345px;top:965px;width:390px"></svg>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:840px;height:110px;display:flex;align-items:center;justify-content:space-around;font:800 34px Pop;color:var(--ink)">
+    <span>SUN 25 OCT</span><span style="opacity:.3">|</span><span>7:30 PM</span><span style="opacity:.3">|</span><span>JLN, KOCHI</span></div>
+  <div class="foot"><span>Your score prediction? <b>Comment ↓</b></span><small>Fan page · not affiliated with ISL or clubs</small></div>
+</div>
+
+<!-- 2 · FULL TIME -->
+<div class="ab sun-r" id="fulltime">
+  <div class="pill red">FULL TIME</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:175px"><div class="h gold" style="font-size:150px">NEU 4–1 KBFC</div></div>
+  <div class="center" style="top:385px"><span class="tag white">ഗുവാഹത്തിയിൽ കനത്ത തോൽവി!</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:520px;padding:30px 40px;display:grid;grid-template-columns:1fr 1fr;gap:20px;font:600 32px Pop;color:var(--ink);line-height:1.5">
+    <div><div style="font:400 40px Anton;color:#C8102E;margin-bottom:6px">NORTHEAST UTD</div>⚽ Alaeddine Ajaraie ×2<br>⚽ Antonio Moyano<br>⚽ Aman CK</div>
+    <div><div style="font:400 40px Anton;color:#1E3A8A;margin-bottom:6px">KERALA BLASTERS</div>⚽ Momo Yansane</div>
+  </div>
+  <svg class="appu" data-mood="sad" style="left:330px;top:790px;width:420px"></svg>
+  <div class="emoji" style="left:120px;top:900px">💔</div><div class="emoji" style="right:120px;top:960px">😢</div>
+  <div class="foot"><span>18 Oct · Guwahati · <b>Next: vs Mumbai, Sun 7:30 PM</b></span><small>Fan page</small></div>
+</div>
+
+<!-- 3 · RESULTS ROUND-UP (carousel slide) -->
+<div class="ab sun-y" id="roundup">
+  <div class="pill">MATCHDAY 1 · RESULTS</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h" style="font-size:150px">ALL RESULTS</div></div>
+  <div class="center" style="top:350px"><span class="tag red">ആദ്യ ദിനത്തിലെ ഫലങ്ങൾ</span></div>
+  <div style="position:absolute;left:64px;right:64px;top:480px;display:grid;gap:22px" id="rows"></div>
+    <div class="foot"><span>Swipe for the table <b>→</b></span><small>10–11 Oct 2026 · Fan page</small></div>
+</div>
+
+<!-- 4 · TOP SCORERS -->
+<div class="ab sun-r" id="scorers">
+  <div class="pill red">GOLDEN BOOT</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h gold" style="font-size:150px">TOP SCORERS</div></div>
+  <div class="center" style="top:350px"><span class="tag white">ഗോൾ വേട്ട തുടങ്ങി!</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:480px;padding:14px 36px;color:var(--ink)" id="boot"></div>
+  <svg class="appu" data-mood="shock" style="left:385px;top:1010px;width:310px"></svg>
+  <div class="emoji" style="left:170px;top:1060px">⚽</div><div class="emoji" style="right:170px;top:1040px">🔥</div>
+  <div class="foot"><span>Who wins the Golden Boot? <b>Comment ↓</b></span><small>As of 18 Oct · Fan page</small></div>
+</div>
+
+
+<!-- 5 · STORY (1080x1920) -->
+<div class="ab sun-y" id="story" style="height:1920px">
+  <div class="pill" style="top:180px">MATCHDAY · TOMORROW</div>
+  <div class="center" style="top:360px"><div class="h" style="font-size:150px">WHO WINS?</div></div>
+  <div class="center" style="top:540px"><span class="tag red">നാളെ കൊച്ചിയിൽ!</span></div>
+  <div class="badge" style="position:absolute;left:150px;top:680px;background:#FFC629;color:#1E3A8A">KBFC</div>
+  <div style="position:absolute;left:0;right:0;top:735px;text-align:center" class="h gold"><span style="font-size:90px">vs</span></div>
+  <div class="badge" style="position:absolute;right:150px;top:680px;background:#5DB3E6;color:#0E2240">MCFC</div>
+  <div class="card" style="position:absolute;left:90px;right:90px;top:930px;height:100px;display:flex;align-items:center;justify-content:space-around;font:800 32px Pop;color:var(--ink)">
+    <span>SUN 25 OCT</span><span style="opacity:.3">|</span><span>7:30 PM</span><span style="opacity:.3">|</span><span>JLN, KOCHI</span></div>
+  <svg class="appu" data-mood="happy" style="left:340px;top:1330px;width:400px"></svg>
+  <div class="handle" style="top:180px;right:64px">@appu27.isl</div>
+</div>
+
+<!-- CAROUSEL: Matchweek recap -->
+<div class="ab sun-y" id="c1">
+  <div class="pill">MATCHWEEK RECAP</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:200px"><div class="h" style="font-size:200px">LAST WEEK.</div></div>
+  <div class="center" style="top:430px"><div class="h gold" style="font-size:200px">NEXT UP.</div></div>
+  <div class="center" style="top:680px"><span class="tag red">ഈ ആഴ്ചയിലെ ISL</span></div>
+  <svg class="appu" data-mood="shock" style="left:340px;top:820px;width:400px"></svg>
+  <div class="foot"><span>Swipe <b>&rarr;</b></span><small>Fan page &middot; not affiliated with ISL or clubs</small></div>
+</div>
+<div class="ab sun-r" id="c2">
+  <div class="pill red">BLASTERS &middot; LAST GAME</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:180px"><div class="h gold" style="font-size:150px">NEU 4&ndash;1 KBFC</div></div>
+  <div class="center" style="top:390px"><span class="tag white">ഗുവാഹത്തിയിൽ കനത്ത തോൽവി</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:530px;padding:30px 40px;display:grid;grid-template-columns:1fr 1fr;gap:20px;font:600 32px Pop;color:var(--ink);line-height:1.5">
+    <div><div style="font:400 40px Anton;color:#C8102E;margin-bottom:6px">NORTHEAST UTD</div>&#9917; Alaeddine Ajaraie &times;2<br>&#9917; Antonio Moyano<br>&#9917; Aman CK</div>
+    <div><div style="font:400 40px Anton;color:#1E3A8A;margin-bottom:6px">KERALA BLASTERS</div>&#9917; Momo Yansane</div></div>
+  <svg class="appu" data-mood="sad" style="left:350px;top:860px;width:380px"></svg>
+  <div class="foot"><span>18 Oct &middot; Guwahati</span><small>Source: Khel Now</small></div>
+</div>
+<div class="ab sun-y" id="c3">
+  <div class="pill">RESULT OF THE WEEK</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:180px"><div class="h" style="font-size:118px">IK 1&ndash;5 EAST BENGAL</div></div>
+  <div class="center" style="top:380px"><span class="tag red">ഈസ്റ്റ് ബംഗാളിന്റെ ഗോൾ മഴ!</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:520px;padding:30px 40px;font:600 34px Pop;color:var(--ink);line-height:1.6">
+    <div style="font:400 42px Anton;color:#C8102E;margin-bottom:6px">EAST BENGAL</div>
+    &#9917; Dani Ramirez &nbsp;8'<br>&#9917; PV Vishnu &nbsp;16'<br>&#9917; Ak&eacute; Loba &nbsp;16' (pen), 35'<br>&#9917; &#321;ukasz Zwoli&#324;ski &nbsp;81'
+    <div style="font:400 42px Anton;color:#5B2A86;margin:16px 0 6px">INTER KASHI</div>&#9917; Own goal (Lalchungnunga)</div>
+  <div class="foot"><span>Five goals. <b>Statement win.</b></span><small>Source: Khel Now</small></div>
+</div>
+<div class="ab sun-r" id="c4">
+  <div class="pill red">POINTS TABLE</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:180px"><div class="h gold" style="font-size:150px">WHERE WE STAND</div></div>
+  <div class="center" style="top:370px"><span class="tag white">ബ്ലാസ്റ്റേഴ്സ് ആറാമത്</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:510px;padding:10px 36px;color:var(--ink)" id="tbl"></div>
+  <div class="foot"><span>Table as of 23 Oct</span><small>Source: Khel Now</small></div>
+</div>
+<div class="ab sun-y" id="c5">
+  <div class="pill">TOMORROW &middot; 7:30 PM</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:180px"><div class="h" style="font-size:150px">KBFC vs MCFC</div></div>
+  <div class="center" style="top:370px"><span class="tag red">നാളെ കൊച്ചിയിൽ!</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:500px;padding:26px 40px;font:600 31px Pop;color:var(--ink);line-height:1.55">
+    <div style="font:400 40px Anton">FORM</div>
+    Blasters: 6th, 3 pts (W1 L1)<br>Mumbai: 9th, 1 pt (D1 L1), <b>still winless</b>
+    <div style="font:400 40px Anton;margin-top:14px">TEAM NEWS</div>
+    KBFC: Bikash Yumnan out<br>MCFC doubts: Vikram Pratap, Jord&aacute;n Gil
+    <div style="font:400 40px Anton;margin-top:14px">VENUE</div>JLN Stadium, Kochi
+  </div>
+  <svg class="appu" data-mood="happy" style="left:395px;top:975px;width:290px"></svg>
+  <div class="foot"><span>Official lineups ~6:30 PM, <b>watch our story</b></span><small>Source: Khel Now</small></div>
+</div>
+<script>
+// Appu, vector mascot with moods
+function appu(mood){
+  const S='stroke="#141414" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"';
+  const skin='#8A5634', jer='#FFC629';
+  const arms = mood==='happy'
+    ? `<path d="M95 300 L40 150 Q35 120 62 118 L80 120 L120 270Z" fill="${skin}" ${S}/><path d="M305 300 L360 150 Q365 120 338 118 L320 120 L280 270Z" fill="${skin}" ${S}/>
+       <path d="M40 160 L70 110 L95 140 L72 185Z" fill="${jer}" ${S}/><path d="M360 160 L330 110 L305 140 L328 185Z" fill="${jer}" ${S}/>`
+    : mood==='shock'
+    ? `<path d="M100 300 Q40 230 70 170 L100 175 Q90 230 130 280Z" fill="${skin}" ${S}/><path d="M300 300 Q360 230 330 170 L300 175 Q310 230 270 280Z" fill="${skin}" ${S}/>`
+    : `<path d="M95 300 Q60 330 70 400 L105 400 L125 310Z" fill="${skin}" ${S}/><path d="M305 300 Q340 330 330 400 L295 400 L275 310Z" fill="${skin}" ${S}/>`;
+  const mouth = mood==='happy'
+    ? `<path d="M165 238 Q200 290 235 238 Z" fill="#fff" ${S}/><path d="M178 258 Q200 282 222 258 Q200 266 178 258Z" fill="#E86A7A"/>`
+    : mood==='shock'
+    ? `<ellipse cx="200" cy="255" rx="22" ry="28" fill="#7A1E2A" ${S}/>`
+    : `<path d="M172 262 Q200 236 228 262" fill="none" ${S}/>`;
+  const extra = mood==='sad' ? `<path d="M150 205 q-6 18 0 26 q8 6 10 -6 q0 -10 -10 -20z" fill="#7CC7F2" stroke="#141414" stroke-width="4"/>` : '';
+  const brows = mood==='sad' ? `<path d="M135 150 L172 162" ${S}/><path d="M265 150 L228 162" ${S}/>` : mood==='shock' ? `<path d="M135 140 Q152 128 172 140" fill="none" ${S}/><path d="M228 140 Q248 128 265 140" fill="none" ${S}/>` : '';
+  return `<svg viewBox="0 0 400 430" xmlns="http://www.w3.org/2000/svg">
+   ${arms}
+   <path d="M105 290 Q105 270 135 266 L265 266 Q295 270 295 290 L300 420 L100 420Z" fill="${jer}" ${S}/>
+   <rect x="102" y="392" width="196" height="22" fill="#1E3A8A"/>
+   <text x="200" y="378" text-anchor="middle" font-family="Anton" font-size="96" fill="#1E3A8A">27</text>
+   <path d="M170 266 L200 296 L230 266" fill="none" stroke="#1E3A8A" stroke-width="10"/>
+   <ellipse cx="96" cy="190" rx="20" ry="26" fill="${skin}" ${S}/><ellipse cx="304" cy="190" rx="20" ry="26" fill="${skin}" ${S}/>
+   <ellipse cx="200" cy="185" rx="108" ry="100" fill="${skin}" ${S}/>
+   <path d="M94 165 Q92 80 200 78 Q308 80 306 165 Q290 130 270 140 L262 112 L245 136 L228 106 L212 134 L196 104 L180 134 L163 108 L148 138 L132 114 L124 145 Q110 135 94 165Z" fill="#1A1A1A" ${S}/>
+   ${brows}
+   <circle cx="158" cy="190" r="${mood==='shock'?26:22}" fill="#fff" ${S}/><circle cx="242" cy="190" r="${mood==='shock'?26:22}" fill="#fff" ${S}/>
+   <circle cx="${mood==='sad'?158:160}" cy="${mood==='sad'?196:192}" r="10" fill="#141414"/><circle cx="${mood==='sad'?242:244}" cy="${mood==='sad'?196:192}" r="10" fill="#141414"/>
+   <ellipse cx="128" cy="232" rx="18" ry="10" fill="#E8838C" opacity=".8"/><ellipse cx="272" cy="232" rx="18" ry="10" fill="#E8838C" opacity=".8"/>
+   ${mouth}${extra}</svg>`;
+}
+document.querySelectorAll('svg.appu').forEach(s=>{s.outerHTML=appu(s.dataset.mood).replace('<svg ','<svg class="appu" style="'+s.getAttribute('style')+'" ')});
+
+const R=[['BFC','#0E3B8C','#fff',3,2,'DEL','#E4002B','#fff'],['CBFC','#C8102E','#fff',2,1,'MCFC','#5DB3E6','#0E2240'],['FCG','#F7941D','#1E3A8A',1,1,'CFC','#1F4EA1','#fff'],['IK','#5B2A86','#fff',0,2,'KBFC','#FFC629','#1E3A8A']];
+document.getElementById('rows').innerHTML=R.map(r=>`<div class="card" style="height:132px;display:grid;grid-template-columns:110px 1fr 220px 1fr 110px;align-items:center;padding:0 22px;color:#141414">
+ <div class="badge" style="width:96px;height:96px;border-width:5px;box-shadow:none;font-size:30px;background:${r[1]};color:${r[2]}">${r[0]}</div>
+ <div style="font:400 44px Anton;text-align:left;padding-left:10px">${r[0]}</div>
+ <div style="font:400 84px Anton;text-align:center">${r[3]}–${r[4]}</div>
+ <div style="font:400 44px Anton;text-align:right;padding-right:10px">${r[5]}</div>
+ <div class="badge" style="width:96px;height:96px;border-width:5px;box-shadow:none;font-size:30px;background:${r[6]};color:${r[7]}">${r[5]}</div></div>`).join('');
+const T=[['1','East Bengal','6'],['2','NorthEast United','6'],['3','Bengaluru FC','6'],['6','Kerala Blasters','3'],['9','Mumbai City','1']];
+document.getElementById('tbl').innerHTML=T.map((r,i)=>`<div style="display:grid;grid-template-columns:90px 1fr 120px;align-items:center;padding:14px 0;${i<4?'border-bottom:3px dashed #ddd':''};${r[1]==='Kerala Blasters'?'background:#FFF4CC;margin:0 -36px;padding-left:36px;padding-right:36px':''}">
+ <div style="font:400 60px Anton;color:#E03A3E">${r[0]}</div><div style="font:800 40px Pop">${r[1]}</div><div style="font:400 64px Anton;text-align:right">${r[2]}<span style="font-size:26px"> pts</span></div></div>`).join('')+'<div style="font:600 24px Pop;opacity:.55;padding:10px 0 16px">Positions 4, 5, 7 and 8 not shown</div>';
+const B=[['Borja Martinez','Bengaluru FC',2],['Raphaël Messi Bouli','Punjab FC',2],['Alaeddine Ajaraie','NorthEast United',2],['Bipin Singh','East Bengal',2]];
+document.getElementById('boot').innerHTML=B.map((b,i)=>`<div style="display:grid;grid-template-columns:70px 1fr 110px;align-items:center;padding:16px 0;${i<3?'border-bottom:3px dashed #ddd':''}">
+ <div style="font:400 54px Anton;color:#E03A3E">${i+1}</div><div><div style="font:800 38px Pop">${b[0]}</div><div style="font:600 26px Pop;opacity:.6">${b[1]}</div></div>
+ <div style="font:400 72px Anton;text-align:right">${b[2]}<span style="font-size:30px"> ⚽</span></div></div>`).join('');
+</script></body></html>

@@ -1,0 +1,2 @@
+{ "name": "appu27-design", "private": true,
+  "dependencies": { "playwright": "^1.47.0", "@fontsource/anton": "^5.0.0", "@fontsource/baloo-chettan-2": "^5.0.0", "@fontsource/poppins": "^5.0.0" } }
