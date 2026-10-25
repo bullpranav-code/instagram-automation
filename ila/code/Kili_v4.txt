@@ -16,7 +16,8 @@ function doPost(e) {
   var out;
   try {
     var req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    if (req.action === 'feedback') out = ccFeedback(req);
+    if (req.action === 'admin') out = ccAdminData_(req.key);
+    else if (req.action === 'feedback') out = ccFeedback(req);
     else if (req.action === 'review') out = ccReview(req);
     else throw new Error('Unknown request.');
   } catch (err) { out = { error: String(err.message || err) }; }
@@ -173,6 +174,20 @@ function ccFeedback(f) {
   if (!sh) { sh = ss.insertSheet('Beta Feedback'); sh.appendRow(['Timestamp', 'Learner', 'Rating', 'Comment', 'Kili score /100']); sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF'); sh.setFrozenRows(1); }
   sh.appendRow([new Date(), String(f.learner || '').slice(0, 80), String(f.rating || '').slice(0, 10), String(f.comment || '').slice(0, 1000), f.score || '']);
   return { ok: true };
+}
+
+/** Admin data for the in-app dashboard (JSON). */
+function ccAdminData_(key) {
+  var k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+  if (!k || key !== k) throw new Error('Wrong admin key.');
+  var ss = ss_(), rows = anAll_(ss.getSheetByName(CC.TAB), 24), fbs = anAll_(ss.getSheetByName('Beta Feedback'), 5);
+  var iso = function (x) { return x instanceof Date ? x.toISOString() : String(x || ''); };
+  rows = rows.slice(Math.max(0, rows.length - 1000)).map(function (r) {
+    return { t: iso(r[0]), learner: r[1], type: r[3], product: r[4], goal: r[5], lang: r[6], audio: String(r[7] || ''), status: String(r[8] || ''), s10: Number(r[9]) || null, s100: Number(r[10]) || null,
+      interest: r[11], talk: r[12], summary: String(r[13] || '').slice(0, 500), well: String(r[14] || '').slice(0, 600), fixes: String(r[15] || '').slice(0, 900), objections: String(r[16] || '').slice(0, 600),
+      flags: r[17], next: r[18], followup: String(r[19] || '').slice(0, 600), verdict: r[21], checklist: String(r[22] || ''), words: String(r[23] || '') }; });
+  fbs = fbs.slice(Math.max(0, fbs.length - 300)).map(function (r) { return { t: iso(r[0]), learner: r[1], rating: r[2], comment: r[3], score: r[4] }; });
+  return { ok: true, at: new Date().toISOString(), sheet: ss.getUrl(), calls: rows, feedback: fbs };
 }
 
 function ccClamp_(x, lo, hi) { var n = Number(x) || 0; return Math.max(lo, Math.min(hi, n)); }

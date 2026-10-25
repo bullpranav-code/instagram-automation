@@ -59,7 +59,8 @@ function doPost(e) {
   let out;
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    if (req.action === 'start') out = startSession(req);
+    if (req.action === 'admin') out = adminData_(req.key);
+    else if (req.action === 'start') out = startSession(req);
     else if (!/^IL-[A-Z0-9]{8}$/.test(String(req.session || ''))) throw new Error('Session expired. Please sign in again.');
     else if (req.action === 'service') out = requestService(req);
     else if (req.action === 'feedback') out = saveFeedback_(req);
@@ -131,6 +132,23 @@ function ilaStt_(req) {
 }
 
 /** Once a day: remove the old knowledge-sync timer (knowledge now loads straight from GitHub). */
+/** Admin data for the in-app dashboard (JSON). */
+function adminData_(key) {
+  const k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+  if (!k || key !== k) throw new Error('Wrong admin key.');
+  const ss = ss_(), sh = n => ss.getSheetByName(TABS[n][0]);
+  const iso = x => x instanceof Date ? x.toISOString() : String(x || '');
+  const tail = (rows, n) => rows.slice(Math.max(0, rows.length - n));
+  const leads = tail(anAll_(sh('leads'), 7), 1000).map(r => ({ t: iso(r[0]), name: r[2], wa: String(r[3]), iam: r[5], district: r[6] }));
+  const reps = tail(anAll_(sh('reports'), 7), 1000).map(r => ({ t: iso(r[0]), session: r[1], name: r[2], role: r[3], lang: r[4], score: Number(r[5]) || null, report: String(r[6]).slice(0, 3000) }));
+  const fbs = tail(anAll_(sh('feedback'), 7), 500).map(r => ({ t: iso(r[0]), product: r[1], name: r[3], rating: r[4], comment: r[5], context: r[6] }));
+  const svcs = tail(anAll_(sh('services'), 9), 300).map(r => ({ t: iso(r[0]), name: r[2], wa: String(r[3]), service: r[4], status: r[7], draft: r[8] }));
+  const chats = anAll_(sh('chats'), 7), daily = {}, modes = {}, flagged = [];
+  chats.forEach(r => { try { const d = Utilities.formatDate(new Date(r[0]), 'Asia/Kolkata', 'yyyy-MM-dd'); daily[d] = (daily[d] || 0) + 1; } catch (e) {}
+    const m = r[3] || 'chat'; modes[m] = (modes[m] || 0) + 1; });
+  tail(chats, 400).forEach(r => { if (/handoff|crisis/.test(r[6])) flagged.push({ t: iso(r[0]), name: r[2], flag: r[6], msg: String(r[4]).slice(0, 200) }); });
+  return { ok: true, at: new Date().toISOString(), sheet: ss.getUrl(), leads: leads, reports: reps, feedback: fbs, services: svcs, chatDaily: daily, chatModes: modes, chatTotal: chats.length, flagged: flagged.slice(-30) };
+}
 function housekeeping_() {
   const c = CacheService.getScriptCache();
   if (c.get('hk_done')) return;

@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Accent AI · Choice Is Yours.</title>
-<meta name="theme-color" content="#0B3D1E">
+<meta name="theme-color" content="#0B3D1E"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Accent AI"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--f:#0B3D1E;--g:#16A34A;--l:#79C24A;--m:#E9F5EA;--s:#F7FAF8;--line:#DCE5DE;--ink:#2C3A31;--mute:#8A968E;--warn:#C97A2B;--red:#B42318}
@@ -81,6 +81,23 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
 .bigs{background:var(--f);color:#fff;border-radius:16px;padding:16px}.bigs b{font-size:38px;display:block;line-height:1}.bigs span{font-size:12px;color:var(--m)}
 .bigs.alt{background:var(--m);color:var(--f)}.bigs.alt span{color:var(--ink)}
 .hide{display:none!important}
+/* admin */
+#atabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:none;justify-content:space-around;padding:6px 4px;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:6}
+#atabs.on{display:flex}#atabs button{flex:1;border:0;background:none;font:inherit;font-size:11px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0}
+#atabs button i{font-style:normal;font-size:20px}#atabs button.on{color:var(--f);font-weight:600}
+#v-admin .wrap{padding-bottom:96px;max-width:900px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}.kpi small{font-size:10px;letter-spacing:1.5px;color:var(--g);font-weight:700}
+.kpi b{display:block;font-size:26px;color:var(--f);margin-top:2px}.kpi span{font-size:12px;color:var(--mute)}
+.item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.item .s{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex:none;font-size:15px}
+.item .m{flex:1;min-width:0}.item .m b{display:block;color:var(--f);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item .m span{font-size:12px;color:var(--mute)}
+.alert{background:#FDECEA;color:var(--red);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14px}
+.hb{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}.hb span{width:44%;color:var(--f)}.hb div{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden}.hb div i{display:block;height:100%;background:var(--g)}.hb b{width:30px;text-align:right}
+.sheet{position:fixed;inset:0;background:rgba(10,15,12,.45);z-index:20;display:none;align-items:flex-end;justify-content:center}.sheet.on{display:flex}
+.sheet .pan{background:var(--s);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px 30px}
+.seg{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+@media(max-width:600px){#v-admin .two{grid-template-columns:1fr}}
 </style></head><body>
 <header><button id="back" aria-label="Back">‹</button><div class="t"><small id="eyebrow">ACCENT · AI · BETA</small><b id="title">Accent AI</b></div><img src="data:image/png;base64,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" alt="ACCENT"></header>
 
@@ -94,7 +111,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
     <label>I AM</label><select id="w-iam"><option>A student / fresher</option><option>An Accent learner</option><option>Working, want to switch</option><option>A parent</option></select>
     <label>DISTRICT</label><select id="w-dist"><option value="">Choose your district</option><option>Kasaragod</option><option>Kannur</option><option>Wayanad</option><option>Kozhikode</option><option>Malappuram</option><option>Palakkad</option><option>Thrissur</option><option>Ernakulam</option><option>Idukki</option><option>Kottayam</option><option>Alappuzha</option><option>Pathanamthitta</option><option>Kollam</option><option>Thiruvananthapuram</option><option>Outside Kerala</option></select>
     <div class="chk"><input type="checkbox" id="w-ok"><span>I agree that Accent can save my details and messages to guide me and contact me on WhatsApp.</span></div>
-    <button class="btn" id="w-go">Continue</button><div class="err" id="w-err"></div>
+    <button class="btn" id="w-go">Continue</button><div class="err" id="w-err"></div><p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" class="adminlink" style="color:var(--mute)">Admin / trainer login</a></p>
   </div>
 </div></section>
 
@@ -110,8 +127,20 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
     <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
     <button class="tile" data-go="human"><span class="e">👤</span><b>Talk to a person</b><span>WhatsApp the Accent team.</span></button>
   </div>
-  <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Sign out</a> · <a href="#" id="trainer" style="color:var(--mute)">Trainer</a></p>
+  <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Sign out</a> · <a href="#" class="adminlink" style="color:var(--mute)">Admin</a></p>
 </div></section>
+
+<!-- ADMIN -->
+<section class="view" id="v-admin"><div class="wrap">
+  <div id="a-login" class="card"><h2>Admin access</h2><p class="sub">For Accent trainers. Enter the key once on this device.</p>
+    <input id="a-key" type="password" placeholder="Admin key"><button class="btn" id="a-go">Open admin</button><div class="err" id="a-err"></div></div>
+  <div id="a-body" class="hide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="sub" id="a-at" style="margin:0"></span><button class="icon" id="a-ref">↻ Refresh</button></div>
+    <div id="a-ov"></div><div id="a-int" class="hide"></div><div id="a-calls" class="hide"></div><div id="a-stu" class="hide"></div><div id="a-fb" class="hide"></div>
+  </div>
+</div></section>
+<div id="atabs"><button data-t="ov" class="on"><i>📊</i>Overview</button><button data-t="int"><i>🎤</i>Interviews</button><button data-t="calls"><i>🐦</i>Calls</button><button data-t="stu"><i>👥</i>Students</button><button data-t="fb"><i>💬</i>Feedback</button></div>
+<div class="sheet" id="sheet"><div class="pan" id="pan"></div></div>
 
 <!-- CHAT -->
 <section class="view" id="v-chat"><div id="chatlog"></div></section>
@@ -189,17 +218,17 @@ function netMsg(e){const m=String(e&&e.message||e);return /Failed to fetch|Load 
 function pick(box,cb){box.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{box.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');cb(p.dataset.v);});}
 
 /* ---------- navigation ---------- */
-const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review']};
+const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review'],admin:['ACCENT AI · ADMIN','Admin']};
 let current='';
 function show(v,push){
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
-  $('composer').classList.toggle('on',v==='chat');$('back').style.display=(v==='home'||v==='welcome')?'none':'block';
+  $('composer').classList.toggle('on',v==='chat');$('atabs').classList.toggle('on',v==='admin'&&!!AK);$('back').style.display=(v==='home'||v==='welcome')?'none':'block';
   $('eyebrow').textContent=TITLES[v][0];if(v!=='chat')$('title').textContent=TITLES[v][1];
   if(v!=='interview')stopVoice();
   current=v;window.scrollTo(0,0);if(push!==false)try{history.pushState({v:v},'','#'+v)}catch(e){}
 }
 window.onpopstate=e=>{const v=(e.state&&e.state.v)||'home';show(S?(v==='welcome'?'home':v):'welcome',false);};
-$('back').onclick=()=>{if(history.state&&history.state.v&&history.length>1)history.back();else show('home');};
+$('back').onclick=()=>{if(history.state&&history.state.v&&history.length>1)history.back();else show(S?'home':'welcome');};
 
 /* ---------- welcome ---------- */
 $('w-go').onclick=()=>{
@@ -212,9 +241,6 @@ $('w-go').onclick=()=>{
   .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
 };
 function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
-$('trainer').onclick=e=>{e.preventDefault();const k=prompt('Trainer key');if(!k)return;
-  const d=document.createElement('div');d.className='card';d.innerHTML='<div class="qn">TRAINER DASHBOARDS</div><a class="btn" target="_blank" href="'+ILA+'?view=admin&key='+encodeURIComponent(k)+'">📊 Ila dashboard (interviews, students, feedback)</a><a class="btn green" target="_blank" href="'+KILI+'?view=calls&key='+encodeURIComponent(k)+'">🐦 Kili dashboard (call reviews)</a>';
-  $('v-home').querySelector('.wrap').appendChild(d);d.scrollIntoView({behavior:'smooth'});};
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone?')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
@@ -402,7 +428,101 @@ function kshow(o){
     post(KILI,{action:'feedback',learner:S.name,rating:rating,comment:$('k-fbt').value.trim(),score:o.score100}).then(()=>{$('k-fb').innerHTML='<h4>THANK YOU 🌱</h4><p>Your feedback helps us make Kili better.</p>'}).catch(()=>{$('k-fbs').disabled=false;$('k-fbs').textContent='Try again';});};
 }
 
+
+/* ---------- admin ---------- */
+let AK=store.get('accent_admin')||'',AD=null,KD=null;
+document.querySelectorAll('.adminlink').forEach(a=>a.onclick=e=>{e.preventDefault();openAdmin();});
+function openAdmin(){show('admin');if(AK){$('a-login').classList.add('hide');$('a-body').classList.remove('hide');$('atabs').classList.add('on');if(!AD)loadAdmin();}else{$('a-login').classList.remove('hide');$('a-body').classList.add('hide');}}
+$('a-go').onclick=()=>{const k=$('a-key').value.trim();if(!k)return;AK=k;$('a-err').textContent='';$('a-go').disabled=true;$('a-go').textContent='Checking…';loadAdmin(true);};
+$('a-key').onkeydown=e=>{if(e.key==='Enter')$('a-go').click()};
+$('a-ref').onclick=()=>loadAdmin();
+function loadAdmin(first){
+  $('a-at').textContent='Loading…';
+  Promise.allSettled([post(ILA,{action:'admin',key:AK}),post(KILI,{action:'admin',key:AK})]).then(([a,k])=>{
+    $('a-go').disabled=false;$('a-go').textContent='Open admin';
+    if(a.status==='rejected'&&k.status==='rejected'){const m=String(a.reason&&a.reason.message||'');if(/key/i.test(m)||first){AK='';store.del('accent_admin');$('a-login').classList.remove('hide');$('a-body').classList.add('hide');$('atabs').classList.remove('on');$('a-err').textContent=/key/i.test(m)?'Wrong key.':netMsg(a.reason);}else $('a-at').textContent=netMsg(a.reason);return}
+    store.set('accent_admin',AK);AD=a.status==='fulfilled'?a.value:null;KD=k.status==='fulfilled'?k.value:null;
+    $('a-login').classList.add('hide');$('a-body').classList.remove('hide');$('atabs').classList.add('on');
+    $('a-at').textContent='Updated '+new Date().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+(AD?'':' · Ila data unavailable')+(KD?'':' · Kili data unavailable');
+    renderAdmin();});
+}
+document.querySelectorAll('#atabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#atabs button').forEach(x=>x.classList.toggle('on',x===b));
+  ['ov','int','calls','stu','fb'].forEach(t=>$('a-'+t).classList.toggle('hide',t!==b.dataset.t));$('title').textContent=b.textContent.replace(/^\S+/,'').trim()||'Admin';window.scrollTo(0,0);});
+const dkey=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'})};
+const dshow=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})};
+function days30(){const o=[];for(let i=29;i>=0;i--){const d=new Date(Date.now()-i*864e5);o.push({k:dkey(d),l:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})});}return o;}
+function chart(labels,bars,line,lmax,bn,ln){const W=640,H=190,P=28,n=labels.length,bw=(W-P*2)/n,max=Math.max(1,...bars);let g='<svg viewBox="0 0 '+W+' '+(H+30)+'" width="100%">';
+  [0,.5,1].forEach(f=>{const y=P+(H-P*2)*(1-f);g+='<line x1="'+P+'" x2="'+(W-P)+'" y1="'+y+'" y2="'+y+'" stroke="#DCE5DE"/><text x="'+(P-6)+'" y="'+(y+4)+'" font-size="10" text-anchor="end" fill="#8A968E">'+Math.round(max*f)+'</text>'});
+  bars.forEach((v,i)=>{const hh=(H-P*2)*v/max;g+='<rect x="'+(P+i*bw+bw*.18)+'" y="'+(H-P-hh)+'" width="'+(bw*.64)+'" height="'+hh+'" rx="3" fill="#16A34A"/>'});
+  if(line){const pts=[];line.forEach((v,i)=>{if(v!=null)pts.push((P+i*bw+bw/2)+','+(P+(H-P*2)*(1-v/lmax)))});if(pts.length)g+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="#0B3D1E" stroke-width="2.5"/>'+pts.map(p=>{const a=p.split(',');return '<circle cx="'+a[0]+'" cy="'+a[1]+'" r="3.5" fill="#0B3D1E"/>'}).join('');}
+  const st=Math.ceil(n/6);labels.forEach((l,i)=>{if(i%st===0)g+='<text x="'+(P+i*bw+bw/2)+'" y="'+(H-P+16)+'" font-size="10" text-anchor="middle" fill="#8A968E">'+esc(l)+'</text>'});
+  g+='<rect x="'+P+'" y="'+(H+10)+'" width="10" height="10" fill="#16A34A"/><text x="'+(P+14)+'" y="'+(H+19)+'" font-size="11" fill="#2C3A31">'+esc(bn)+'</text>';
+  if(line)g+='<line x1="'+(P+130)+'" x2="'+(P+144)+'" y1="'+(H+15)+'" y2="'+(H+15)+'" stroke="#0B3D1E" stroke-width="2.5"/><text x="'+(P+148)+'" y="'+(H+19)+'" font-size="11" fill="#2C3A31">'+esc(ln)+'</text>';return g+'</svg>';}
+function hbars(map,top){const a=Object.entries(map).sort((x,y)=>y[1]-x[1]).slice(0,top||6);if(!a.length)return '<p class="sub">No data yet.</p>';const m=a[0][1]||1;
+  return a.map(([k,v])=>'<div class="hb"><span>'+esc(k)+'</span><div><i style="width:'+Math.round(v/m*100)+'%"></i></div><b>'+v+'</b></div>').join('');}
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const col10=s=>s>=7?'#16A34A':s>=5?'#C97A2B':'#B42318',col100=s=>s>=70?'#16A34A':s>=50?'#C97A2B':'#B42318';
+const kpi=(t,v,s)=>'<div class="kpi"><small>'+t+'</small><b>'+v+'</b><span>'+(s||'')+'</span></div>';
+function renderAdmin(){
+  const R=(AD&&AD.reports)||[],L=(AD&&AD.leads)||[],F=((AD&&AD.feedback)||[]).map(x=>Object.assign({src:'Ila'},x)).concat(((KD&&KD.feedback)||[]).map(x=>({src:'Kili',t:x.t,name:x.learner,rating:x.rating,comment:x.comment,context:x.score?('Kili '+x.score+'/100'):''})));
+  const C=((KD&&KD.calls)||[]).filter(c=>c.status==='Done'),Call=(KD&&KD.calls)||[];
+  const D=days30(),rs=R.map(r=>r.score).filter(x=>x>0),cs=C.map(c=>c.s100).filter(x=>x>0);
+  const wk=(arr)=>{const now=Date.now();let a=0,b=0;arr.forEach(x=>{const d=(now-new Date(x.t))/864e5;if(d<7)a++;else if(d<14)b++;});return [a,b]};
+  const [iw,ip]=wk(R),[cw,cp]=wk(C),up=F.filter(f=>/👍/.test(f.rating)).length,rated=F.filter(f=>/👍|👎/.test(f.rating)).length;
+  const byDay=(arr,f)=>D.map(d=>arr.filter(x=>dkey(x.t)===d.k)),ri=byDay(R),ci=byDay(C);
+  let o='';
+  if(AD&&AD.flagged&&AD.flagged.length)o+='<div class="alert"><b>'+AD.flagged.length+' chats need a human.</b> '+esc(AD.flagged.slice(-1)[0].name||'')+': “'+esc(AD.flagged.slice(-1)[0].msg)+'”</div>';
+  const newSvc=((AD&&AD.services)||[]).filter(s=>/^New|Draft ready/.test(s.status));if(newSvc.length)o+='<div class="alert" style="background:var(--m);color:var(--f)"><b>'+newSvc.length+' service requests</b> waiting (resume/LinkedIn).</div>';
+  o+='<div class="kpis">'+kpi('STUDENTS',L.length,'signed up')+kpi('MOCK INTERVIEWS',R.length,iw+' this week ('+(iw>=ip?'+':'')+(iw-ip)+')')+kpi('AVG INTERVIEW',rs.length?avg(rs).toFixed(1)+'/10':'–','')+
+    kpi('INTERVIEW-READY',rs.length?Math.round(rs.filter(x=>x>=7).length/rs.length*100)+'%':'–','scored 7+')+kpi('CALLS REVIEWED',C.length,cw+' this week ('+(cw>=cp?'+':'')+(cw-cp)+')')+
+    kpi('AVG CALL SCORE',cs.length?Math.round(avg(cs))+'/100':'–','')+kpi('CHAT MESSAGES',(AD&&AD.chatTotal)||0,'')+kpi('BETA 👍',rated?Math.round(up/rated*100)+'%':'–',rated+' ratings')+'</div>';
+  o+='<div class="card"><b style="color:var(--f)">Mock interviews · last 30 days</b>'+chart(D.map(d=>d.l),ri.map(a=>a.length),ri.map(a=>avg(a.map(r=>r.score).filter(x=>x>0))),10,'Interviews','Avg score /10')+'</div>';
+  o+='<div class="card"><b style="color:var(--f)">Calls reviewed · last 30 days</b>'+chart(D.map(d=>d.l),ci.map(a=>a.length),ci.map(a=>avg(a.map(c=>c.s100).filter(x=>x>0))),100,'Calls','Avg score /100')+'</div>';
+  const cd=(AD&&AD.chatDaily)||{};o+='<div class="card"><b style="color:var(--f)">Ila chat messages · last 30 days</b>'+chart(D.map(d=>d.l),D.map(d=>cd[d.k]||0),null,0,'Messages','')+'</div>';
+  o+='<div class="card"><b style="color:var(--f)">What students use</b>'+hbars((AD&&AD.chatModes)||{},7)+'</div>';
+  if(AD)o+='<p class="sub" style="text-align:center"><a href="'+esc(AD.sheet)+'" target="_blank" style="color:var(--g)">Open Ila sheet</a>'+(KD?' · <a href="'+esc(KD.sheet)+'" target="_blank" style="color:var(--g)">Open Kili sheet</a>':'')+'</p>';
+  $('a-ov').innerHTML=o;
+  // interviews
+  const dist={'0–4 needs work':0,'5–6 getting there':0,'7–8 ready':0,'9–10 strong':0};rs.forEach(x=>dist[x<5?'0–4 needs work':x<7?'5–6 getting there':x<9?'7–8 ready':'9–10 strong']++);
+  const weak={'Salary answer':0,'Using numbers / proof':0,'Closing / next step':0,'Grammar & words':0,'Confidence':0,'Structure (STAR)':0};
+  R.forEach(r=>{const t=(String(r.report).split(/CORRECTIONS:/i)[1]||'').toLowerCase();if(/salary|ctc|expect/.test(t))weak['Salary answer']++;if(/number|figure|data|result/.test(t))weak['Using numbers / proof']++;if(/clos|next step|callback/.test(t))weak['Closing / next step']++;if(/words:/.test(t)&&!/words:\s*none/.test(t))weak['Grammar & words']++;if(/confiden|hesitat|filler/.test(t))weak['Confidence']++;if(/star|structure|situation/.test(t))weak['Structure (STAR)']++;});
+  const roles={};R.forEach(r=>{if(r.role)roles[r.role]=(roles[r.role]||0)+1});
+  $('a-int').innerHTML='<div class="two"><div class="card"><b style="color:var(--f)">Score spread</b>'+hbars(dist,4)+'</div><div class="card"><b style="color:var(--f)">Weak areas</b>'+hbars(weak,6)+'</div></div><div class="card"><b style="color:var(--f)">Roles practised</b>'+hbars(roles,6)+'</div>'+
+    '<input id="q-int" placeholder="Search name or role" style="margin-bottom:10px"><div id="l-int"></div>';
+  const listI=()=>{const q=$('q-int').value.toLowerCase();$('l-int').innerHTML=R.slice().reverse().filter(r=>(r.name+' '+r.role).toLowerCase().includes(q)).slice(0,200).map((r,i)=>'<div class="item" data-i="'+R.indexOf(r)+'"><div class="s" style="background:'+col10(r.score||0)+'">'+(r.score||'–')+'</div><div class="m"><b>'+esc(r.name||'Student')+'</b><span>'+esc(r.role)+' · '+esc(r.lang)+' · '+dshow(r.t)+'</span></div>›</div>').join('')||'<p class="sub">No interviews yet.</p>';
+    $('l-int').querySelectorAll('.item').forEach(it=>it.onclick=()=>openSheet(intDetail(R[+it.dataset.i])));};
+  $('q-int').oninput=listI;listI();
+  // calls
+  const missed={},words={};C.forEach(c=>{c.checklist.split('\n').forEach(l=>{const m=l.match(/^\[ \]\s*([^:]+)/);if(m)missed[m[1].trim()]=(missed[m[1].trim()]||0)+1});c.words.split('\n').forEach(l=>{const m=l.match(/^"([^"]+)"/);if(m)words[m[1].toLowerCase()]=(words[m[1].toLowerCase()]||0)+1});});
+  $('a-calls').innerHTML='<div class="two"><div class="card"><b style="color:var(--f)">Most-missed call steps</b>'+hbars(missed,6)+'</div><div class="card"><b style="color:var(--f)">Words to stop using</b>'+hbars(words,6)+'</div></div>'+
+    '<input id="q-calls" placeholder="Search learner" style="margin-bottom:10px"><div id="l-calls"></div>';
+  const listC=()=>{const q=$('q-calls').value.toLowerCase();$('l-calls').innerHTML=Call.slice().reverse().filter(c=>String(c.learner).toLowerCase().includes(q)).slice(0,200).map(c=>'<div class="item" data-i="'+Call.indexOf(c)+'"><div class="s" style="background:'+(c.status==='Done'?col100(c.s100||0):'#8A968E')+'">'+(c.status==='Done'?c.s100:'!')+'</div><div class="m"><b>'+esc(c.learner)+'</b><span>'+esc(c.type)+' · '+dshow(c.t)+(c.status!=='Done'?' · '+esc(c.status).slice(0,40):'')+'</span></div>›</div>').join('')||'<p class="sub">No calls yet.</p>';
+    $('l-calls').querySelectorAll('.item').forEach(it=>it.onclick=()=>openSheet(callDetail(Call[+it.dataset.i])));};
+  $('q-calls').oninput=listC;listC();
+  // students
+  const dists={};L.forEach(l=>{const d=l.district||'Not given';dists[d]=(dists[d]||0)+1});
+  $('a-stu').innerHTML='<div class="card"><b style="color:var(--f)">Students by district</b>'+hbars(dists,8)+'</div><input id="q-stu" placeholder="Search name, number or district" style="margin-bottom:10px"><div id="l-stu"></div>';
+  const listS=()=>{const q=$('q-stu').value.toLowerCase();$('l-stu').innerHTML=L.slice().reverse().filter(l=>(l.name+' '+l.wa+' '+l.district).toLowerCase().includes(q)).slice(0,300).map(l=>{const n=R.filter(r=>r.name===l.name).length;
+    return '<a class="item" style="text-decoration:none" target="_blank" href="https://wa.me/'+String(l.wa).replace(/\D/g,'').replace(/^(\d{10})$/,'91$1')+'"><div class="s" style="background:var(--f)">'+esc((l.name||'?').trim()[0]||'?').toUpperCase()+'</div><div class="m"><b>'+esc(l.name)+'</b><span>'+esc(l.iam)+' · '+esc(l.district||'')+' · '+dshow(l.t)+(n?' · '+n+' interview'+(n>1?'s':''):'')+'</span></div>💬</a>'}).join('')||'<p class="sub">No students yet.</p>';};
+  $('q-stu').oninput=listS;listS();
+  // feedback
+  const seg=s=>{const a=F.filter(f=>f.src===s),u=a.filter(f=>/👍/.test(f.rating)).length,r=a.filter(f=>/👍|👎/.test(f.rating)).length;return kpi(s.toUpperCase()+' 👍',r?Math.round(u/r*100)+'%':'–',r+' ratings')};
+  $('a-fb').innerHTML='<div class="kpis">'+seg('Ila')+seg('Kili')+'</div>'+(F.sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,200).map(f=>'<div class="item" style="cursor:default"><div class="s" style="background:'+(/👎/.test(f.rating)?'#B42318':'#16A34A')+'">'+(f.rating||'💬')+'</div><div class="m"><b>'+esc(f.comment||'(no comment)')+'</b><span>'+esc(f.src)+' · '+esc(f.name||'')+' · '+esc(f.context||'')+' · '+dshow(f.t)+'</span></div></div>').join('')||'<p class="sub">No feedback yet.</p>');
+}
+function openSheet(html){$('pan').innerHTML='<div style="display:flex;justify-content:flex-end"><button class="icon" id="sh-x">Close ✕</button></div>'+html;$('sheet').classList.add('on');$('sh-x').onclick=closeSheet;}
+function closeSheet(){$('sheet').classList.remove('on');}
+$('sheet').onclick=e=>{if(e.target.id==='sheet')closeSheet()};
+function intDetail(r){const body=String(r.report).replace(/^\s*\**\s*REPORT\**\s*/i,'').replace(/\*\*/g,'');
+  return '<div class="qn">MOCK INTERVIEW REPORT</div><h2 style="margin-top:6px">'+esc(r.name)+' · '+esc(r.role)+'</h2><p class="sub">'+esc(r.lang)+' · '+dshow(r.t)+'</p><div class="score"><b>'+(r.score||'–')+'</b><span>/ 10</span></div><div class="sec"><p>'+esc(body)+'</p></div>';}
+function callDetail(c){const s=(t,v)=>v?'<div class="sec"><h4>'+t+'</h4><p>'+esc(v)+'</p></div>':'';
+  return '<div class="qn">KILI CALL REVIEW</div><h2 style="margin-top:6px">'+esc(c.learner)+'</h2><p class="sub">'+esc(c.type)+' · '+esc(c.goal||'')+' · '+dshow(c.t)+'</p>'+
+    (c.status==='Done'?'<div class="two"><div class="bigs"><b>'+c.s10+'/10</b><span>Course scorecard</span></div><div class="bigs alt"><b>'+c.s100+'</b><span>Kili /100</span></div></div>':'<p class="alert">'+esc(c.status)+'</p>')+
+    s('VERDICT',c.verdict)+s('SUMMARY',c.summary)+s('BUYER INTEREST',c.interest)+s('FIX NEXT TIME',c.fixes)+s('OBJECTIONS',c.objections)+s('CHECKLIST',c.checklist)+s('WORDS',c.words)+s('NEXT ACTION',c.next)+s('FOLLOW-UP MESSAGE',c.followup)+
+    (/^http/.test(c.audio)?'<a class="btn alt" target="_blank" href="'+esc(c.audio)+'">▶ Play recording</a>':'');}
+
 /* ---------- start ---------- */
-if(S&&S.session){openHome();const h=location.hash.slice(1);if(h==='interview')openInterview();else if(h==='kili')openKili();}
+const H0=location.hash.slice(1);
+if(H0==='admin'){if(S&&S.session)openHome();openAdmin();}
+else if(S&&S.session){openHome();if(H0==='interview')openInterview();else if(H0==='kili')openKili();}
 else{show('welcome',false);}
 </script></body></html>
