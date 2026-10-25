@@ -97,6 +97,14 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
 .sheet{position:fixed;inset:0;background:rgba(10,15,12,.45);z-index:20;display:none;align-items:flex-end;justify-content:center}.sheet.on{display:flex}
 .sheet .pan{background:var(--s);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px 30px}
 .seg{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.lesson{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.lesson .n{width:40px;height:40px;border-radius:12px;background:var(--m);color:var(--f);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.lesson.done .n{background:var(--g);color:#fff}.lesson.lock{opacity:.55}.lesson .m{flex:1}.lesson .m b{display:block;color:var(--f);font-size:15px}.lesson .m span{font-size:12px;color:var(--mute)}
+video{width:100%;border-radius:16px;background:#000;display:block}
+.vbox{position:relative;border-radius:16px;overflow:hidden;background:#0A0F0C;min-height:200px;display:flex;align-items:center;justify-content:center;color:#E9F5EA;font-size:14px;text-align:center;padding:0}
+.opt{display:block;width:100%;text-align:left;padding:12px 14px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.opt.right{border-color:var(--g);background:var(--m);font-weight:600}.opt.wrong{border-color:var(--red);background:#FDECEA}
+.progbar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin-top:8px}.progbar i{display:block;height:100%;background:var(--l)}
 @media(max-width:600px){#v-admin .two{grid-template-columns:1fr}}
 </style></head><body>
 <header><button id="back" aria-label="Back">‹</button><div class="t"><small id="eyebrow">ACCENT · AI · BETA</small><b id="title">Accent AI</b></div><img src="data:image/png;base64,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" alt="ACCENT"></header>
@@ -119,6 +127,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
 <section class="view" id="v-home"><div class="wrap">
   <div class="hero"><small>ACCENT AI · BETA</small><h2 id="hello">Hi!</h2><p>What would you like to work on today?</p></div>
   <div class="grid">
+    <button class="tile big" data-go="course" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">📚</span><div><b>Sales Basics course<span class="tag">₹149</span></b><span id="course-tile">10 Malayalam lessons, quiz, certificate and a live practical.</span></div></button>
     <button class="tile big" data-go="interview"><span class="e">🎤</span><div><b>Mock interview<span class="tag">VOICE</span></b><span>Speak with Ila like a real HR round. Get a score and corrections.</span></div></button>
     <button class="tile" data-go="kili"><span class="e">🐦</span><b>Call review</b><span>Upload a sales call. Kili tells you what to fix.</span></button>
     <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Sales course mentor</b><span>Lesson help, daily drills, role-play.</span></button>
@@ -130,16 +139,20 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
   <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Sign out</a> · <a href="#" class="adminlink" style="color:var(--mute)">Admin</a></p>
 </div></section>
 
+<!-- COURSE -->
+<section class="view" id="v-course"><div class="wrap" id="c-wrap"><div class="card"><span class="typing"><span></span><span></span><span></span></span> Loading your course…</div></div></section>
+<section class="view" id="v-lesson"><div class="wrap" id="l-wrap"></div></section>
+
 <!-- ADMIN -->
 <section class="view" id="v-admin"><div class="wrap">
   <div id="a-login" class="card"><h2>Admin access</h2><p class="sub">For Accent trainers. Enter the key once on this device.</p>
     <input id="a-key" type="password" placeholder="Admin key"><button class="btn" id="a-go">Open admin</button><div class="err" id="a-err"></div></div>
   <div id="a-body" class="hide">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="sub" id="a-at" style="margin:0"></span><button class="icon" id="a-ref">↻ Refresh</button></div>
-    <div id="a-ov"></div><div id="a-int" class="hide"></div><div id="a-calls" class="hide"></div><div id="a-stu" class="hide"></div><div id="a-fb" class="hide"></div>
+    <div id="a-ov"></div><div id="a-int" class="hide"></div><div id="a-calls" class="hide"></div><div id="a-stu" class="hide"></div><div id="a-crs" class="hide"></div><div id="a-fb" class="hide"></div>
   </div>
 </div></section>
-<div id="atabs"><button data-t="ov" class="on"><i>📊</i>Overview</button><button data-t="int"><i>🎤</i>Interviews</button><button data-t="calls"><i>🐦</i>Calls</button><button data-t="stu"><i>👥</i>Students</button><button data-t="fb"><i>💬</i>Feedback</button></div>
+<div id="atabs"><button data-t="ov" class="on"><i>📊</i>Overview</button><button data-t="int"><i>🎤</i>Interviews</button><button data-t="calls"><i>🐦</i>Calls</button><button data-t="stu"><i>👥</i>Students</button><button data-t="crs"><i>📚</i>Course</button><button data-t="fb"><i>💬</i>Feedback</button></div>
 <div class="sheet" id="sheet"><div class="pan" id="pan"></div></div>
 
 <!-- CHAT -->
@@ -221,7 +234,7 @@ function netMsg(e){const m=String(e&&e.message||e);return /Failed to fetch|Load 
 function pick(box,cb){box.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{box.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');cb(p.dataset.v);});}
 
 /* ---------- navigation ---------- */
-const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review'],admin:['ACCENT AI · ADMIN','Admin']};
+const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review'],admin:['ACCENT AI · ADMIN','Admin'],course:['ACCENT · COURSE','Sales Basics'],lesson:['ACCENT · COURSE','Lesson']};
 let current='';
 function show(v,push){
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
@@ -231,7 +244,7 @@ function show(v,push){
   current=v;window.scrollTo(0,0);if(push!==false)try{history.pushState({v:v},'','#'+v)}catch(e){}
 }
 window.onpopstate=e=>{const v=(e.state&&e.state.v)||'home';show(S?(v==='welcome'?'home':v):'welcome',false);};
-$('back').onclick=()=>{if(history.state&&history.state.v&&history.length>1)history.back();else show(S?'home':'welcome');};
+$('back').onclick=()=>{if(current==='lesson'){openCourse();return}if(history.state&&history.state.v&&history.length>1)history.back();else show(S?'home':'welcome');};
 
 /* ---------- welcome ---------- */
 $('w-go').onclick=()=>{
@@ -247,7 +260,7 @@ function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';sh
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone?')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
-  if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g==='course'){openCourse();return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
@@ -432,6 +445,120 @@ function kshow(o){
 }
 
 
+const COURSE={id:'sales-basics',title:'Sales Basics in Malayalam',fee:'₹149',deposit:'₹99',
+ blurb:'10 short video lessons in Malayalam (sales terms in English) for students, freshers and job seekers. Worksheets, a final quiz (pass 7/10), a certificate, and a live practical with Accent trainers.',
+ lessons:[
+ {n:1,t:'What sales really is',free:true,task:'Write down 3 things someone "sold" you this week, and what made you say yes.',practice:'mentor',
+  check:[{q:'What is "the real product" in sales?',o:['The lowest price','Trust','A long pitch'],a:1},{q:'Every sale has how many steps in this course?',o:['3','5','10'],a:1}]},
+ {n:2,t:"The seller's mindset",free:true,task:'Recall one "No" you got and write its real reason.',practice:'mentor',
+  check:[{q:'A customer says "No". What does it usually mean?',o:["You're bad at sales",'Not needed now, wrong time, or we missed the need','Never call them again'],a:1},{q:'Which seller wins long term?',o:['The pushy seller','The helpful, honest seller','The fastest talker'],a:1}]},
+ {n:3,t:'Features vs benefits',task:'Pick any product at home. Write 5 features and turn each into a benefit with the "So what?" test.',practice:'mentor',
+  check:[{q:'"So what?" helps you turn a feature into a…',o:['Discount','Benefit for the customer','Longer speech'],a:1},{q:'"Barcode scanner" is a feature. A benefit is…',o:['It is black','Fast bills, nobody leaves the queue','It has a cable'],a:1}]},
+ {n:4,t:'Know your customer',task:'Think of someone\'s recent purchase and fill the 4 boxes: Need, Budget, Decider, Timing.',practice:'mentor',
+  check:[{q:'"I have to ask my father." Which box is this?',o:['Need','Decider','Timing'],a:1},{q:'"Next month is fine." Which box?',o:['Budget','Timing','Need'],a:1}]},
+ {n:5,t:'The first 30 seconds',task:'Write your own 4-line opening: Greet · Name · Reason · Permission.',practice:'kili',
+  check:[{q:'The 4-word opening formula is…',o:['Greet · Name · Reason · Permission','Price · Offer · Close · Bye','Hello · Product · Price · Pay'],a:0},{q:'Which opening line should you avoid?',o:['"Namaskaram, I\'m Anu from Accent."','"Sir, are you busy?"','"Can we talk for 2 minutes?"'],a:1}]},
+ {n:6,t:'Ask, then listen',task:'Ask someone at home the 5 questions, then repeat back what you heard.',practice:'kili',
+  check:[{q:'Which is an OPEN question?',o:['"Do you need a job?"','"What\'s hardest about your job search?"','"Is it okay?"'],a:1},{q:'After the customer stops talking, you should…',o:['Start your pitch at once','Wait one second, the key point often comes next','Change the topic'],a:1}]},
+ {n:7,t:'Present the value',task:'Use the bridge for 3 problems: You said… → So this… → Which means…',practice:'kili',
+  check:[{q:'The bridge is…',o:['You said → So this → Which means','Price → Discount → Pay','Hello → Bye'],a:0},{q:'How many points should you present at most?',o:['3','7','All features'],a:0}]},
+ {n:8,t:'Handling objections',task:'Write your honest answer to "Too costly", "I\'ll think about it" and "Not interested".',practice:'kili',
+  check:[{q:'The 4-step method is…',o:['Listen · Agree · Ask · Answer','Argue · Push · Discount · Close','Ignore · Repeat · Pressure · Leave'],a:0},{q:'"Too costly" — first you should…',o:['Cut the price','Ask what amount they had in mind','Say "today only offer"'],a:1}]},
+ {n:9,t:'Close with a next step',task:'Record a full mock call, open to close, and bring it to your practical (or upload it to Kili).',practice:'kili',
+  check:[{q:'If the customer says "not now", you…',o:['Say "okay bye"','Fix an exact callback time and ask for feedback','Keep pushing'],a:1},{q:'After asking "Shall we start?", you should…',o:['Keep talking','Stay quiet and let them speak first','Hang up'],a:1}]},
+ {n:10,t:'Your first real sale',task:'Book your practical session on WhatsApp 99958 42727.',practice:'interview',
+  check:[{q:'The practical session has…',o:['Only videos','Role-play lab, offline workshop, real field task','Just an exam'],a:1},{q:'Field tasks are done…',o:['Alone at night','In pairs, daytime, with trainer support','Only online'],a:1}]}
+ ],
+ final:[
+  {q:'"Trust is the real product" means…',o:['Price matters most','Customers buy from people they trust','Talk more to win'],a:1},
+  {q:'A "No" usually means…',o:['Never call again','Not now, wrong time, or need not understood','You failed'],a:1},
+  {q:'Turn "6 GB RAM" into a benefit:',o:['It has 6 GB','Apps run smoothly without hanging','It is a number'],a:1},
+  {q:'A mother is choosing a course for her son. Who is the decider?',o:['Only the son','Find out — often the family decides together','The salesperson'],a:1},
+  {q:'The best opening on a call is…',o:['"Sir, are you busy?"','"Namaskaram, I\'m Anu from Accent… can we talk for 2 minutes?"','Start with the price'],a:1},
+  {q:'Which question gets the customer talking?',o:['"Do you want this?"','"How do you do it now?"','"Yes or no?"'],a:1},
+  {q:'When presenting, you should…',o:['List every feature','Answer their problem with 1 feature and 1 benefit','Show fake reviews'],a:1},
+  {q:'"I\'ll think about it." A good reply:',o:['"Okay bye"','"What\'s left to think about — price or timing?"','"Offer ends today!"'],a:1},
+  {q:'Which word does Accent use instead of "offer"?',o:['Discount deal','Fee reduction (only if real)','Today-only price'],a:1},
+  {q:'Every call should end with…',o:['A callback time and a feedback request','Nothing','A long goodbye'],a:0}
+ ]};
+
+/* ---------- course ---------- */
+const PAY_URL='';   // Razorpay payment link goes here when ready
+let CS=null;
+function cpost(b){b.wa=S.wa;return ila(b);}
+function openCourse(){show('course');$('c-wrap').innerHTML='<div class="card"><span class="typing"><span></span><span></span><span></span></span> Loading your course…</div>';
+  cpost({action:'course_state'}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-wrap').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p><button class="btn" onclick="openCourse()">Try again</button></div>';});}
+function doneCount(){return Object.keys((CS&&CS.done)||{}).length;}
+function renderCourse(){
+  const st=CS.status,app=st==='Approved',dc=doneCount();let h='<div class="hero"><small>ACCENT ACADEMY · BETA</small><h2>'+esc(COURSE.title)+'</h2><p>'+esc(COURSE.blurb)+'</p>'+
+    (app?'<div class="progbar"><i style="width:'+(dc*10)+'%"></i></div><p style="margin-top:6px">'+dc+' of 10 lessons done · 🍃 '+(CS.points||0)+' Leaf Points</p>':'')+'</div>';
+  if(st==='none')h+='<div class="card"><h2 style="font-size:18px">Join the course</h2><p class="sub">'+COURSE.fee+' course fee + '+COURSE.deposit+' Green Deposit (fully refunded when you complete the Green Task). Lessons 1–2 are free to watch now.</p>'+
+    '<button class="btn green" id="c-pay">Pay & join</button><p class="sub" style="margin:10px 0 0">After paying, tap below so we can approve you.</p><button class="btn alt" id="c-paid">I have paid · request access</button></div>';
+  else if(st==='Pending')h+='<div class="card" style="border-color:var(--warn)"><b style="color:var(--f)">⏳ Waiting for approval</b><p class="sub" style="margin:6px 0 0">We\'re checking your payment. Lessons unlock as soon as the Accent team approves (usually the same day). Questions? WhatsApp 99958 42727.</p><button class="btn alt" onclick="openCourse()">Check again</button></div>';
+  h+='<h3 style="margin:18px 0 10px;color:var(--f);font-size:15px">Lessons</h3>';
+  COURSE.lessons.forEach(l=>{const open=!!(CS.videos&&CS.videos[l.n]),done=CS.done&&CS.done[l.n];
+    h+='<div class="lesson '+(done?'done':'')+(open?'':' lock')+'" data-n="'+l.n+'"><div class="n">'+(done?'✓':l.n)+'</div><div class="m"><b>'+esc(l.t)+'</b><span>'+(open?(done?'Done · watch again':(l.free?'Free lesson':'Ready to watch')):'🔒 Unlocks after joining')+'</span></div>›</div>';});
+  if(app){
+    const allDone=dc>=10;
+    h+='<div class="card" style="margin-top:14px"><b style="color:var(--f)">🎓 Final quiz & certificate</b>'+(CS.cert?'<p class="sub" style="margin:6px 0 0">Passed '+esc(CS.final)+' · Certificate '+esc(CS.cert)+'</p><button class="btn green" id="c-cert">View certificate</button>':
+      '<p class="sub" style="margin:6px 0 0">10 questions · pass with 7/10 · earn your certificate and 🍃 200 Leaf Points.'+(CS.final?' Last try: '+esc(CS.final)+'.':'')+'</p><button class="btn" id="c-final" '+(allDone?'':'disabled')+'>'+(allDone?'Start final quiz':'Finish all 10 lessons first ('+dc+'/10)')+'</button>')+'</div>';
+    const g=CS.green||'';
+    h+='<div class="card"><b style="color:var(--f)">🌱 Green Task · get your ₹99 back</b><p class="sub" style="margin:6px 0 0">Plant a seed or sapling, post it on Instagram with the Accent Green Task frame tagging @accent_tutors #ChoiceIsYours, then upload the photo here within 30 days.</p>'+
+      (g?'<p style="font-weight:600;color:var(--g)">Status: '+esc(g)+'</p>':'')+(/Approved|Refunded/.test(g)?'':'<input id="c-insta" placeholder="Instagram post link (optional)" style="margin-top:8px"><input type="file" id="c-photo" accept="image/*" hidden><button class="btn alt" id="c-gt">'+(g?'Upload a new photo':'Upload planting photo')+'</button>')+'</div>';
+    h+='<div class="card"><b style="color:var(--f)">🤝 Live practical session</b><p class="sub" style="margin:6px 0 0">Role-play lab, offline workshop and a real field task with Accent trainers. Book on WhatsApp.</p><a class="btn alt" target="_blank" href="https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I finished Sales Basics lessons and want to book the practical session. Name: '+S.name)+'">Book practical on WhatsApp</a></div>';
+  }
+  $('c-wrap').innerHTML=h;
+  $('c-wrap').querySelectorAll('.lesson').forEach(x=>x.onclick=()=>{const n=+x.dataset.n;if(!(CS.videos&&CS.videos[n])){alert('This lesson unlocks after you join and get approved.');return}openLesson(n);});
+  if($('c-pay'))$('c-pay').onclick=()=>{window.open(PAY_URL||('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I want to join the Sales Basics course (₹149 + ₹99 Green Deposit). Name: '+S.name+', WhatsApp: '+S.wa+'. Please share the payment link.')),'_blank');};
+  if($('c-paid'))$('c-paid').onclick=()=>{const note=prompt('Payment reference or UPI transaction ID (optional)')||'';$('c-paid').disabled=true;cpost({action:'course_join',name:S.name,note:note}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-paid').disabled=false;alert(netMsg(e));});};
+  if($('c-final'))$('c-final').onclick=finalQuiz;if($('c-cert'))$('c-cert').onclick=showCert;
+  if($('c-gt')){$('c-gt').onclick=()=>$('c-photo').click();$('c-photo').onchange=()=>{const f=$('c-photo').files[0];if(!f)return;$('c-gt').disabled=true;$('c-gt').textContent='Uploading…';
+    const img=new Image(),u=URL.createObjectURL(f);img.onload=()=>{const k=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);
+      cpost({action:'green_submit',photo:c.toDataURL('image/jpeg',0.82).split(',')[1],insta:$('c-insta').value.trim()}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-gt').disabled=false;$('c-gt').textContent='Try again';alert(netMsg(e));});};img.src=u;};}
+}
+let blobUrl='';
+function openLesson(n){const L=COURSE.lessons[n-1];show('lesson');$('title').textContent='Lesson '+n;
+  let h='<div class="qn">LESSON '+n+' OF 10</div><h2 style="margin:4px 0 12px">'+esc(L.t)+'</h2><div class="vbox" id="vbox">Loading video…</div>'+
+    '<div class="card" style="margin-top:14px"><b style="color:var(--f)">📝 Your task</b><p style="margin:6px 0 0;font-size:15px;line-height:1.55">'+esc(L.task)+'</p></div>'+
+    '<div class="card" id="chk"><b style="color:var(--f)">✅ Quick check</b>'+L.check.map((q,i)=>'<p style="margin:12px 0 4px;font-weight:600;color:var(--f);font-size:14px">'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map((o,j)=>'<button class="opt" data-q="'+i+'" data-j="'+j+'">'+esc(o)+'</button>').join('')).join('')+'<div class="hint" id="chk-r"></div></div>'+
+    '<div class="card"><b style="color:var(--f)">💪 Practise it now</b><p class="sub" style="margin:6px 0 0">'+(L.practice==='kili'?'Record a practice call and get feedback from Kili.':L.practice==='interview'?'Try a full mock interview with Ila.':'Ask Ila to explain, drill or role-play this lesson.')+'</p><button class="btn alt" id="l-prac">'+(L.practice==='kili'?'🐦 Open Kili call review':L.practice==='interview'?'🎤 Start mock interview':'🌱 Practise with Ila')+'</button></div>'+
+    '<button class="btn" id="l-done">'+(n<10?'Mark done & next lesson →':'Mark done · go to final quiz')+'</button>';
+  $('l-wrap').innerHTML=h;
+  const src=CS.videos[n];const put=u=>{$('vbox').innerHTML='<video controls playsinline preload="metadata" src="'+u+'"></video>';$('vbox').querySelector('video').onended=()=>markDone(n,false);};
+  if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl='';}
+  if(src&&src!=='private')put(src);
+  else{$('vbox').innerHTML='<span><span class="typing"><span></span><span></span><span></span></span><br>Loading your lesson… (about 10 seconds)</span>';
+    cpost({action:'course_video',lesson:n}).then(r=>{const b=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));blobUrl=URL.createObjectURL(new Blob([b],{type:r.mime}));put(blobUrl);})
+    .catch(e=>{$('vbox').innerHTML='<span style="padding:20px">'+esc(netMsg(e))+'</span>';});}
+  const picked={};$('chk').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const q=+b.dataset.q,j=+b.dataset.j;if(picked[q]!=null)return;picked[q]=j;
+    $('chk').querySelectorAll('.opt[data-q="'+q+'"]').forEach(x=>{const k=+x.dataset.j;if(k===L.check[q].a)x.classList.add('right');else if(k===j)x.classList.add('wrong');});
+    if(Object.keys(picked).length===L.check.length){const sc=L.check.filter((c,i)=>picked[i]===c.a).length;$('chk-r').textContent=sc===L.check.length?'Perfect! '+sc+'/'+sc+' 🎉':sc+'/'+L.check.length+' · the green answers show the right idea.';cpost({action:'course_event',lesson:n,event:'check',score:sc,name:S.name}).catch(()=>{});}});
+  $('l-prac').onclick=()=>{if(L.practice==='kili')openKili();else if(L.practice==='interview')openInterview();else{openChat('mentor');$('msg').value='I just finished Lesson '+n+': '+L.t+'. Give me a quick drill.';}};
+  $('l-done').onclick=()=>markDone(n,true);
+}
+function markDone(n,go){CS.done=CS.done||{};const was=CS.done[n];CS.done[n]=1;
+  if(!was)cpost({action:'course_event',lesson:n,event:'watched',name:S.name}).then(s=>{CS=s;}).catch(()=>{});
+  if(!go)return;if(n<10&&CS.videos[n+1])openLesson(n+1);else{openCourse();}}
+function finalQuiz(){show('lesson');$('title').textContent='Final quiz';const Q=COURSE.final,pk={};
+  $('l-wrap').innerHTML='<div class="qn">FINAL QUIZ · PASS 7/10</div><h2 style="margin:4px 0 12px">'+esc(COURSE.title)+'</h2>'+Q.map((q,i)=>'<div class="card"><p style="margin:0 0 6px;font-weight:600;color:var(--f)">'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map((o,j)=>'<button class="opt" data-q="'+i+'" data-j="'+j+'">'+esc(o)+'</button>').join('')+'</div>').join('')+'<button class="btn" id="fq-go">Submit answers</button><div class="err" id="fq-err"></div>';
+  $('l-wrap').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const q=+b.dataset.q;pk[q]=+b.dataset.j;$('l-wrap').querySelectorAll('.opt[data-q="'+q+'"]').forEach(x=>x.classList.toggle('right',x===b));});
+  $('fq-go').onclick=()=>{if(Object.keys(pk).length<Q.length){$('fq-err').textContent='Answer all '+Q.length+' questions.';return}const sc=Q.filter((q,i)=>pk[i]===q.a).length;$('fq-go').disabled=true;$('fq-go').textContent='Checking…';
+    cpost({action:'course_event',lesson:0,event:'final',score:sc,name:S.name}).then(s=>{CS=s;
+      $('l-wrap').innerHTML='<div class="card" style="text-align:center"><div class="score" style="justify-content:center"><b>'+sc+'</b><span>/ 10</span></div><h2 style="margin-top:8px">'+(sc>=7?'You passed! 🎉':'Almost there')+'</h2><p class="sub">'+(sc>=7?'Your certificate is ready and 🍃 200 Leaf Points are added.':'You need 7/10. Rewatch a few lessons and try again.')+'</p>'+
+        (sc>=7&&CS.cert?'<button class="btn green" id="fq-cert">View certificate</button>':'<button class="btn" id="fq-again">Try again</button>')+'<button class="btn alt" onclick="openCourse()">Back to course</button></div>';
+      if($('fq-cert'))$('fq-cert').onclick=showCert;if($('fq-again'))$('fq-again').onclick=finalQuiz;}).catch(e=>{$('fq-go').disabled=false;$('fq-go').textContent='Submit answers';$('fq-err').textContent=netMsg(e);});};}
+function showCert(){const c=document.createElement('canvas');c.width=1600;c.height=1131;const x=c.getContext('2d');
+  x.fillStyle='#F7FAF8';x.fillRect(0,0,1600,1131);x.fillStyle='#0B3D1E';x.fillRect(0,0,1600,190);x.strokeStyle='#79C24A';x.lineWidth=6;x.strokeRect(40,40,1520,1051);
+  const logo=new Image();logo.onload=()=>{const w=360,hh=logo.height*w/logo.width;x.drawImage(logo,1600-80-w,95-hh/2,w,hh);done();};logo.onerror=done;logo.src=document.querySelector('header img').src;
+  function done(){x.fillStyle='#79C24A';x.font='600 26px Poppins';x.fillText('ACCENT ACADEMY · CERTIFICATE OF COMPLETION',90,110);
+    x.fillStyle='#16A34A';x.font='600 30px Poppins';x.fillText('This certifies that',90,330);x.fillStyle='#0B3D1E';x.font='700 92px Poppins';x.fillText(S.name,90,440);
+    x.fillStyle='#2C3A31';x.font='400 34px Poppins';x.fillText('has completed the course',90,520);x.fillStyle='#0B3D1E';x.font='700 56px Poppins';x.fillText(COURSE.title,90,600);
+    x.fillStyle='#2C3A31';x.font='400 28px Poppins';x.fillText('10 lessons · final quiz '+(CS.final||'')+' · '+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}),90,670);
+    x.fillStyle='#8A968E';x.font='400 24px Poppins';x.fillText('Certificate ID '+(CS.cert||''),90,1000);x.fillText('Choice Is Yours.',90,1040);
+    x.save();x.translate(1320,780);x.scale(9,9);x.fillStyle='#79C24A';x.fill(new Path2D('M4 20C4 10 10 4 21 3c-1 11-7 17-17 17z'));x.strokeStyle='#0B3D1E';x.lineWidth=0.9;x.stroke(new Path2D('M4 20L15 9'));x.restore();
+    const url=c.toDataURL('image/png');show('lesson');$('title').textContent='Certificate';
+    $('l-wrap').innerHTML='<img src="'+url+'" style="width:100%;border-radius:12px;border:1px solid var(--line)"><a class="btn green" download="Accent_Certificate_'+S.name.replace(/\W+/g,'_')+'.png" href="'+url+'">Download certificate</a><a class="btn alt" target="_blank" href="https://wa.me/?text='+encodeURIComponent('I just completed '+COURSE.title+' at Accent Academy! 🎓 Certificate '+(CS.cert||'')+' #ChoiceIsYours')+'">Share on WhatsApp</a><button class="btn alt" onclick="openCourse()">Back to course</button>';}}
+
 /* ---------- admin ---------- */
 let AK=store.get('accent_admin')||'',AD=null,KD=null;
 document.querySelectorAll('.adminlink').forEach(a=>a.onclick=e=>{e.preventDefault();openAdmin();});
@@ -450,7 +577,7 @@ function loadAdmin(first){
     renderAdmin();});
 }
 document.querySelectorAll('#atabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#atabs button').forEach(x=>x.classList.toggle('on',x===b));
-  ['ov','int','calls','stu','fb'].forEach(t=>$('a-'+t).classList.toggle('hide',t!==b.dataset.t));$('title').textContent=b.textContent.replace(/^\S+/,'').trim()||'Admin';window.scrollTo(0,0);});
+  ['ov','int','calls','stu','crs','fb'].forEach(t=>$('a-'+t).classList.toggle('hide',t!==b.dataset.t));$('title').textContent=b.textContent.replace(/^\S+/,'').trim()||'Admin';window.scrollTo(0,0);});
 const dkey=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'})};
 const dshow=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})};
 function days30(){const o=[];for(let i=29;i>=0;i--){const d=new Date(Date.now()-i*864e5);o.push({k:dkey(d),l:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})});}return o;}
@@ -475,6 +602,7 @@ function renderAdmin(){
   const byDay=(arr,f)=>D.map(d=>arr.filter(x=>dkey(x.t)===d.k)),ri=byDay(R),ci=byDay(C);
   let o='';
   if(AD&&AD.flagged&&AD.flagged.length)o+='<div class="alert"><b>'+AD.flagged.length+' chats need a human.</b> '+esc(AD.flagged.slice(-1)[0].name||'')+': “'+esc(AD.flagged.slice(-1)[0].msg)+'”</div>';
+  const pendC=((AD&&AD.enrol)||[]).filter(e=>e.status==='Pending').length;if(pendC)o+='<div class="alert" style="background:#FFF4E5;color:#8a4b00"><b>'+pendC+' course joins</b> waiting for approval → Course tab.</div>';
   const newSvc=((AD&&AD.services)||[]).filter(s=>/^New|Draft ready/.test(s.status));if(newSvc.length)o+='<div class="alert" style="background:var(--m);color:var(--f)"><b>'+newSvc.length+' service requests</b> waiting (resume/LinkedIn).</div>';
   o+='<div class="kpis">'+kpi('STUDENTS',L.length,'signed up')+kpi('MOCK INTERVIEWS',R.length,iw+' this week ('+(iw>=ip?'+':'')+(iw-ip)+')')+kpi('AVG INTERVIEW',rs.length?avg(rs).toFixed(1)+'/10':'–','')+
     kpi('INTERVIEW-READY',rs.length?Math.round(rs.filter(x=>x>=7).length/rs.length*100)+'%':'–','scored 7+')+kpi('CALLS REVIEWED',C.length,cw+' this week ('+(cw>=cp?'+':'')+(cw-cp)+')')+
@@ -508,6 +636,19 @@ function renderAdmin(){
   const listS=()=>{const q=$('q-stu').value.toLowerCase();$('l-stu').innerHTML=L.slice().reverse().filter(l=>(l.name+' '+l.wa+' '+l.district).toLowerCase().includes(q)).slice(0,300).map(l=>{const n=R.filter(r=>r.name===l.name).length;
     return '<a class="item" style="text-decoration:none" target="_blank" href="https://wa.me/'+String(l.wa).replace(/\D/g,'').replace(/^(\d{10})$/,'91$1')+'"><div class="s" style="background:var(--f)">'+esc((l.name||'?').trim()[0]||'?').toUpperCase()+'</div><div class="m"><b>'+esc(l.name)+'</b><span>'+esc(l.iam)+' · '+esc(l.district||'')+' · '+dshow(l.t)+(n?' · '+n+' interview'+(n>1?'s':''):'')+'</span></div>💬</a>'}).join('')||'<p class="sub">No students yet.</p>';};
   $('q-stu').oninput=listS;listS();
+
+  // course
+  const E=(AD&&AD.enrol)||[],pend=E.filter(e=>e.status==='Pending'),greens=E.filter(e=>/^Submitted/.test(e.green||'')),dueRef=E.filter(e=>/refund due/.test(e.green||''));
+  let ch='<div class="kpis">'+kpi('ENROLLED',E.filter(e=>e.status==='Approved').length,'approved')+kpi('WAITING',pend.length,'to approve')+kpi('COMPLETED',E.filter(e=>e.cert).length,'certificates')+kpi('GREEN TASKS',greens.length,'to check')+'</div>';
+  const row=(e,btns)=>'<div class="card" style="padding:14px"><b style="color:var(--f)">'+esc(e.name)+'</b> <span class="sub">· '+esc(e.wa)+' · '+dshow(e.t)+'</span><p class="sub" style="margin:4px 0 0">'+esc(e.status)+(e.note?' · ref: '+esc(e.note):'')+' · lessons '+(e.lessons||0)+'/10'+(e.final?' · quiz '+esc(e.final):'')+(e.cert?' · 🎓 '+esc(e.cert):'')+(e.green?' · 🌱 '+esc(e.green):'')+'</p>'+
+    (e.photo&&/^http/.test(e.photo)?'<a class="sub" target="_blank" href="'+esc(e.photo)+'" style="color:var(--g)">View Green Task photo</a>':'')+'<div class="row" style="flex-wrap:wrap">'+btns+'<a class="icon" target="_blank" href="https://wa.me/'+String(e.wa).replace(/\D/g,'').replace(/^(\d{10})$/,'91$1')+'">💬 WhatsApp</a></div></div>';
+  const ab=(wa,what,label)=>'<button class="icon" data-wa="'+esc(wa)+'" data-what="'+what+'" style="border-color:var(--g);color:var(--g)">'+label+'</button>';
+  if(pend.length)ch+='<h3 style="color:var(--f);font-size:15px">⏳ Waiting for approval</h3>'+pend.map(e=>row(e,ab(e.wa,'access','✓ Approve access'))).join('');
+  if(greens.length)ch+='<h3 style="color:var(--f);font-size:15px">🌱 Green Tasks to check</h3>'+greens.map(e=>row(e,ab(e.wa,'green','✓ Approve Green Task'))).join('');
+  if(dueRef.length)ch+='<h3 style="color:var(--f);font-size:15px">💸 ₹99 refunds due</h3>'+dueRef.map(e=>row(e,ab(e.wa,'refunded','✓ Mark refunded'))).join('');
+  ch+='<h3 style="color:var(--f);font-size:15px">All learners</h3>'+(E.slice().reverse().map(e=>row(e,'')).join('')||'<p class="sub">No enrolments yet.</p>');
+  $('a-crs').innerHTML=ch;
+  $('a-crs').querySelectorAll('button[data-what]').forEach(b=>b.onclick=()=>{b.disabled=true;b.textContent='Saving…';post(ILA,{action:'admin_approve',key:AK,wa:b.dataset.wa,what:b.dataset.what}).then(()=>loadAdmin()).catch(e=>{b.disabled=false;alert(netMsg(e));});});
   // feedback
   const seg=s=>{const a=F.filter(f=>f.src===s),u=a.filter(f=>/👍/.test(f.rating)).length,r=a.filter(f=>/👍|👎/.test(f.rating)).length;return kpi(s.toUpperCase()+' 👍',r?Math.round(u/r*100)+'%':'–',r+' ratings')};
   $('a-fb').innerHTML='<div class="kpis">'+seg('Ila')+seg('Kili')+'</div>'+(F.sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,200).map(f=>'<div class="item" style="cursor:default"><div class="s" style="background:'+(/👎/.test(f.rating)?'#B42318':'#16A34A')+'">'+(f.rating||'💬')+'</div><div class="m"><b>'+esc(f.comment||'(no comment)')+'</b><span>'+esc(f.src)+' · '+esc(f.name||'')+' · '+esc(f.context||'')+' · '+dshow(f.t)+'</span></div></div>').join('')||'<p class="sub">No feedback yet.</p>');
