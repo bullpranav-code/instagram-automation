@@ -267,7 +267,8 @@ const DEFAULT_LINKS = {   // group invite links (admin can override in the app)
   interview: 'https://chat.whatsapp.com/HnZ68IeYPbWFXhyNS2Mmeg',
   sales: 'https://chat.whatsapp.com/E9YGfD9ujW4BBpE0TlK4Zm',
   jobs: 'https://chat.whatsapp.com/EK7a4HwP8mM3Nl498raWRu',
-  learners: 'https://chat.whatsapp.com/GcI8YfnlmQl2qneyxrTvFu'
+  learners: 'https://chat.whatsapp.com/GcI8YfnlmQl2qneyxrTvFu',
+  green: 'https://chat.whatsapp.com/Gt187g1mVoqAJF6lleDqW0'
 };
 function communityLinks_() {
   let links = {};
