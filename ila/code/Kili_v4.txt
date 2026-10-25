@@ -43,7 +43,7 @@ function folder_(sub) {
 /** Run once from the editor (pick "setup", tap Run) to create the sheet and allow permissions. */
 function setup() { ccSheet_(); folder_('Calls'); Logger.log('Kili ready. Sheet: ' + ss_().getUrl()); }
 
-var CC = { MODEL: 'gemini-flash-latest', BACKUP: 'gemini-2.5-flash', MAX_MB: 30, TAB: 'AI Call Reviews' };
+var CC = { MODEL: 'gemini-flash-latest', BACKUP: 'gemini-2.5-flash', MORE: ['gemini-flash-lite-latest', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'], MAX_MB: 30, TAB: 'AI Call Reviews' };
 var CC_HEADERS = ['Submitted', 'Learner ID', 'Email', 'Call type', 'Product', 'Goal', 'Language',
   'Recording link', 'Status', 'Score /10', 'Score /100', 'Buyer interest', 'Talk ratio',
   'Summary', 'What went well', 'Fix next time', 'Objections', 'Red flags', 'Next action',
@@ -126,7 +126,7 @@ function ccGemini_(card, b64, mime, bytes) {
   var key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
   if (!key) throw new Error('Kili is not set up yet (missing GEMINI_API_KEY).');
   var audio = bytes && bytes.length > 14 * 1048576 ? ccUpload_(key, bytes, mime) : { inlineData: { mimeType: mime, data: b64 } };
-  var models = [CC.MODEL, CC.BACKUP], last = '';
+  var models = [CC.MODEL, CC.BACKUP].concat(CC.MORE || []), last = '', why = '';
   for (var m = 0; m < models.length; m++) {
     var body = { systemInstruction: { parts: [{ text: CC_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: card }, audio] }],
@@ -140,14 +140,16 @@ function ccGemini_(card, b64, mime, bytes) {
         if (!cand || !cand.content) throw new Error('Kili could not hear this recording. Check it plays, then retry.');
         return JSON.parse(cand.content.parts.map(function (x) { return x.text || ''; }).join('').replace(/^```json\s*|```\s*$/g, ''));
       }
-      last = code + '';
+      last = code + ''; try { why = (JSON.parse(text).error || {}).message || ''; } catch (e) { why = text.slice(0, 120); }
+      if (code === 404 && /file/i.test(why)) { Utilities.sleep(4000); continue; }   // uploaded file not ready yet
       if (code === 400 && body.generationConfig.responseSchema) { delete body.generationConfig.responseSchema; continue; }
       if (code === 429) throw new Error('Too many reviews right now. Try again in a few minutes.');
       if (code !== 503 && code !== 500) break;
       Utilities.sleep(2000);
     }
   }
-  throw new Error('Review failed (' + last + '). If it mentions the file type, send an MP3.');
+  if (last === '404') throw new Error('Kili could not reach the AI model right now (404). Please try again in a few minutes. [' + String(why).slice(0, 90) + ']');
+  throw new Error('Review failed (' + last + '). ' + String(why).slice(0, 120));
 }
 
 function ccMime_(name, mime) {
