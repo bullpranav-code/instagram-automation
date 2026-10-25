@@ -263,9 +263,13 @@ const GROUPS = [
   { id: 'green', name: 'Green Task Club', emoji: '🌳', who: 'Course students: planting photos, Leaf Points, refunds' }
 ];
 const DEFAULT_COMMUNITY = 'https://chat.whatsapp.com/HmdSdlbiWd1GPBjl2Xiacs';
+const DEFAULT_LINKS = {   // group invite links (admin can override in the app)
+  interview: 'https://chat.whatsapp.com/HnZ68IeYPbWFXhyNS2Mmeg'
+};
 function communityLinks_() {
   let links = {};
   try { links = JSON.parse(PropertiesService.getScriptProperties().getProperty('COMMUNITY_LINKS') || '{}'); } catch (e) {}
+  Object.keys(DEFAULT_LINKS).forEach(id => { if (!links[id]) links[id] = DEFAULT_LINKS[id]; });
   if (!links.main) links.main = DEFAULT_COMMUNITY;
   return { groups: GROUPS, links: links };
 }
