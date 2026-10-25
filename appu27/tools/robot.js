@@ -42,7 +42,7 @@ async function main(){
      date:fmt(f.fixture.date),venue:((f.fixture.venue||{}).city||'').toUpperCase(),source:'API-Football',pen:st==='PEN'?f.score.penalty:null});
   }
  }
- if(!matches.length){console.log('nothing new');return;}
+ if(!matches.length){console.log('::notice::nothing new to post');return;}
  // next Blasters fixture
  let next='';
  try{const n=await data(`from=${istDate(new Date(Date.now()+864e5))}&to=${istDate(new Date(Date.now()+15*864e5))}`);
@@ -87,6 +87,6 @@ async function main(){
  sh('git',['-C',REPO,'commit','-m','Appu27 robot: full-time jobs '+day]);
  sh('git',['-C',REPO,'pull','--rebase','origin','main']);
  sh('git',['-C',REPO,'push','origin','HEAD:main']);
- console.log('queued',jobs.map(j=>j.key));
+ console.log('::notice::queued '+jobs.map(j=>j.key).join(', '));
 }
-main().catch(e=>{console.error(e.message);process.exit(1)});
+main().catch(e=>{console.log('::error::'+String(e.message).replace(/\n/g,' ').slice(0,900));process.exit(1)});
