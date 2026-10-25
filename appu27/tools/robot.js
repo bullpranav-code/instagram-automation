@@ -56,7 +56,9 @@ async function main(){
   const res=gf>ga?'W':gf<ga?'L':'D';
   m.mode='ft'; m.next=next; m.pill=m.pen?'FULL TIME · PENS':'FULL TIME';
   m.tag={W:'ജയിച്ചു മക്കളേ!',L:'സാരമില്ല, തിരിച്ചുവരും!',D:'സമനില!'}[res];
-  const prefix=`ft_${m.home}_${m.away}`.toLowerCase(), tmp=path.join(ROOT,'out','robot');fs.mkdirSync(tmp,{recursive:true});
+  const prefix=`ft_${m.home}_${m.away}`.toLowerCase();
+  if(JSON.parse(fs.readFileSync(path.join(ROOT,'jobs','index.json'),'utf8')).includes(`${day}_${prefix}_post.json`)){console.log('::notice::already queued '+prefix);state.done.push(m.id);continue;}
+  const tmp=path.join(ROOT,'out','robot');fs.mkdirSync(tmp,{recursive:true});
   const df=path.join(tmp,prefix+'.json');fs.writeFileSync(df,JSON.stringify(m));
   console.log(sh('node',[path.join(ROOT,'tools','match.js'),df,tmp,prefix],{cwd:ROOT}));
   for(const f of ['_post.jpg','_story.jpg','_reel.mp4','_cover.jpg']) fs.copyFileSync(path.join(tmp,prefix+f),path.join(mdir,prefix+f));
@@ -68,6 +70,7 @@ async function main(){
   jobs.push({key:`${day}_${prefix}`,prefix,cap});
   state.done.push(m.id);
  }
+ if(!jobs.length){fs.mkdirSync(path.dirname(STATE),{recursive:true});fs.writeFileSync(STATE,JSON.stringify(state,null,1));console.log('::notice::nothing new to post');return;}
  if(process.env.DRY==='1'){console.log('::notice::DRY run rendered '+jobs.map(j=>j.key).join(', ')+' | '+jobs.map(j=>j.cap.split('\n')[0]).join(' / '));return;}
  // push media
  sh('git',['-C',GHP,'add','m/'+day]);
