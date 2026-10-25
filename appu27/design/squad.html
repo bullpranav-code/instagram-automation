@@ -1,0 +1,238 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Anton;src:url(../node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2)}
+@font-face{font-family:Anton;src:url(../node_modules/@fontsource/anton/files/anton-latin-ext-400-normal.woff2);unicode-range:U+0100-024F}
+@font-face{font-family:Baloo;font-weight:800;src:url(../node_modules/@fontsource/baloo-chettan-2/files/baloo-chettan-2-malayalam-800-normal.woff2)}
+@font-face{font-family:Baloo;font-weight:800;src:url(../node_modules/@fontsource/baloo-chettan-2/files/baloo-chettan-2-latin-800-normal.woff2);unicode-range:U+0000-00FF}
+@font-face{font-family:Pop;font-weight:600;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-600-normal.woff2)}
+@font-face{font-family:Pop;font-weight:600;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-ext-600-normal.woff2);unicode-range:U+0100-024F}
+@font-face{font-family:Pop;font-weight:800;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-800-normal.woff2)}
+@font-face{font-family:Pop;font-weight:800;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-ext-800-normal.woff2);unicode-range:U+0100-024F}
+:root{--y:#FFC629;--y2:#F7A600;--r:#E03A3E;--r2:#B8282C;--ink:#141414;--blue:#1E3A8A;--g:#1F9D55}
+*{box-sizing:border-box;margin:0}
+body{background:#222;padding:20px;display:flex;flex-wrap:wrap;gap:20px}
+.ab{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:Pop}
+.st{height:1920px}
+.sun-y{background:repeating-conic-gradient(from 0deg at 50% 62%,var(--y) 0 7.5deg,var(--y2) 7.5deg 15deg)}
+.sun-r{background:repeating-conic-gradient(from 0deg at 50% 62%,var(--r) 0 7.5deg,var(--r2) 7.5deg 15deg)}
+.pill{position:absolute;left:64px;top:64px;display:flex;align-items:center;gap:12px;padding:12px 26px;border:4px solid var(--ink);border-radius:999px;font:800 30px Pop;letter-spacing:.04em;background:var(--y);color:var(--ink)}
+.pill:before{content:"";width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.pill.red{background:var(--r);color:#fff;border-color:#fff}.pill.red:before{background:#fff}
+.handle{position:absolute;right:64px;top:70px;font:800 30px Pop;color:var(--ink);background:#fff;border:4px solid var(--ink);border-radius:14px;padding:8px 18px}
+.st .pill,.st .handle{top:180px}
+.h{font-family:Anton;color:#fff;-webkit-text-stroke:14px var(--ink);paint-order:stroke fill;text-shadow:10px 12px 0 var(--ink);line-height:.98;text-align:center;letter-spacing:.01em}
+.h.gold{color:var(--y)}
+.tag{display:inline-block;font:800 54px Baloo;padding:10px 34px 4px;border:5px solid var(--ink);border-radius:16px;transform:rotate(-2deg);box-shadow:8px 8px 0 var(--ink)}
+.tag.red{background:var(--r);color:#fff}.tag.white{background:#fff;color:var(--ink)}
+.center{position:absolute;left:0;right:0;text-align:center}
+.foot{position:absolute;left:0;right:0;bottom:0;height:96px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 64px;font:600 28px Pop}
+.foot b{font-weight:800;color:var(--y)}
+.foot small{font-size:20px;opacity:.6}
+.card{background:#fff;border:6px solid var(--ink);border-radius:28px;box-shadow:10px 12px 0 var(--ink);color:var(--ink)}
+.appu{position:absolute}
+.emoji{position:absolute;font-size:90px;filter:drop-shadow(4px 5px 0 rgba(0,0,0,.25))}
+.lbl{font:400 40px Anton;letter-spacing:.02em}
+.roster{position:absolute;left:64px;right:64px;display:grid;grid-template-columns:1fr 1fr;gap:18px 22px}
+.pl{display:grid;grid-template-columns:96px 1fr;align-items:center;height:96px;padding:0 20px 0 0;overflow:hidden}
+.pl .n{height:100%;display:grid;place-items:center;background:var(--blue);color:var(--y);font:400 50px Anton;border-right:6px solid var(--ink)}
+.pl .nm{padding-left:18px;font:800 30px Pop;line-height:1.12}
+.pl .nm small{display:block;font:600 21px Pop;opacity:.55}
+.pl.star .n{background:var(--r);color:#fff}
+.bul{font:600 31px Pop;line-height:1.45;padding-left:46px;position:relative;margin-top:10px}
+.bul:before{position:absolute;left:0;top:0;font:800 32px Pop}
+.ok:before{content:"✓";color:var(--g)}.no:before{content:"!";color:var(--r);left:10px}
+.big .bul{font-size:37px;margin-top:16px}.big .watch{font-size:32px;margin-top:26px}.big .lbl{font-size:46px}
+.watch{background:#FFF4CC;border-radius:16px;padding:16px 22px;font:600 28px Pop;line-height:1.4;margin-top:18px}
+</style></head><body>
+
+<!-- ============ STORY 1 · MEET THE BLASTERS ============ -->
+<div class="ab st sun-y" id="s1">
+  <div class="pill">NEW SEASON · NEW SQUAD</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:330px"><div class="h" style="font-size:190px">MEET THE</div></div>
+  <div class="center" style="top:540px"><div class="h gold" style="font-size:190px">BLASTERS</div></div>
+  <div class="center" style="top:790px"><span class="tag red">പുതിയ ബ്ലാസ്റ്റേഴ്സ്!</span></div>
+  <div class="card" style="position:absolute;left:90px;right:90px;top:950px;padding:30px 44px;font:800 40px Pop;line-height:1.6">
+    🧠 New coach: Ashley Westwood<br>✈️ 4 new foreign signings<br>🔟 Adrián Luna is back<br>
+    <span style="font:600 32px Pop;opacity:.7">Full squad on our feed today 👇</span></div>
+  <svg class="appu" data-mood="happy" style="left:330px;top:1340px;width:420px"></svg>
+  <div class="card" style="position:absolute;left:90px;right:90px;top:1780px;height:96px;display:flex;align-items:center;justify-content:center;gap:26px;font:800 32px Pop;background:var(--ink);color:#fff;border-color:#fff;box-shadow:none">
+    <span style="color:var(--y)">TONIGHT</span><span>vs MUMBAI · 7:30 PM · KOCHI</span></div>
+</div>
+
+<!-- ============ STORY 2 · WHO'S YOUR #1 ============ -->
+<div class="ab st sun-r" id="s2">
+  <div class="pill red">FAN VOTE</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:330px"><div class="h gold" style="font-size:170px">WHO'S YOUR</div></div>
+  <div class="center" style="top:520px"><div class="h" style="font-size:210px">#1 BLASTER?</div></div>
+  <div class="center" style="top:780px"><span class="tag white">നിങ്ങളുടെ ഹീറോ ആര്?</span></div>
+  <div id="vote" style="position:absolute;left:90px;right:90px;top:930px;display:grid;grid-template-columns:1fr 1fr;gap:34px"></div>
+  <svg class="appu" data-mood="shock" style="left:375px;top:1560px;width:330px"></svg>
+  <div class="center" style="top:1500px;font:800 40px Pop;color:#fff;text-shadow:3px 3px 0 var(--ink)">Reply with the shirt number 💬</div>
+</div>
+
+<!-- ============ POST 1 · MEET THE SQUAD (carousel) ============ -->
+<div class="ab sun-y" id="sq1">
+  <div class="pill">2026–27 SQUAD</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:190px"><div class="h" style="font-size:210px">MEET THE</div></div>
+  <div class="center" style="top:420px"><div class="h gold" style="font-size:210px">SQUAD</div></div>
+  <div class="center" style="top:690px"><span class="tag red">ഇതാണ് നമ്മുടെ ടീം</span></div>
+  <svg class="appu" data-mood="happy" style="left:345px;top:820px;width:390px"></svg>
+  <div class="foot"><span>Every player, every number <b>→</b></span><small>Fan page · not affiliated with ISL or clubs</small></div>
+</div>
+<div class="ab sun-r" id="sq2">
+  <div class="pill red">THE WALL</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h gold" style="font-size:130px">KEEPERS &amp; DEFENCE</div></div>
+  <div class="roster" id="r-def" style="top:350px"></div>
+  <div class="foot"><span>#27 Dohling wears <b>Appu's number</b> 😄</span><small>Source: ESPN, Goal</small></div>
+</div>
+<div class="ab sun-y" id="sq3">
+  <div class="pill">THE ENGINE ROOM</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h" style="font-size:150px">MIDFIELD</div></div>
+  <div class="roster" id="r-mid" style="top:380px"></div>
+  <div class="foot"><span>Swipe for the attack <b>→</b></span><small>Source: ESPN, Goal</small></div>
+</div>
+<div class="ab sun-r" id="sq4">
+  <div class="pill red">GOAL HUNTERS</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h gold" style="font-size:150px">ATTACK</div></div>
+  <div class="roster" id="r-fwd" style="top:380px"></div>
+  <svg class="appu" data-mood="happy" style="left:600px;top:870px;width:330px"></svg>
+  <div class="foot"><span>Swipe for the coach <b>→</b></span><small>Source: ESPN, Goal</small></div>
+</div>
+<div class="ab sun-y" id="sq5">
+  <div class="pill">THE GAFFER</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:170px"><div class="h" style="font-size:150px">HEAD COACH</div></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:400px;padding:44px 50px">
+    <div style="font:400 104px Anton;line-height:1">ASHLEY WESTWOOD</div>
+    <div style="font:800 36px Pop;color:var(--r);margin-top:12px">ENGLAND · ex-Bengaluru FC head coach</div>
+    <div style="font:600 32px Pop;line-height:1.5;margin-top:22px">Rebuilt the squad this summer: 4 new foreign signings, Luna kept as the creative heart.</div>
+  </div>
+  <div class="center" style="top:830px"><span class="tag red">കോച്ച് റെഡി!</span></div>
+  <svg class="appu" data-mood="happy" style="left:375px;top:900px;width:330px"></svg>
+  <div class="foot"><span>Who's your #1 Blaster? <b>Comment ↓</b></span><small>Source: Khel Now, Onmanorama</small></div>
+</div>
+
+<!-- ============ POST 2 · THE FOREIGN SIX (carousel) ============ -->
+<div class="ab sun-r" id="f0">
+  <div class="pill red">PLAYER GUIDE</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:190px"><div class="h gold" style="font-size:230px">THE</div></div>
+  <div class="center" style="top:420px"><div class="h" style="font-size:200px">FOREIGN SIX</div></div>
+  <div class="center" style="top:660px"><span class="tag white">വിദേശ കരുത്ത്</span></div>
+  <div id="f0grid" style="position:absolute;left:64px;right:64px;top:800px;display:grid;grid-template-columns:repeat(6,1fr);gap:14px"></div>
+  <svg class="appu" data-mood="shock" style="left:400px;top:925px;width:280px"></svg>
+  <div class="foot"><span>Strengths of each <b>→</b></span><small>Fan page · not affiliated with ISL or clubs</small></div>
+</div>
+<div id="fslides" style="display:contents"></div>
+
+<!-- ============ POST 3 · STRENGTHS vs WORRIES ============ -->
+<div class="ab sun-y" id="sw">
+  <div class="pill">FAN VERDICT</div><div class="handle">@appu27.isl</div>
+  <div class="center" style="top:165px"><div class="h" style="font-size:118px">STRENGTHS <span class="gold" style="color:var(--y)">vs</span> WORRIES</div></div>
+  <div class="center" style="top:320px"><span class="tag red">കരുത്തും ആശങ്കയും</span></div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:440px;padding:26px 40px">
+    <div class="lbl" style="color:var(--g)">💪 STRENGTHS</div>
+    <div class="bul ok"><b>Luna's magic:</b> set pieces and final-third creativity</div>
+    <div class="bul ok"><b>Experience:</b> Bolton brings 400+ career games</div>
+    <div class="bul ok"><b>Aerial power:</b> Ndiaye wins headers at both ends</div>
+  </div>
+  <div class="card" style="position:absolute;left:64px;right:64px;top:820px;padding:26px 40px">
+    <div class="lbl" style="color:var(--r)">😬 WORRIES</div>
+    <div class="bul no"><b>New squad,</b> still learning to play together</div>
+    <div class="bul no"><b>Defence:</b> 4 conceded in Guwahati</div>
+    <div class="bul no"><b>Goals:</b> we need a clinical No. 9</div>
+  </div>
+  <div class="foot"><span>Biggest strength? <b>Comment ↓</b></span><small>Source: Khel Now, Onmanorama</small></div>
+</div>
+
+<script>
+function appu(mood){
+  const S='stroke="#141414" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"';
+  const skin='#8A5634', jer='#FFC629';
+  const arms = mood==='happy'
+    ? `<path d="M95 300 L40 150 Q35 120 62 118 L80 120 L120 270Z" fill="${skin}" ${S}/><path d="M305 300 L360 150 Q365 120 338 118 L320 120 L280 270Z" fill="${skin}" ${S}/>
+       <path d="M40 160 L70 110 L95 140 L72 185Z" fill="${jer}" ${S}/><path d="M360 160 L330 110 L305 140 L328 185Z" fill="${jer}" ${S}/>`
+    : mood==='shock'
+    ? `<path d="M100 300 Q40 230 70 170 L100 175 Q90 230 130 280Z" fill="${skin}" ${S}/><path d="M300 300 Q360 230 330 170 L300 175 Q310 230 270 280Z" fill="${skin}" ${S}/>`
+    : `<path d="M95 300 Q60 330 70 400 L105 400 L125 310Z" fill="${skin}" ${S}/><path d="M305 300 Q340 330 330 400 L295 400 L275 310Z" fill="${skin}" ${S}/>`;
+  const mouth = mood==='happy'
+    ? `<path d="M165 238 Q200 290 235 238 Z" fill="#fff" ${S}/><path d="M178 258 Q200 282 222 258 Q200 266 178 258Z" fill="#E86A7A"/>`
+    : mood==='shock' ? `<ellipse cx="200" cy="255" rx="22" ry="28" fill="#7A1E2A" ${S}/>`
+    : `<path d="M172 262 Q200 236 228 262" fill="none" ${S}/>`;
+  const extra = mood==='sad' ? `<path d="M150 205 q-6 18 0 26 q8 6 10 -6 q0 -10 -10 -20z" fill="#7CC7F2" stroke="#141414" stroke-width="4"/>` : '';
+  const brows = mood==='sad' ? `<path d="M135 150 L172 162" ${S}/><path d="M265 150 L228 162" ${S}/>` : mood==='shock' ? `<path d="M135 140 Q152 128 172 140" fill="none" ${S}/><path d="M228 140 Q248 128 265 140" fill="none" ${S}/>` : '';
+  return `<svg viewBox="0 0 400 430" xmlns="http://www.w3.org/2000/svg">${arms}
+   <path d="M105 290 Q105 270 135 266 L265 266 Q295 270 295 290 L300 420 L100 420Z" fill="${jer}" ${S}/>
+   <rect x="102" y="392" width="196" height="22" fill="#1E3A8A"/>
+   <text x="200" y="378" text-anchor="middle" font-family="Anton" font-size="96" fill="#1E3A8A">27</text>
+   <path d="M170 266 L200 296 L230 266" fill="none" stroke="#1E3A8A" stroke-width="10"/>
+   <ellipse cx="96" cy="190" rx="20" ry="26" fill="${skin}" ${S}/><ellipse cx="304" cy="190" rx="20" ry="26" fill="${skin}" ${S}/>
+   <ellipse cx="200" cy="185" rx="108" ry="100" fill="${skin}" ${S}/>
+   <path d="M94 165 Q92 80 200 78 Q308 80 306 165 Q290 130 270 140 L262 112 L245 136 L228 106 L212 134 L196 104 L180 134 L163 108 L148 138 L132 114 L124 145 Q110 135 94 165Z" fill="#1A1A1A" ${S}/>
+   ${brows}
+   <circle cx="158" cy="190" r="${mood==='shock'?26:22}" fill="#fff" ${S}/><circle cx="242" cy="190" r="${mood==='shock'?26:22}" fill="#fff" ${S}/>
+   <circle cx="160" cy="192" r="10" fill="#141414"/><circle cx="244" cy="192" r="10" fill="#141414"/>
+   <ellipse cx="128" cy="232" rx="18" ry="10" fill="#E8838C" opacity=".8"/><ellipse cx="272" cy="232" rx="18" ry="10" fill="#E8838C" opacity=".8"/>
+   ${mouth}${extra}</svg>`;
+}
+// generic shirt (no club crest), number + surname
+function shirt(num,name,w,col='#FFC629',ink='#1E3A8A'){
+  return `<svg viewBox="0 0 300 300" width="${w}" xmlns="http://www.w3.org/2000/svg">
+   <path d="M95 30 L60 40 L10 95 L50 140 L75 118 L75 285 L225 285 L225 118 L250 140 L290 95 L240 40 L205 30 Q150 70 95 30Z" fill="${col}" stroke="#141414" stroke-width="9" stroke-linejoin="round"/>
+   <path d="M108 34 Q150 62 192 34" fill="none" stroke="${ink}" stroke-width="10"/>
+   <text x="150" y="112" text-anchor="middle" font-family="Pop" font-weight="800" font-size="${name.length>8?24:30}" fill="${ink}">${name}</text>
+   <text x="150" y="250" text-anchor="middle" font-family="Anton" font-size="132" fill="${ink}">${num}</text></svg>`;
+}
+document.querySelectorAll('svg.appu').forEach(s=>{s.outerHTML=appu(s.dataset.mood).replace('<svg ','<svg class="appu" style="'+s.getAttribute('style')+'" ')});
+
+// roster (numbers agree on ESPN + Goal, 25 Oct 2026). star = foreign
+const DEF=[[1,'Amrinder Singh','GK'],[31,'Arsh Anwer Shaikh','GK'],[81,'Alsabith','GK'],
+ [3,'Sandeep Singh','RB / CB'],[4,'Hormipam Ruivah','CB'],[5,'Sumit Sharma','CB'],[13,'James Bolton','CB / RB · England',1],
+ [19,'Jaganath Jayan','CB'],[27,'Aibanbha Dohling','LB / CB'],[33,'Bikash Yumnam','CB'],[44,'Fallou Ndiaye','CB · Senegal',1],
+ [50,'Naocha Singh','LB'],[55,'Amey Ranawade','RB']];
+const MID=[[6,'Freddy Lallawmawma','DM'],[8,'Vibin Mohanan','CM'],[10,'Adrián Luna','Playmaker · Uruguay',1],[15,'Sahil Tavora','CM'],
+ [16,'Paul Ramfangzauva','CM'],[23,'Nebojša Kosović','CM / DM · Montenegro',1],[24,'Joel Lalramengmawia','CM'],[32,'Mohammad Yasir','AM / Wing'],[47,'Ebindas Yesudasan','AM']];
+const FWD=[[7,'Korou Singh','Winger'],[9,'André Green','Winger · England',1],[11,'Mohammed Sanan','Forward'],[45,'Sreekuttan MS','Striker'],
+ [46,'Ramhlunchhunga','Forward'],[97,'R. Lalthanmawia','Winger'],[99,'Momo Yansané','Striker · Guinea',1]];
+const row=p=>`<div class="card pl${p[3]?' star':''}"><div class="n">${p[0]}</div><div class="nm" style="${p[1].length>17?'font-size:24px':''}">${p[1]}<small>${p[2]}</small></div></div>`;
+document.getElementById('r-def').innerHTML=DEF.map(row).join('');
+document.getElementById('r-mid').innerHTML=MID.map(row).join('');
+document.getElementById('r-fwd').style.gridTemplateColumns='1fr';
+document.getElementById('r-fwd').style.right='460px';
+document.getElementById('r-fwd').innerHTML=FWD.map(row).join('');
+
+// story vote tiles
+const V=[[10,'LUNA'],[99,'YANSANÉ'],[9,'GREEN'],[7,'KOROU']];
+document.getElementById('vote').innerHTML=V.map(v=>`<div class="card" style="height:270px;display:grid;place-items:center">${shirt(v[0],v[1],240)}</div>`).join('');
+
+// foreign six
+const F=[
+ {n:10,s:'LUNA',name:'ADRIÁN LUNA',c:'URUGUAY',pos:'Playmaker · CAM / wing',from:'Back from a loan at Persik Kediri (Indonesia)',
+  ok:['Set-piece delivery is elite','Creates chances in the final third','Knows the club inside out, helps new signings settle'],w:'Can he keep up with a high-tempo game at 34?'},
+ {n:9,s:'GREEN',name:'ANDRÉ GREEN',c:'ENGLAND',pos:'Winger · second striker',from:'Panserraikos & AVS · ex-Aston Villa, Slovan Bratislava',
+  ok:['Plays anywhere across the front line','Two Slovak league titles','7 goals in 19 European games for Slovan'],w:'Match sharpness after few league minutes last season'},
+ {n:13,s:'BOLTON',name:'JAMES BOLTON',c:'ENGLAND',pos:'Centre-back · right-back',from:'Plymouth Argyle · ex-Portsmouth, Shrewsbury',
+  ok:['400+ career appearances','League One title winner with Plymouth','Covers two positions, can push forward'],w:'Reliable rather than flashy, a calm head at the back'},
+ {n:23,s:'KOSOVIĆ',name:'NEBOJŠA KOSOVIĆ',c:'MONTENEGRO',pos:'Central / defensive mid',from:'Bangkok United · ex-Partizan, Kairat Almaty',
+  ok:['Controls the tempo of a game','Comfortable in every central role','Asian and European competition experience'],w:'Limited minutes over the last two seasons'},
+ {n:99,s:'YANSANÉ',name:'MOMO YANSANÉ',c:'GUINEA',pos:'Striker · can drift left',from:'Pyunik Yerevan (Armenia) · ex-Sheriff, Rijeka',
+  ok:['Presses defenders all game','Links play well with the wingers','Already on the scoresheet vs NorthEast'],w:'8 goals in 26 last season, needs to be more clinical'},
+ {n:44,s:'NDIAYE',name:'FALLOU NDIAYE',c:'SENEGAL',pos:'Centre-back',from:'SJK Seinäjoki (Finland)',
+  ok:['Tall and dominant in the air','A real threat from set pieces','Calm on the ball, starts attacks from the back'],w:'Pace, so he needs a quick partner beside him'}];
+document.getElementById('f0grid').innerHTML=F.map(f=>`<div class="card" style="height:170px;display:grid;place-items:center;border-radius:20px;box-shadow:6px 7px 0 #141414">${shirt(f.n,f.s,140)}</div>`).join('');
+document.getElementById('fslides').innerHTML=F.map((f,i)=>{const r=i%2===0;return `
+<div class="ab ${r?'sun-y':'sun-r'}" id="f${i+1}">
+  <div class="pill${r?'':' red'}">FOREIGN SIX · ${i+1}/6</div><div class="handle">@appu27.isl</div>
+  <div style="position:absolute;left:64px;top:175px;width:330px;height:330px" class="card"><div style="display:grid;place-items:center;height:100%">${shirt(f.n,f.s,290)}</div></div>
+  <div style="position:absolute;left:440px;right:64px;top:190px">
+    <div class="h ${r?'':'gold'}" style="font-size:${f.name.length>13?84:96}px;text-align:left">${f.name}</div>
+    <div style="display:inline-block;margin-top:22px;background:var(--ink);color:#fff;font:800 30px Pop;padding:8px 20px;border-radius:10px;letter-spacing:.06em">${f.c}</div>
+    <div style="font:800 32px Pop;color:${r?'var(--ink)':'#fff'};margin-top:16px;${r?'':'text-shadow:2px 2px 0 #141414'}">${f.pos}</div>
+  </div>
+  <div class="card big" style="position:absolute;left:64px;right:64px;top:570px;padding:34px 44px">
+    <div style="font:600 26px Pop;opacity:.6">CAME FROM</div><div style="font:800 30px Pop;margin-bottom:14px">${f.from}</div>
+    <div class="lbl" style="color:var(--g)">STRENGTHS</div>
+    ${f.ok.map(o=>`<div class="bul ok">${o}</div>`).join('')}
+    <div class="watch">👀 <b>Watch for:</b> ${f.w}</div>
+  </div>
+  <div class="foot"><span>${i<5?'Swipe <b>→</b>':'Best signing? <b>Comment ↓</b>'}</span><small>Source: Khel Now, Onmanorama, ESPN</small></div>
+</div>`}).join('');
+</script></body></html>
