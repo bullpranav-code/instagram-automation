@@ -110,7 +110,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
     <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
     <button class="tile" data-go="human"><span class="e">👤</span><b>Talk to a person</b><span>WhatsApp the Accent team.</span></button>
   </div>
-  <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Not you? Sign out</a></p>
+  <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Sign out</a> · <a href="#" id="trainer" style="color:var(--mute)">Trainer</a></p>
 </div></section>
 
 <!-- CHAT -->
@@ -212,6 +212,9 @@ $('w-go').onclick=()=>{
   .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
 };
 function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
+$('trainer').onclick=e=>{e.preventDefault();const k=prompt('Trainer key');if(!k)return;
+  const d=document.createElement('div');d.className='card';d.innerHTML='<div class="qn">TRAINER DASHBOARDS</div><a class="btn" target="_blank" href="'+ILA+'?view=admin&key='+encodeURIComponent(k)+'">📊 Ila dashboard (interviews, students, feedback)</a><a class="btn green" target="_blank" href="'+KILI+'?view=calls&key='+encodeURIComponent(k)+'">🐦 Kili dashboard (call reviews)</a>';
+  $('v-home').querySelector('.wrap').appendChild(d);d.scrollIntoView({behavior:'smooth'});};
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone?')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
