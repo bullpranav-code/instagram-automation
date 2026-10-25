@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ila + Kili · Beta install</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;font-family:Poppins,Arial;background:#F7FAF8;color:#0B3D1E}header{background:#0B3D1E;color:#fff;padding:18px 16px}header small{color:#79C24A;letter-spacing:3px;font-size:11px;font-weight:600}
+.w{max-width:560px;margin:0 auto;padding:16px}.c{background:#fff;border:1px solid #DCE5DE;border-radius:16px;padding:16px;margin-bottom:14px}h2{font-size:17px;margin:0 0 8px}ol{padding-left:20px;margin:8px 0;line-height:1.7;font-size:14px}
+button{width:100%;padding:15px;border:0;border-radius:12px;background:#16A34A;color:#fff;font:inherit;font-weight:600;font-size:16px;margin:6px 0}button.d{background:#0B3D1E}small.m{color:#8A968E}</style></head><body>
+<header><small>ACCENT · BETA INSTALL</small><div style="font-size:20px;font-weight:700">Ila + Kili v4.0</div></header><div class="w">
+<div class="c"><h2>1 · Ila</h2><button id="ila">Copy Ila code</button><small class="m" id="ilas"></small>
+<ol><li>script.google.com → Ila project → main file</li><li>Select all → delete → paste → Save</li><li>Delete old files <b>Voice</b> and <b>Kili.gs</b> if present</li><li>Deploy → Manage deployments → ✏️ → Access: <b>Anyone</b> → Version: <b>New version</b> → Deploy</li></ol></div>
+<div class="c"><h2>2 · Kili</h2><button id="kili" class="d">Copy Kili code</button><small class="m" id="kilis"></small>
+<ol><li>script.google.com → Kili project</li><li>Select all → delete → paste → Save</li><li>Deploy → Manage deployments → ✏️ → Version: <b>New version</b> → Deploy</li></ol></div>
+<div class="c"><h2>3 · Check</h2><ol><li><a href="interview.html">Open mock interview</a> → Start → answer once</li><li>Open Ila → tap 🌱 Sales course mentor</li><li>If anything fails, send Claude one screenshot</li></ol></div></div>
+<script>
+function wire(btn,file,st){const b=document.getElementById(btn),s=document.getElementById(st);let txt='';
+fetch('code/'+file+'?v='+Date.now()).then(r=>r.text()).then(t=>{txt=t;s.textContent=(t.length/1024).toFixed(0)+' KB ready';});
+b.onclick=()=>{if(!txt){s.textContent='Still loading…';return}const ok=()=>{b.textContent='Copied ✓ — now paste in Apps Script';};
+(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(ok).catch(()=>{const a=document.createElement('textarea');a.value=txt;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();ok();});};}
+wire('ila','Ila_v4_BETA.txt','ilas');wire('kili','Kili_v4_BETA.txt','kilis');
+</script></body></html>

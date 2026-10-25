@@ -1,0 +1,955 @@
+// ILA v4.0 BETA - Accent AI mentor (25 Oct 2026). This ONE file replaces all earlier Ila code in the main file.
+// Kili (call review) runs as its own app: CONFIG.KILI_URL
+const CONFIG = {
+  MODEL: 'gemini-flash-latest',
+  BACKUP_MODELS: ['gemini-flash-lite-latest', 'gemini-2.5-flash'],   // used when the main model is busy
+  SHEET_ID: '1BS0sL3Hy09wLYVsjRuGJLpiD9PFJkNE-yE0vw4xJqrU',   // same Google Sheet as CallVibe (Script property SHEET_ID overrides)
+  WHATSAPP: '919995842727',
+  INTERVIEW_URL: 'https://bullpranav-code.github.io/instagram-automation/ila/interview.html',   // voice mock interview page (real mic + voice on iPhone)
+  KILI_URL: 'https://script.google.com/macros/s/AKfycbzm5pCgvF4zDj7oGMvGiFY-hl_OHOhJjl8oTl0RrzuayQjeVQpBfyYoYG6DkYZqqspO/exec',
+  DAILY_MESSAGE_LIMIT: 40,                                     // per person per day, protects the free quota
+  MAX_UPLOAD_MB: 4,
+  DRIVE_FOLDER: 'Ila - Accent Careers',                        // uploads + drafts are saved here (private to you)
+  SERVICES: [                                                  // set prices when decided; blank = "price on WhatsApp"
+    { id: 'resume',   name: 'Resume rewrite',            price: '' },
+    { id: 'linkedin', name: 'LinkedIn profile makeover', price: '' },
+    { id: 'combo',    name: 'Resume + LinkedIn combo',   price: '' }
+  ]
+};
+
+const TABS = {
+  leads:    ['Ila Leads', ['Timestamp', 'Session', 'Name', 'WhatsApp', 'Email', 'I am', 'District', 'Consent']],
+  chats:    ['Ila Chats', ['Timestamp', 'Session', 'Name', 'Mode', 'Message', 'Ila reply', 'Flag', 'File link']],
+  services: ['Ila Service Requests', ['Timestamp', 'Session', 'Name', 'WhatsApp', 'Service', 'Price shown', 'Notes', 'Status', 'Draft doc']],
+  know:     ['Ila Knowledge', ['Topic', 'What Ila should know']],
+  reports:  ['Ila Interview Reports', ['Timestamp', 'Session', 'Name', 'Role', 'Language', 'Overall /10', 'Report']],
+  feedback: ['Beta Feedback', ['Timestamp', 'Product', 'Session', 'Name', 'Rating', 'Comment', 'Context']]
+};
+
+/* ================= set-up ================= */
+function setup() {
+  const ss = ss_();
+  Object.keys(TABS).forEach(k => tab_(ss, k));
+  const k = ss.getSheetByName(TABS.know[0]);
+  if (k.getLastRow() < 2) k.getRange(2, 1, DEFAULT_KNOWLEDGE.length, 2).setValues(DEFAULT_KNOWLEDGE);
+  folder_('Uploads'); folder_('Drafts');
+  Logger.log('Ready. Deploy \u2192 New deployment \u2192 Web app (Execute as Me, access Anyone).');
+}
+
+/* ================= web ================= */
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  const url = ScriptApp.getService().getUrl();
+  if (p.view === 'voice') return page_(goPage_(CONFIG.INTERVIEW_URL, 'Open the mock interview'));
+  if (p.view === 'call' || p.view === 'calls') return page_(goPage_(CONFIG.KILI_URL + (p.view === 'calls' ? '?view=calls&key=' + encodeURIComponent(p.key || '') : ''), 'Open Kili (call review)'));
+  if (p.view === 'admin') {
+    const key = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+    return page_(key && p.key === key ? adminHtml_() : '<p style="font-family:Arial;padding:30px">Wrong or missing key.</p>');
+  }
+  return page_(CHAT_HTML.split('{{LOGO}}').join(LOGO_LIGHT).split('{{LEAF}}').join(LEAF_SVG)
+    .replace('{{SERVICES}}', JSON.stringify(CONFIG.SERVICES)).replace('{{WA}}', CONFIG.WHATSAPP)
+    .split('{{URL}}').join(url).replace('{{KURL}}', CONFIG.KILI_URL).replace('{{IURL}}', CONFIG.INTERVIEW_URL));
+}
+/** API for the interview page hosted outside Google (it posts JSON here).
+ *  action 'chat' (interview turns), 'tts' (natural Gemini voice), 'stt' (voice answer -> text). */
+function doPost(e) {
+  let out;
+  try {
+    const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (!/^IL-[A-Z0-9]{8}$/.test(String(req.session || ''))) throw new Error('Session expired. Refresh the page.');
+    if (req.action === 'feedback') out = saveFeedback_(req);
+    else if (req.action === 'tts') { if (overCap_(req.session, 'tts', 40)) throw new Error('Voice limit reached for today'); out = { audio: ilaTts_(String(req.text || '').slice(0, 600), req.lang) }; }
+    else if (req.action === 'stt') { if (overCap_(req.session, 'stt', 40)) throw new Error('Recording limit reached for today. Please type your answer.'); out = { text: ilaStt_(req) }; }
+    else if (req.mode === 'interview') out = chat(req);
+    else throw new Error('Only interview requests are allowed here.');
+  } catch (err) { out = { error: String(err.message || err) }; }
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Natural voice (Gemini TTS). Returns base64 WAV. Throws if Google is busy, so the page falls back to text. */
+function ilaTts_(text, lang) {
+  if (!text) throw new Error('No text');
+  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  const style = lang === 'ml-IN'
+    ? 'Speak in clear, standard Malayalam like a calm, professional HR manager. Warm, unhurried, confident.'
+    : 'Speak in clear Indian English like a calm, professional HR manager. Warm, unhurried, confident.';
+  const models = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini-3.1-flash-tts-preview'];
+  for (let m = 0; m < models.length; m++) {
+    const r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': key },
+      payload: JSON.stringify({ model: models[m],
+        input: [{ type: 'user_input', content: [{ type: 'text', text: text, annotations: [{ type: 'speech_metadata', style: style }] }] }],
+        response_format: { type: 'audio', mime_type: 'audio/wav' },
+        generation_config: { speech_config: [{ voice: 'Puck' }] } }) });
+    if (r.getResponseCode() !== 200) continue;
+    const json = JSON.parse(r.getContentText());
+    let b64 = '';
+    (json.steps || []).forEach(st => (st.content || []).forEach(c => { if (c.type === 'audio' && c.data) b64 = c.data; }));
+    if (!b64 && json.output_audio) b64 = json.output_audio.data || '';
+    if (!b64) continue;
+    const bytes = Utilities.base64Decode(b64);
+    const head = String.fromCharCode(bytes[0] & 255, bytes[1] & 255, bytes[2] & 255, bytes[3] & 255);
+    return head === 'RIFF' ? b64 : Utilities.base64Encode(wav_(bytes, 24000));
+  }
+  throw new Error('Voice is busy');
+}
+function overCap_(session, kind, max) {
+  const c = CacheService.getScriptCache(), k = kind + '_' + session + '_' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyyMMdd');
+  const n = Number(c.get(k) || 0) + 1; c.put(k, String(n), 21600); return n > max;
+}
+/** Beta feedback from the interview page (and Ila chat). */
+function saveFeedback_(r) {
+  tab_(ss_(), 'feedback').appendRow([new Date(), String(r.product || 'Ila interview').slice(0, 40), String(r.session || ''), String(r.name || '').slice(0, 80),
+    String(r.rating || '').slice(0, 10), String(r.comment || '').slice(0, 1000), String(r.context || '').slice(0, 200)]);
+  return { ok: true };
+}
+function feedback(r) { return saveFeedback_(r || {}); }   // for google.script.run
+
+function wav_(pcm, rate) {
+  const h = [], s = t => { for (let i = 0; i < t.length; i++) h.push(t.charCodeAt(i)); };
+  const u32 = v => h.push(v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >> 24) & 255), u16 = v => h.push(v & 255, (v >> 8) & 255);
+  s('RIFF'); u32(36 + pcm.length); s('WAVE'); s('fmt '); u32(16); u16(1); u16(1); u32(rate); u32(rate * 2); u16(2); u16(16); s('data'); u32(pcm.length);
+  return h.map(b => b > 127 ? b - 256 : b).concat(pcm);
+}
+
+/** Voice answer -> text (Gemini listens to the recording). */
+function ilaStt_(req) {
+  const data = String(req.audio || '');
+  if (!data) throw new Error('No recording');
+  if (data.length > 6 * 1024 * 1024) throw new Error('Recording too long. Keep answers under 2 minutes.');
+  const mime = /mp4|m4a|aac/.test(req.mime || '') ? 'audio/aac' : /ogg/.test(req.mime || '') ? 'audio/ogg' : /wav/.test(req.mime || '') ? 'audio/wav' : /webm/.test(req.mime || '') ? 'audio/webm' : 'audio/aac';
+  const ask = 'Transcribe this spoken interview answer exactly as said, in ' + (req.lang === 'ml-IN' ? 'Malayalam script (keep English words in English)' : 'English') +
+    '. Fix nothing, add nothing, no labels or notes. If there is no speech, reply exactly: (no speech)';
+  const out = gemini_('You are a precise transcriber.', [{ role: 'user', parts: [{ text: ask }, { inlineData: { mimeType: mime, data: data } }] }],
+    { temperature: 0, maxOutputTokens: 800, thinkingConfig: { thinkingBudget: 0 } });
+  if (BUSY_RE.test(out)) throw new Error('Google is busy. Please record again in a moment.');
+  return String(out).trim();
+}
+
+function goPage_(to, label) {
+  return '<div style="font-family:Poppins,Arial;padding:40px 24px;text-align:center"><p style="color:#0B3D1E">Opening\u2026</p>' +
+    '<a href="' + to + '" target="_top" style="display:inline-block;background:#0B3D1E;color:#fff;padding:14px 22px;border-radius:12px;text-decoration:none">' + label + '</a></div>' +
+    '<script>try{window.top.location.href=' + JSON.stringify(to) + '}catch(e){}</script>';
+}
+function page_(html) {
+  return HtmlService.createHtmlOutput(html).setTitle('Ila \u00b7 ACCENT \u00b7 Choice Is Yours.')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/** Lead card from the welcome screen. */
+function startSession(f) {
+  const name = String(f.name || '').trim(), wa = String(f.whatsapp || '').replace(/[^\d+]/g, '');
+  if (!name) throw new Error('Please tell Ila your name.');
+  if (wa.replace(/\D/g, '').length < 10) throw new Error('Enter a valid WhatsApp number.');
+  if (!f.consent) throw new Error('Please tick the consent box to continue.');
+  const session = 'IL-' + Utilities.getUuid().slice(0, 8).toUpperCase();
+  tab_(ss_(), 'leads').appendRow([new Date(), session, name, wa, String(f.email || '').trim(), f.iam || '', f.district || '', 'Yes']);
+  return { session: session };
+}
+
+/** One chat turn. history = [{role:'user'|'model', text}] (last few turns, kept in the browser). */
+function chat(req) {
+  const session = String(req.session || ''), name = String(req.name || '');
+  if (!/^IL-[A-Z0-9]{8}$/.test(session)) throw new Error('Session expired. Refresh the page.');
+  if (overLimit_(session)) return { reply: "You've reached today's chat limit. Ila will be back tomorrow, or WhatsApp us on +91 99958 42727.", flag: 'limit' };
+
+  const mode = req.mode || 'chat';
+  const msg = String(req.message || '').slice(0, 4000);
+  let fileUrl = '';
+  const contents = (req.history || []).slice(mode === 'interview' ? -14 : -6).map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: String(h.text).slice(0, 4000) }] }));
+  const parts = [{ text: (mode !== 'chat' ? '[MODE: ' + mode + ']\n' : '') + (msg || '(attached file)') }];
+  if (req.file && req.file.data) {
+    const bytes = Utilities.base64Decode(req.file.data);
+    if (bytes.length > CONFIG.MAX_UPLOAD_MB * 1048576) throw new Error('File is over ' + CONFIG.MAX_UPLOAD_MB + ' MB.');
+    const mime = /pdf$/i.test(req.file.name || '') ? 'application/pdf' : (req.file.mime || 'application/pdf');
+    if (!/^(application\/pdf|image\/(png|jpe?g|webp))$/.test(mime)) throw new Error('Upload a PDF or a photo (JPG/PNG) of your resume.');
+    parts.push({ inlineData: { mimeType: mime, data: req.file.data } });
+    try { fileUrl = folder_('Uploads').createFile(Utilities.newBlob(bytes, mime, session + ' - ' + (req.file.name || 'resume'))).getUrl(); } catch (e) { fileUrl = ''; }
+  }
+  contents.push({ role: 'user', parts: parts });
+
+  const recent = (req.history || []).slice(-2).map(h => h.text).join(' ');
+  const out = gemini_(systemPrompt_(name, msg + ' ' + recent), contents,
+    mode === 'interview' ? { temperature: 0.5, maxOutputTokens: 1200, thinkingConfig: { thinkingBudget: 0 } } : null);
+  if (BUSY_RE.test(out)) return { reply: out, flag: 'busy' };
+  const flag = /\[HANDOFF\]/.test(out) ? 'handoff' : /\[CRISIS\]/.test(out) ? 'crisis' : '';
+  const reply = out.replace(/\[(HANDOFF|CRISIS)\]/g, '').trim();
+  const logMsg = mode === 'interview' ? msg.replace(/^\[[\s\S]*?\]\s*/, '').replace(/^MY ANSWER:\s*/, '') : msg;
+  tab_(ss_(), 'chats').appendRow([new Date(), session, name, mode, logMsg.slice(0, 1000) + (req.file ? ' [file: ' + (req.file.name || '') + ']' : ''), reply.slice(0, 4000), flag, fileUrl]);
+  if (/^\s*\**\s*REPORT/i.test(reply)) { try {
+    const sc = (reply.match(/SCORE:\s*(\d+(?:\.\d)?)/i) || [])[1] || '';
+    tab_(ss_(), 'reports').appendRow([new Date(), session, name, String(req.role || ''), String(req.lang || ''), sc, reply.slice(0, 5000)]);
+  } catch (e) {} }
+  return { reply: reply, flag: flag };
+}
+
+/** Paid service request (resume / LinkedIn rewrite). */
+function requestService(r) {
+  const svc = CONFIG.SERVICES.find(s => s.id === r.service);
+  if (!svc) throw new Error('Unknown service.');
+  tab_(ss_(), 'services').appendRow([new Date(), r.session || '', r.name || '', r.whatsapp || '', svc.name, svc.price || 'On WhatsApp', String(r.notes || '').slice(0, 500), 'New', '']);
+  try {                                       // build the draft in the background (about a minute)
+    ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'processDrafts').forEach(t => ScriptApp.deleteTrigger(t));
+    ScriptApp.newTrigger('processDrafts').timeBased().after(5000).create();
+  } catch (e) {}
+  return { ok: true, service: svc.name };
+}
+
+/* ================= paid drafts (resume / LinkedIn) ================= */
+/** Builds a Google Doc draft for every service request that has none yet.
+ *  Runs automatically after each request; you can also run it by hand from the editor. */
+function processDrafts() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'processDrafts').forEach(t => ScriptApp.deleteTrigger(t));
+  const sh = tab_(ss_(), 'services');
+  if (sh.getLastRow() < 2) return;
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 9).getValues();
+  rows.forEach((r, i) => {
+    if (r[8] || !/^New|^Draft failed/.test(String(r[7]))) return;
+    const row = i + 2;
+    sh.getRange(row, 8).setValue('Drafting\u2026');
+    SpreadsheetApp.flush();
+    try {
+      const url = buildDraft_(String(r[1]), String(r[2]), String(r[4]));
+      sh.getRange(row, 8, 1, 2).setValues([['Draft ready \u2014 check [brackets], send after payment', url]]);
+    } catch (e) {
+      sh.getRange(row, 8).setValue('Draft failed \u2014 ' + String(e.message || e).slice(0, 120));
+    }
+  });
+}
+
+function buildDraft_(session, name, service) {
+  // 1. collect what the student shared: their messages, uploaded files and Ila's reviews
+  const ch = tab_(ss_(), 'chats');
+  const data = ch.getLastRow() > 1 ? ch.getRange(2, 1, ch.getLastRow() - 1, 8).getValues() : [];
+  const mine = data.filter(r => String(r[1]) === session);
+  if (!mine.length) throw new Error('No chat found for ' + session);
+  const texts = mine.map(r => 'STUDENT: ' + r[4] + '\nILA REVIEW: ' + String(r[5]).slice(0, 1500)).join('\n\n').slice(-12000);
+  const files = mine.map(r => String(r[7] || '')).filter(Boolean);
+  const parts = [{ text: 'Service ordered: ' + service + '\nStudent name: ' + name + '\n\nCONVERSATION:\n' + texts }];
+  if (files.length) {
+    const id = (files[files.length - 1].match(/[-\w]{25,}/) || [])[0];
+    if (id) { const b = DriveApp.getFileById(id).getBlob(); parts.push({ inlineData: { mimeType: b.getContentType(), data: Utilities.base64Encode(b.getBytes()) } }); }
+  }
+  // 2. ask Gemini for structured content
+  const raw = gemini_(DRAFT_PROMPT, [{ role: 'user', parts: parts }], { temperature: 0.3, maxOutputTokens: 6000, responseMimeType: 'application/json' });
+  let d;
+  try { d = JSON.parse(raw.replace(/^\x60\x60\x60(json)?|\x60\x60\x60$/g, '').trim()); } catch (e) { throw new Error('AI returned no usable draft (Google may be busy). Run processDrafts again later.'); }
+  // 3. write a clean Google Doc
+  const wantResume = !/^LinkedIn/i.test(service), wantLinkedIn = /LinkedIn/i.test(service);
+  const doc = DocumentApp.create((d.name || name) + ' \u2014 ' + service + ' (draft)');
+  const body = doc.getBody().setMarginTop(48).setMarginBottom(48).setMarginLeft(56).setMarginRight(56);
+  const F = '#0B3D1E', INK = '#2C3A31', GREY = '#8A968E';
+  const para = (t, size, opts) => { const p = body.appendParagraph(String(t || '')); const x = p.editAsText();
+    x.setFontFamily('Poppins').setFontSize(size).setForegroundColor((opts && opts.color) || INK).setBold(!!(opts && opts.bold));
+    p.setSpacingAfter((opts && opts.after) != null ? opts.after : 4).setSpacingBefore((opts && opts.before) || 0).setLineSpacing(1.15); return p; };
+  const head = t => { const p = para(t.toUpperCase(), 10.5, { bold: true, color: F, before: 14, after: 6 }); p.editAsText().setFontFamily('Poppins'); return p; };
+  const bullets = arr => (arr || []).forEach(b => { const li = body.appendListItem(String(b)); li.setGlyphType(DocumentApp.GlyphType.BULLET).setSpacingAfter(2);
+    li.editAsText().setFontFamily('Poppins').setFontSize(10).setForegroundColor(INK).setBold(false); });
+  body.clear();
+  if (wantResume) {
+    para(d.name || name, 22, { bold: true, color: F, after: 2 });
+    if (d.headline) para(d.headline, 11, { color: INK, after: 2 });
+    para(d.contact || '[Phone] \u00b7 [Email] \u00b7 [City] \u00b7 [LinkedIn URL]', 9.5, { color: GREY, after: 6 });
+    if (d.summary) { head('Professional summary'); para(d.summary, 10, {}); }
+    if (d.skills && d.skills.length) { head('Key skills'); para(d.skills.join('  \u00b7  '), 10, {}); }
+    if (d.experience && d.experience.length) { head('Experience'); d.experience.forEach(e => {
+      para([e.role, e.org].filter(Boolean).join(' \u2014 '), 10.5, { bold: true, color: F, before: 6, after: 0 });
+      if (e.dates || e.location) para([e.dates, e.location].filter(Boolean).join(' \u00b7 '), 9, { color: GREY, after: 2 });
+      bullets(e.bullets); }); }
+    if (d.projects && d.projects.length) { head('Projects'); d.projects.forEach(e => {
+      para(e.title, 10.5, { bold: true, color: F, before: 6, after: 0 }); bullets(e.bullets); }); }
+    if (d.education && d.education.length) { head('Education'); d.education.forEach(e => {
+      para([e.degree, e.institution].filter(Boolean).join(' \u2014 '), 10.5, { bold: true, color: F, before: 4, after: 0 });
+      if (e.dates || e.details) para([e.dates, e.details].filter(Boolean).join(' \u00b7 '), 9, { color: GREY, after: 2 }); }); }
+    if (d.certifications && d.certifications.length) { head('Certifications'); bullets(d.certifications); }
+    if (d.languages && d.languages.length) { head('Languages'); para(d.languages.join('  \u00b7  '), 10, {}); }
+  }
+  if (wantLinkedIn && d.linkedin) {
+    if (wantResume) body.appendPageBreak();
+    para('LinkedIn profile makeover', 18, { bold: true, color: F, after: 8 });
+    head('Headline (copy into LinkedIn)'); para(d.linkedin.headline, 11, { bold: true, color: F });
+    head('About section'); String(d.linkedin.about || '').split(/\n+/).forEach(t => para(t, 10, { after: 6 }));
+    if (d.linkedin.skills && d.linkedin.skills.length) { head('Top skills to add'); para(d.linkedin.skills.join('  \u00b7  '), 10, {}); }
+    if (d.linkedin.experience && d.linkedin.experience.length) { head('Experience descriptions'); d.linkedin.experience.forEach(e => {
+      para(e.role, 10.5, { bold: true, color: F, before: 6, after: 2 }); para(e.description, 10, {}); }); }
+    if (d.linkedin.actions && d.linkedin.actions.length) { head('Do this week'); bullets(d.linkedin.actions); }
+  }
+  para('Prepared with Accent Careers \u00b7 Choice Is Yours.', 8, { color: GREY, before: 18 });
+  try { const first = body.getChild(0); if (first.getType() === DocumentApp.ElementType.PARAGRAPH && !first.asParagraph().getText()) first.removeFromParent(); } catch (e) {}
+  doc.saveAndClose();
+  const f = DriveApp.getFileById(doc.getId()); f.moveTo(folder_('Drafts'));
+  return f.getUrl();
+}
+function folder_(sub) {
+  const top = DriveApp.getFoldersByName(CONFIG.DRIVE_FOLDER);
+  const root = top.hasNext() ? top.next() : DriveApp.createFolder(CONFIG.DRIVE_FOLDER);
+  const it = root.getFoldersByName(sub);
+  return it.hasNext() ? it.next() : root.createFolder(sub);
+}
+
+/* ================= brain ================= */
+const BUSY_RE = /^(Ila is a little busy|Sorry, I could not answer)/;
+
+function systemPrompt_(name, q) {
+  const cache = CacheService.getScriptCache();
+  let raw = cache.get('ila_kb_rows'), rows;
+  if (raw) rows = JSON.parse(raw);
+  else {
+    const k = ss_().getSheetByName(TABS.know[0]);
+    rows = (k && k.getLastRow() > 1 ? k.getRange(2, 1, k.getLastRow() - 1, 2).getValues() : DEFAULT_KNOWLEDGE)
+      .filter(r => r[0] || r[1]).map(r => [String(r[0]), String(r[1])]);
+    try { cache.put('ila_kb_rows', JSON.stringify(rows), 600); } catch (e) {}
+  }
+  const words = String(q || '').toLowerCase().split(/[^a-z0-9ഀ-ൿ]+/).filter(w => w.length > 2);
+  const scored = rows.map((r, i) => {
+    const hay = (r[0] + ' ' + r[1]).toLowerCase();
+    let s = 0; words.forEach(w => { if (hay.indexOf(w) > -1) s += r[0].toLowerCase().indexOf(w) > -1 ? 3 : 1; });
+    return { r: r, i: i, s: s };
+  });
+  const pick = scored.filter(x => x.i < 3 || x.s > 0).sort((a, b) => (b.i < 3) - (a.i < 3) || b.s - a.s).slice(0, 8);
+  const kb = pick.map(x => '## ' + x.r[0] + '\n' + x.r[1]).join('\n\n') +
+    '\n\n(Other topics exist: ' + rows.map(r => r[0]).join(', ') + '. If asked about one not shown above, give a short answer and suggest WhatsApp +91 99958 42727.)';
+  return ILA_PROMPT.replace('{{NAME}}', name || 'the student').replace('{{KNOWLEDGE}}', kb) + '\n\n' + INTERVIEW_RULES + '\n\n' + MENTOR_RULES;
+}
+
+const INTERVIEW_RULES = "MOCK INTERVIEW (this overrides the short interview rule above). Start it when the student taps Mock interview ([MODE: interview]) or asks for a mock interview. KEEP GOING with it while your last message in the chat was an interview question (it contains 'Question x/6'), even without the MODE tag. You are a friendly but real HR interviewer. STEP 1: if you don't know yet, ask ONE question: which job role, fresher or experienced, and English or Malayalam. STEP 2: ask 6 questions, ONE at a time, labelled 'Question 1/6' and so on: 1 tell me about yourself, 2 why this role, 3 a role-specific skill question, 4 a situation question (STAR), 5 for sales roles 'sell me this pen', otherwise a small role task, 6 salary expectation or 'any questions for us'. After each answer give only 2 short lines: 'Good:' one strength, 'Better:' one fix with a sample line they could say. Then ask the next question. Never ask two questions at once. STEP 3: after question 6, or if they type END, give a SCORECARD: Communication /10, Confidence /10, Content /10, Overall /10, the top 3 fixes, one improved model answer for their weakest question, and end with: 'Practise again any time. Want a live mock with an Accent trainer? Tap Talk to a person.' Keep every message short. Never invent company facts.";
+
+const MENTOR_RULES = "SALES MENTOR (trial, [MODE: sales course mentor] or [MODE: mentor], or when a learner asks for help with the Accent sales course). You are their personal sales mentor while they do the course. First ask which lesson they are on (if you don't know). Then help in short steps: explain the lesson idea simply with one Kerala example, give ONE small practice drill for today, and offer to role-play: you play a real customer (shop owner, parent, busy professional) and they sell; stay in character for 3 to 5 turns, then give 'Good:' one strength and 'Better:' one fix with a better line. Check homework or answers they share and give a better version. Keep them motivated and accountable (ask what they practised today). Use only the knowledge above for course facts; if a lesson detail is not there, say so. For real call recordings, suggest Kili (call review). For a spoken interview, suggest the Mock interview button. Calls they make should end with a callback time and a feedback request. Say fee reduction, never offer.";
+
+function gemini_(system, contents, cfg) {
+  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (!key) throw new Error('Ila is not set up yet (missing GEMINI_API_KEY).');
+  const models = [CONFIG.MODEL].concat(CONFIG.BACKUP_MODELS || []);
+  const gc = cfg || { temperature: 0.6, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } };  // no "thinking" = fast chat replies
+  let body = JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: contents, generationConfig: gc });
+  let last = 0;
+  for (let m = 0; m < models.length; m++) {
+    for (let t = 0; t < 2; t++) {
+      const resp = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' +
+        models[m] + ':generateContent', { method: 'post', contentType: 'application/json',
+        headers: { 'x-goog-api-key': key }, muteHttpExceptions: true, payload: body });
+      last = resp.getResponseCode();
+      if (last === 200) {
+        const c = (JSON.parse(resp.getContentText()).candidates || [])[0];
+        return c && c.content ? c.content.parts.map(p => p.text || '').join('')
+          : 'Sorry, I could not answer that. Could you rephrase?';
+      }
+      if (last === 400 && gc.thinkingConfig) {   // this model doesn't accept the speed setting: drop it and retry
+        delete gc.thinkingConfig;
+        body = JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: contents, generationConfig: gc });
+        t--; continue;
+      }
+      if (last === 400 || last === 403) throw new Error('Ila could not answer (' + last + '). Check the API key.');
+      if (last === 404) break;                 // model name not available, try the next one
+      Utilities.sleep(800);         // 429 / 500 / 503: wait, then retry
+    }
+  }
+  return 'Ila is a little busy right now (Google is overloaded). Please try again in a minute.';
+}
+
+/* ================= admin ================= */
+function adminHtml_() {
+  const ss = ss_(), sh = n => ss.getSheetByName(TABS[n][0]), esc = anEsc_;
+  const d = x => x instanceof Date ? Utilities.formatDate(x, 'Asia/Kolkata', 'dd MMM HH:mm') : esc(x);
+  const leads = anAll_(sh('leads'), 7), chats = anAll_(sh('chats'), 7), reps = anAll_(sh('reports'), 7), fbs = anAll_(sh('feedback'), 7), svcs = anAll_(sh('services'), 9);
+  const days = anDays_(reps, 0, 30), cdays = anDays_(chats, 0, 30);
+  const scores = reps.map(r => Number(r[5])).filter(x => x > 0);
+  const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '-';
+  const ready = scores.length ? Math.round(scores.filter(x => x >= 7).length / scores.length * 100) + '%' : '-';
+  const up = fbs.filter(r => /👍/.test(r[4])).length, rated = fbs.filter(r => /👍|👎/.test(r[4])).length;
+  const wk = days.slice(-7).reduce((a, x) => a + x.rows.length, 0), pwk = days.slice(-14, -7).reduce((a, x) => a + x.rows.length, 0);
+  const flagged = chats.slice(-300).filter(r => /handoff|crisis/.test(r[6])).length;
+  const modes = {}; chats.forEach(r => { const m = r[3] || 'chat'; modes[m] = (modes[m] || 0) + 1; });
+  const roles = {}; reps.forEach(r => { if (r[3]) roles[r[3]] = (roles[r[3]] || 0) + 1; });
+  const dist = {}; ['0–4 (needs work)', '5–6 (getting there)', '7–8 (ready)', '9–10 (strong)'].forEach(k => dist[k] = 0);
+  scores.forEach(x => { dist[x < 5 ? '0–4 (needs work)' : x < 7 ? '5–6 (getting there)' : x < 9 ? '7–8 (ready)' : '9–10 (strong)']++; });
+  const weak = { 'Salary answer': 0, 'Using numbers / proof': 0, 'Closing / next step': 0, 'Grammar & words': 0, 'Confidence': 0, 'Structure (STAR)': 0 };
+  reps.forEach(r => { const t = (String(r[6]).split(/CORRECTIONS:/i)[1] || '').toLowerCase();
+    if (/salary|ctc|expect/.test(t)) weak['Salary answer']++; if (/number|figure|data|result/.test(t)) weak['Using numbers / proof']++;
+    if (/close|closing|next step|callback/.test(t)) weak['Closing / next step']++; if (/grammar|words:|tense/.test(t) && !/words:\s*none/.test(t)) weak['Grammar & words']++;
+    if (/confiden|hesitat|filler/.test(t)) weak['Confidence']++; if (/star|structure|situation/.test(t)) weak['Structure (STAR)']++; });
+  const table = (head, rows, empty) => '<div style="overflow-x:auto"><table><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr>' + (rows || '<tr><td colspan=' + head.length + '>' + empty + '</td></tr>') + '</table></div>';
+  const lastRep = reps.slice(-15).reverse().map(r => { const sc = Number(r[5]) || 0, col = sc >= 7 ? '#16A34A' : sc >= 5 ? '#C97A2B' : '#B42318';
+    return '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td><td><b style="color:' + col + '">' + esc(r[5]) + '</b></td><td>' + esc((String(r[6]).match(/READY:\s*([^\n]+)/i) || [])[1] || '') + '</td></tr>'; }).join('');
+  const lastFb = fbs.slice(-15).reverse().map(r => '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td><td>' + esc(r[5]) + '</td></tr>').join('');
+  const lastLeads = leads.slice(-15).reverse().map(r => '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[5]) + '</td><td>' + esc(r[6]) + '</td></tr>').join('');
+  const lastSvc = svcs.slice(-15).reverse().map(r => '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td><td>' + esc(r[7]) + '</td><td>' + (r[8] ? '<a href="' + esc(r[8]) + '" target="_blank">Open</a>' : '') + '</td></tr>').join('');
+  const key = encodeURIComponent(PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '');
+  return '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">' +
+    '<style>body{margin:0;background:#F7FAF8;font-family:Poppins,Arial;color:#0B3D1E}table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}th{background:#0B3D1E;color:#fff;text-align:left;font-weight:600}th,td{padding:8px 10px;border-bottom:1px solid #DCE5DE;vertical-align:top}a{color:#16A34A}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.two{grid-template-columns:1fr}}</style>' +
+    '<div style="background:#0B3D1E;padding:16px 20px;display:flex;justify-content:space-between;align-items:center"><div><div style="color:#79C24A;font-size:11px;letter-spacing:3px;font-weight:600">ACCENT · ILA · BETA</div><div style="color:#fff;font-size:20px;font-weight:600">Analytics dashboard</div></div><img src="data:image/png;base64,' + LOGO_LIGHT + '" style="height:34px"></div>' +
+    '<div style="max-width:1100px;margin:0 auto;padding:12px 20px 40px">' +
+    '<p style="font-size:13px;color:#8A968E">Updated ' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd MMM yyyy, HH:mm') + ' · every record is kept in the sheet · <a href="' + ss.getUrl() + '" target="_blank">Open sheet</a> · <a href="' + CONFIG.KILI_URL + '?view=calls&key=' + key + '" target="_top">Kili dashboard →</a></p>' +
+    (flagged ? '<p style="background:#FDECEA;color:#B42318;padding:10px 14px;border-radius:12px"><b>' + flagged + ' chats need a human.</b> Check rows flagged handoff/crisis in "Ila Chats".</p>' : '') +
+    anKpi_([['STUDENTS', leads.length, 'signed up'], ['CHAT MESSAGES', chats.length, ''], ['MOCK INTERVIEWS', reps.length, wk + ' this week (' + (wk >= pwk ? '+' : '') + (wk - pwk) + ')'],
+      ['AVG SCORE', avg + (avg === '-' ? '' : '/10'), 'all interviews'], ['INTERVIEW-READY', ready, 'scored 7+'], ['BETA 👍', rated ? Math.round(up / rated * 100) + '%' : '-', rated + ' ratings']]) +
+    anCard_('Mock interviews per day · average score (last 30 days)', anChart_(days.map(x => x.label), days.map(x => x.rows.length),
+      days.map(x => { const v = x.rows.map(r => Number(r[5])).filter(y => y > 0); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }), 10, 'Interviews', 'Avg score /10')) +
+    anCard_('Ila chat messages per day (last 30 days)', anChart_(cdays.map(x => x.label), cdays.map(x => x.rows.length), null, 0, 'Messages', '')) +
+    '<div class="two">' + anCard_('Score spread', anHBars_(dist, 4)) + anCard_('Most common weak areas (from reports)', anHBars_(weak, 6)) + '</div>' +
+    '<div class="two">' + anCard_('Roles practised', anHBars_(roles, 6)) + anCard_('What students use Ila for', anHBars_(modes, 7)) + '</div>' +
+    anCard_('Latest mock interviews', table(['When', 'Name', 'Role', 'Lang', 'Score', 'Ready?'], lastRep, 'None yet')) +
+    anCard_('Beta feedback', table(['When', 'Product', 'Name', 'Rating', 'Comment'], lastFb, 'None yet')) +
+    '<div class="two">' + anCard_('Latest students', table(['When', 'Name', 'WhatsApp', 'I am', 'District'], lastLeads, 'None yet')) +
+    anCard_('Service requests', table(['When', 'Name', 'WhatsApp', 'Service', 'Status', 'Draft'], lastSvc, 'None yet')) + '</div></div>';
+}
+
+/* ================= helpers ================= */
+function ss_() {
+  const id = String(PropertiesService.getScriptProperties().getProperty('SHEET_ID') || CONFIG.SHEET_ID || '').trim();
+  return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+}
+function tab_(ss, k) {
+  const [name, headers] = TABS[k];
+  let s = ss.getSheetByName(name);
+  if (!s) {
+    s = ss.insertSheet(name);
+    s.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF');
+    s.setFrozenRows(1);
+  } else if (s.getLastColumn() < headers.length) {
+    s.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF');
+  }
+  return s;
+}
+function overLimit_(session) {
+  const c = CacheService.getScriptCache(), key = 'n_' + session + '_' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyyMMdd');
+  const n = Number(c.get(key) || 0) + 1;
+  c.put(key, String(n), 21600);
+  return n > CONFIG.DAILY_MESSAGE_LIMIT;
+}
+
+/* ================= Ila's personality and rules ================= */
+const ILA_PROMPT = [
+  "",
+  "You are Ila (\u0d07\u0d32, \"leaf\"), the AI buddy of Accent, a skill and career ecosystem in Kerala",
+  "(tagline \"Choice Is Yours.\"). You are talking with {{NAME}}. You are warm, encouraging and",
+  "practical, like a smart elder sister or brother who works in industry. Short paragraphs,",
+  "simple words, no hype. Reply in the language the student uses (English, Malayalam or",
+  "Manglish). Use their name now and then.",
+  "",
+  "WHAT YOU DO",
+  "1. CAREER MENTOR: help students choose a direction. Ask 2\u20134 short questions first if you",
+  "   need them (degree, district, interests, strengths, salary goal, relocation, timeline).",
+  "   Then give: 3 suitable roles, why each fits, realistic Kerala entry salary (ONLY from the",
+  "   knowledge below; otherwise say \"varies by company\"), skills to build, and a simple",
+  "   30/60/90-day plan. Mention the matching Accent course or session when it genuinely fits.",
+  "2. COURSE HELP: answer questions about Accent programs using ONLY the knowledge below.",
+  "   If something is not there (e.g. a date not announced), say so and offer WhatsApp.",
+  "3. RESUME REVIEW ([MODE: resume], or any attached resume or pasted resume text):",
+  "   If a file or resume text is present, review it IMMEDIATELY. Never ask which review they",
+  "   want. If the document is clearly a LinkedIn profile (export or screenshot), do the",
+  "   LinkedIn review instead. If nothing is attached or pasted yet, reply in ONE short line",
+  "   asking them to tap the clip icon or paste the text, and do not score anything.",
+  "   A review contains: 'Resume score: NN/100', 3 things that work, 5 specific fixes (quote",
+  "   the line, then the improved line), a rewritten 2-3 line professional summary, and for",
+  "   freshers how to show projects, internships and field results with numbers.",
+  "   End the review with exactly: \"Want our team to rewrite your full resume professionally? Tap 'Get it done for you' below.\"",
+  "4. LINKEDIN REVIEW ([MODE: linkedin], or a LinkedIn profile is shared): same rules. Start",
+  "   with 'LinkedIn score: NN/100'. Review headline, About, experience, skills, featured and",
+  "   activity. Give a rewritten headline (Role \u00b7 who you help \u00b7 proof), a rewritten About",
+  "   (3 short paragraphs) and 5 quick wins. End with exactly: \"Want our team to do your full LinkedIn makeover? Tap 'Get it done for you' below.\"",
+  "   Only write the 'Get it done for you' line after a real review.",
+  "5. INTERVIEW PRACTICE: see MOCK INTERVIEW below. For a spoken interview, suggest the Mock interview button.",
+  "6. SALES COURSE MENTOR (trial): see SALES MENTOR below.",
+  "",
+  "RULES",
+  "- Never promise a job, placement or salary. Say \"placement support\", never \"guaranteed\".",
+  "- Never invent facts, prices, dates, companies or statistics. If unsure, say so.",
+  "- Sales language rule: say \"fee reduction\", never \"offer\" or \"one-time offer\".",
+  "- Do not ask for or repeat sensitive personal data (ID numbers, bank details).",
+  "- If the student wants to talk to a person, is angry, wants a refund, or you cannot help:",
+  "  give the WhatsApp number +91 99958 42727 and add the tag [HANDOFF] at the very end.",
+  "- If the student shows signs of distress, hopelessness or self-harm: respond with care,",
+  "  encourage them to talk to someone they trust, share Tele-MANAS (free mental health",
+  "  helpline in India: 14416) and Accent's WhatsApp, and add the tag [CRISIS] at the end.",
+  "  Do not continue career advice in that reply.",
+  "- Stay on careers, learning, Accent courses and professional growth. Politely decline",
+  "  unrelated requests (homework answers, coding someone's exam, etc.).",
+  "- Format: plain text with short lines; use \"\u2022\" for bullets and **bold** for key words.",
+  "",
+  "ACCENT KNOWLEDGE (the only source of facts about Accent)",
+  "{{KNOWLEDGE}}",
+  ""
+].join('\n');
+
+const DRAFT_PROMPT = [
+  "You are a senior resume writer at Accent Careers (Kerala). Using the student's uploaded",
+  "resume or LinkedIn profile and the conversation, write a complete, polished rewrite.",
+  "RULES:",
+  "- Use ONLY facts found in the material. Never invent employers, dates, degrees, numbers,",
+  "  awards or contact details. Where a number or detail would help but is missing, write a",
+  "  placeholder in square brackets, e.g. [add sales figure], [add year], [Phone].",
+  "- Strong action verbs, results first, 1-2 lines per bullet, 3-5 bullets per role.",
+  "- Indian/Kerala hiring context, ATS-friendly, plain English, no hype words.",
+  "- Never write 'guaranteed', 'offer' or '100%'.",
+  "Return ONLY JSON in this shape (omit empty sections):",
+  "{\"name\":\"\",\"headline\":\"\",\"contact\":\"phone \u00b7 email \u00b7 city \u00b7 linkedin, from the material or [placeholders]\",",
+  " \"summary\":\"3 lines\",\"skills\":[\"\"],",
+  " \"experience\":[{\"role\":\"\",\"org\":\"\",\"dates\":\"\",\"location\":\"\",\"bullets\":[\"\"]}],",
+  " \"projects\":[{\"title\":\"\",\"bullets\":[\"\"]}],",
+  " \"education\":[{\"degree\":\"\",\"institution\":\"\",\"dates\":\"\",\"details\":\"\"}],",
+  " \"certifications\":[\"\"],\"languages\":[\"\"],",
+  " \"linkedin\":{\"headline\":\"max 220 chars\",\"about\":\"3 short paragraphs separated by newlines\",",
+  "   \"skills\":[\"10 skills\"],\"experience\":[{\"role\":\"Role - Org\",\"description\":\"3-4 lines\"}],",
+  "   \"actions\":[\"5 concrete things to do this week\"]}}"
+].join('\n');
+
+const DEFAULT_KNOWLEDGE = [
+  ['About Accent', 'Accent started in 2015 (our founder Pranav\'s first year of college). Based in Manjeri, Malappuram, Kerala. Skill division of 27yOc. 724+ sessions delivered, on the road to 1,000. Tagline: Choice Is Yours. WhatsApp +91 99958 42727 \u00b7 Instagram @accent_tutors \u00b7 27yoc.com'],
+  ['Accent Sales Program', '28 days: 14 evenings of live classroom training (7:00\u20139:00 PM, 30 live hours, role-play every session) + 14 days of field work selling real products of partner companies with targets and a Daily Sales Diary. Then interview and placement support, plus a 90-Day Success Plan after joining (check-ins on day 1, 7, 30, 60, 90). Fee: \u20b94,999 + GST. Batch 01 dates: to be announced. Pass = 60% score and 80% attendance; full certificate = pass + field phase.'],
+  ['Orientation and refunds', 'Two free-to-decide orientation evenings before Day 1. Full refund if you leave by the end of orientation Evening 2. After that, no cash refund: you can refer a friend (refunded once they pay for the next batch) or move to the next batch once.'],
+  ['Admission', 'Apply by DMing "SALES" on Instagram @accent_tutors or WhatsApp +91 99958 42727. Screening includes a short video pitch (Sell Your District challenge), a voice note and a call. One free seat per batch for a woman or rural learner.'],
+  ['Sales salaries in Kerala (from Accent hiring network, Oct 2026)', 'Fixed per month: Sales Executive (fresher) \u20b910,000\u201315,000, sometimes \u20b918,000\u201320,000 depending on online/offline and company \u00b7 Senior Sales Executive \u20b920,000\u201325,000 \u00b7 Team Lead \u20b925,000\u201330,000 \u00b7 Sales Manager \u20b930,000\u201350,000. Plus incentives that vary by product and company. EdTech average performers can earn \u20b960,000+ a month with salary and incentives. Real estate pays strong commissions on high-value deals. These are ranges, not promises.'],
+  ['Sales roles hiring', 'Retail and showroom, inside sales (phone/WhatsApp), field sales, B2B/corporate, admissions counsellor (EdTech, colleges), banking and insurance, real estate (often Gulf-based buyers), tech/SaaS sales.'],
+  ['Resume and LinkedIn services', 'Free AI review inside Ila. Paid: resume rewrite, LinkedIn profile makeover, or both, done by the Accent team. Prices shared on WhatsApp.'],
+  ['CallVibe', 'Accent learners upload sales call recordings to CallVibe and get AI feedback with scores, coaching and a follow-up message. Link shared in the batch group.'],
+  ['Leaf Points', 'Earn points for webinars (25), workshops (50), posts tagging Accent (10), LinkedIn shares (25), projects (100), referrals who enrol (100), speaking (150), course completion (200), internship or job (500). Badges: Seed 0, Sapling 250, Tree 1,000, Forest 3,000. Every 1,000 points = 1 tree planted.']
+];
+
+/* ================= chat page ================= */
+const LEAF_SVG = '<svg class="i" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 ' +
+  '2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"/></svg>';
+const CHAT_HTML = [
+  "<!doctype html><html><head><meta charset=\"utf-8\">\n",
+  "<meta name=\"theme-color\" content=\"#0B3D1E\">\n",
+  "<link href=\"https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=M",
+  "ontserrat:wght@500&display=swap\" rel=\"stylesheet\">\n",
+  "<style>\n",
+  ":root{--forest:#0B3D1E;--green:#16A34A;--leaf:#79C24A;--mint:#E9F5EA;--white:#FFFFFF;--ink",
+  "9:#0A0F0C;--ink7:#2C3A31;--ink4:#8A968E;--surface:#F7FAF8;--line:#DCE5DE;--ease:cubic-bezi",
+  "er(.22,1,.36,1)}\n",
+  "*{box-sizing:border-box}html,body{margin:0;height:100%}\n",
+  "body{background:var(--surface);font-family:Poppins,Arial,sans-serif;color:var(--forest);di",
+  "splay:flex;flex-direction:column;-webkit-font-smoothing:antialiased}\n",
+  "svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:r",
+  "ound;stroke-linejoin:round;flex:none}\n",
+  ".eyebrow{font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}\n",
+  ".fade{animation:up .8s var(--ease) both}@keyframes up{from{opacity:0;transform:translateY(",
+  "16px)}to{opacity:1;transform:none}}\n",
+  "\n",
+  "/* welcome */\n",
+  "#welcome{flex:1;overflow:auto}\n",
+  ".hero{background:var(--forest);color:#fff;padding:28px 20px 72px;position:relative;overflo",
+  "w:hidden}\n",
+  ".hero:after{content:\"\";position:absolute;right:-90px;bottom:-140px;width:320px;height:320p",
+  "x;border-radius:50%;border:1px solid rgba(121,194,74,.10)}\n",
+  ".hero img{height:46px;display:block;margin-bottom:40px}\n",
+  ".hero .eyebrow{color:var(--leaf);margin-bottom:12px}\n",
+  ".hero h1{font-size:34px;line-height:1.08;letter-spacing:-.02em;font-weight:700;margin:0 0 ",
+  "14px;max-width:440px}\n",
+  ".hero h1 em{font-style:normal;color:var(--leaf)}\n",
+  ".hero p{margin:0;color:var(--mint);font-size:15px;line-height:1.5;max-width:420px}\n",
+  ".card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px;ma",
+  "x-width:560px;margin:-44px 16px 0;position:relative}\n",
+  "@media(min-width:600px){.card{margin:-44px auto 0}.hero{padding-left:max(20px,calc(50% - 2",
+  "80px));padding-right:max(20px,calc(50% - 280px))}}\n",
+  ".card h2{font-size:18px;font-weight:600;margin:0 0 4px}.card .sub{color:var(--ink7);font-s",
+  "ize:14px;margin:0 0 6px}\n",
+  "label{display:block;font-size:13px;font-weight:500;color:var(--ink7);margin:14px 0 6px}\n",
+  "input,select,textarea{width:100%;padding:13px 14px;border:1px solid var(--line);border-rad",
+  "ius:12px;font:inherit;font-size:15px;background:var(--surface);color:var(--forest);outline",
+  ":none;transition:border-color .4s var(--ease)}\n",
+  "input:focus,select:focus,textarea:focus{border-color:var(--green);background:#fff}\n",
+  ".chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;margin-to",
+  "p:16px;color:var(--ink7)}.chk input{width:20px;height:20px;flex:none;accent-color:var(--fo",
+  "rest);margin-top:1px}\n",
+  ".btn{width:100%;margin-top:18px;padding:15px;border:0;border-radius:999px;background:var(-",
+  "-forest);color:#fff;font:inherit;font-weight:600;font-size:16px;display:flex;align-items:c",
+  "enter;justify-content:center;gap:10px}\n",
+  ".btn:disabled{opacity:.6}\n",
+  ".err{color:#B42318;font-size:14px;min-height:20px;margin-top:10px}\n",
+  ".sign{max-width:560px;margin:28px auto 36px;padding:0 20px;color:var(--ink4);font-size:12p",
+  "x;line-height:1.7}\n",
+  ".sign b{color:var(--forest);font-weight:600}\n",
+  "\n",
+  "/* chat */\n",
+  "#chatv{flex:1;display:none;flex-direction:column;min-height:0}\n",
+  ".top{background:var(--forest);color:#fff;padding:12px 16px;display:flex;align-items:center",
+  ";gap:12px;flex:none}\n",
+  ".ava{width:40px;height:40px;border-radius:50%;background:var(--mint);color:var(--forest);d",
+  "isplay:grid;place-items:center;flex:none}\n",
+  ".ava svg{width:22px;height:22px}\n",
+  ".top .who{flex:1;min-width:0}.top b{font-size:18px;font-weight:600;display:block;line-heig",
+  "ht:1.15}\n",
+  ".top small{color:var(--leaf);font-size:12px;display:flex;align-items:center;gap:6px}\n",
+  ".top small:before{content:\"\";width:7px;height:7px;border-radius:50%;background:var(--leaf)",
+  "}\n",
+  ".top img{height:30px;opacity:.95}\n",
+  "#log{flex:1;overflow:auto;padding:18px 14px 8px}\n",
+  ".row{display:flex;gap:8px;align-items:flex-end;margin:8px 0}\n",
+  ".row.me{justify-content:flex-end}\n",
+  ".row .dot{width:26px;height:26px;border-radius:50%;background:var(--mint);color:var(--fore",
+  "st);display:grid;place-items:center;flex:none}\n",
+  ".row .dot svg{width:14px;height:14px}\n",
+  ".m{max-width:84%;padding:12px 15px;border-radius:18px;font-size:15px;line-height:1.55;whit",
+  "e-space:pre-wrap;word-wrap:break-word;animation:up .4s var(--ease) both}\n",
+  ".ila .m{background:#fff;border:1px solid var(--line);border-bottom-left-radius:6px;color:v",
+  "ar(--forest)}\n",
+  ".me .m{background:var(--forest);color:#fff;border-bottom-right-radius:6px}\n",
+  ".m b{font-weight:600}\n",
+  ".typing .m{color:var(--ink4)}\n",
+  ".typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--",
+  "leaf);margin-right:4px;animation:bl 1.2s infinite}\n",
+  ".typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4",
+  "s}\n",
+  "@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}\n",
+  ".chips{display:flex;gap:8px;overflow-x:auto;padding:10px 14px 4px;flex:none;scrollbar-widt",
+  "h:none}.chips::-webkit-scrollbar{display:none}\n",
+  ".chip{display:flex;align-items:center;gap:7px;white-space:nowrap;border:1px solid var(--li",
+  "ne);color:var(--forest);background:#fff;border-radius:999px;padding:9px 14px;font:inherit;",
+  "font-size:13px;font-weight:500}\n",
+  ".chip svg{width:16px;height:16px;color:var(--green)}\n",
+  ".upsell{background:var(--mint);border-radius:18px;padding:16px;margin:8px 0 8px 34px;max-w",
+  "idth:84%;animation:up .6s var(--ease) both}\n",
+  ".upsell .eyebrow{color:var(--green);font-size:11px;margin-bottom:4px}\n",
+  ".upsell h3{margin:0 0 4px;font-size:17px;font-weight:600}.upsell p{margin:0 0 10px;font-si",
+  "ze:13px;color:var(--ink7);line-height:1.5}\n",
+  ".upsell button{display:flex;align-items:center;justify-content:space-between;width:100%;ma",
+  "rgin-top:6px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--f",
+  "orest);padding:11px 14px;font:inherit;font-size:14px;font-weight:500;text-align:left}\n",
+  ".upsell button.wa{background:var(--forest);color:#fff;border:0;justify-content:center;gap:",
+  "8px}\n",
+  ".file{font-size:12px;color:var(--ink7);padding:4px 16px 0;display:none;align-items:center;",
+  "gap:6px}\n",
+  ".bar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));borde",
+  "r-top:1px solid var(--line);background:#fff;flex:none;align-items:flex-end}\n",
+  ".bar textarea{min-height:46px;max-height:120px;resize:none;border-radius:23px;padding:12px",
+  " 16px}\n",
+  ".icon{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);back",
+  "ground:#fff;color:var(--forest);display:grid;place-items:center}\n",
+  ".icon svg{width:20px;height:20px}\n",
+  ".send{background:var(--forest);color:#fff;border:0}\n",
+  "</style></head><body>\n",
+  "\n",
+  "<div id=\"welcome\">\n",
+  "  <section class=\"hero\">\n",
+  "    <img src=\"data:image/png;base64,{{LOGO}}\" alt=\"ACCENT \u00b7 Choice Is Yours.\">\n",
+  "    <div class=\"eyebrow fade\">Meet Ila \u00b7 Your AI buddy</div>\n",
+  "    <h1 class=\"fade\" style=\"animation-delay:.06s\">Your career.<br>Your <em>choice.</em></h",
+  "1>\n",
+  "    <p class=\"fade\" style=\"animation-delay:.12s\">Plan your path, sharpen your resume and L",
+  "inkedIn, and practise interviews. Free, any time.</p>\n",
+  "  </section>\n",
+  "  <div class=\"card fade\" style=\"animation-delay:.18s\">\n",
+  "    <h2>Let's get to know you</h2>\n",
+  "    <p class=\"sub\">Ila uses this to guide you better.</p>\n",
+  "    <label for=\"name\">Your name</label><input id=\"name\" autocomplete=\"name\">\n",
+  "    <label for=\"wa\">WhatsApp number</label><input id=\"wa\" inputmode=\"tel\" placeholder=\"98X",
+  "XXXXXXX\">\n",
+  "    <label for=\"email\">Email (optional)</label><input id=\"email\" type=\"email\" autocomplete",
+  "=\"email\">\n",
+  "    <label for=\"iam\">I am</label><select id=\"iam\"><option>A student / fresher</option><opt",
+  "ion>An Accent learner</option><option>Working, want to switch</option><option>A parent</op",
+  "tion></select>\n",
+  "    <label for=\"district\">District</label><select id=\"district\"><option value=\"\">Choose yo",
+  "ur district</option><option>Kasaragod</option><option>Kannur</option><option>Wayanad</opti",
+  "on><option>Kozhikode</option><option>Malappuram</option><option>Palakkad</option><option>T",
+  "hrissur</option><option>Ernakulam</option><option>Idukki</option><option>Kottayam</option>",
+  "<option>Alappuzha</option><option>Pathanamthitta</option><option>Kollam</option><option>Th",
+  "iruvananthapuram</option><option>Outside Kerala</option></select>\n",
+  "    <div class=\"chk\"><input type=\"checkbox\" id=\"consent\"><span>Accent may contact me on Wh",
+  "atsApp about careers and courses, and store my details and chats to help me. If I'm under ",
+  "18, my parent or guardian agrees.</span></div>\n",
+  "    <button class=\"btn\" id=\"start\">Start with Ila <svg class=\"i\" viewBox=\"0 0 24 24\"><path",
+  " d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>\n",
+  "    <div class=\"err\" id=\"err\" role=\"alert\"></div>\n",
+  "  </div>\n",
+  "  <div class=\"sign\"><b>Born in Kerala. Built for the World.</b><br>Ila is an AI and can ma",
+  "ke mistakes. For anything important, talk to the Accent team on WhatsApp +91 99958 42727.<",
+  "/div>\n",
+  "</div>\n",
+  "\n",
+  "<div id=\"chatv\">\n",
+  "  <div class=\"top\">\n",
+  "    <div class=\"ava\">{{LEAF}}</div>\n",
+  "    <div class=\"who\"><b>Ila</b><small>Online \u00b7 Accent AI buddy \u00b7 Beta</small></div>\n",
+  "    <img src=\"data:image/png;base64,{{LOGO}}\" alt=\"ACCENT\">\n",
+  "  </div>\n",
+  "  <div id=\"log\" aria-live=\"polite\"></div>\n",
+  "  <div class=\"chips\">\n",
+  "    <button class=\"chip\" data-m=\"kili\" data-t=\"\">\ud83d\udc26 Talk to Kili (call review)</button>\n",
+  "    <button class=\"chip\" data-m=\"career\" data-t=\"Help me plan my career.\"><svg class=\"i\" v",
+  "iewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m16.2 7.8-2.1 6.3-6.3 2.1 2.1-",
+  "6.3z\"/></svg>Plan my career</button>\n",
+  "    <button class=\"chip\" data-m=\"resume\" data-t=\"Please review my resume. I'll attach it o",
+  "r paste it.\"><svg class=\"i\" viewBox=\"0 0 24 24\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 ",
+  "0 2 2h12a2 2 0 0 0 2-2V8z\"/><path d=\"M14 2v6h6M16 13H8M16 17H8\"/></svg>Review my resume</b",
+  "utton>\n",
+  "    <button class=\"chip\" data-m=\"linkedin\" data-t=\"Please review my LinkedIn profile. I'll",
+  " paste my headline and About.\"><svg class=\"i\" viewBox=\"0 0 24 24\"><rect x=\"2\" y=\"7\" width=",
+  "\"20\" height=\"14\" rx=\"2\"/><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/></svg>Impro",
+  "ve my LinkedIn</button>\n",
+  "    <button class=\"chip\" data-m=\"mentor\" data-t=\"Be my mentor for the Accent sales course.\">\ud83c\udf31 Sales course mentor</button>\n",
+  "    <button class=\"chip\" data-m=\"chat\" data-t=\"Tell me about the Accent Sales Program.\"><s",
+  "vg class=\"i\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r",
+  "=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/></svg>Sales Program</button>\n",
+  "    <button class=\"chip\" data-m=\"interview\" data-t=\"Give me a mock interview for a sales e",
+  "xecutive role.\"><svg class=\"i\" viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"2\" width=\"6\" height=\"12\"",
+  " rx=\"3\"/><path d=\"M19 10v1a7 7 0 0 1-14 0v-1M12 18v4\"/></svg>Mock interview</button>\n",
+  "    <button class=\"chip\" data-m=\"human\" data-t=\"\"><svg class=\"i\" viewBox=\"0 0 24 24\"><path",
+  " d=\"M21 11.5a8.4 8.4 0 0 1-12.2 7.5L3 21l2-5.8A8.4 8.4 0 1 1 21 11.5z\"/></svg>Talk to a pe",
+  "rson</button>\n",
+  "  </div>\n",
+  "  <div class=\"file\" id=\"fileTag\"></div>\n",
+  "  <div class=\"bar\">\n",
+  "    <button class=\"icon\" id=\"attach\" aria-label=\"Attach resume (PDF or photo)\"><svg class=",
+  "\"i\" viewBox=\"0 0 24 24\"><path d=\"m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 ",
+  "5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5\"/></svg></button>\n",
+  "    <input type=\"file\" id=\"file\" accept=\"application/pdf,image/png,image/jpeg\" hidden>\n",
+  "    <textarea id=\"msg\" placeholder=\"Ask Ila anything\u2026\" rows=\"1\"></textarea>\n",
+  "    <button class=\"icon send\" id=\"send\" aria-label=\"Send\"><svg class=\"i\" viewBox=\"0 0 24 2",
+  "4\"><path d=\"M22 2 11 13M22 2l-7 20-4-9-9-4z\"/></svg></button>\n",
+  "  </div>\n",
+  "</div>\n",
+  "<script>\n",
+  "const KURL='{{KURL}}',SERVICES={{SERVICES}},WA='{{WA}}',LEAF='{{LEAF}}';const $=id=>document.getElementByI",
+  "d(id);\n",
+  "let S=null,hist=[],mode='chat',fileObj=null,busy=false;\n",
+  "const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},",
+  "set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};\n",
+  "function fmt(t){const e=String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}",
+  "[c]));return e.replace(/\\*\\*(.+?)\\*\\*/g,'<b>$1</b>')}\n",
+  "function add(who,html,extra){const r=document.createElement('div');r.className='row '+who+",
+  "(extra?' '+extra:'');\n",
+  "  r.innerHTML=(who==='ila'?'<div class=\"dot\">'+LEAF+'</div>':'')+'<div class=\"m\">'+html+'<",
+  "/div>';$('log').appendChild(r);$('log').scrollTop=1e9;return r}\n",
+  "function openChat(){ $('welcome').style.display='none';$('chatv').style.display='flex';\n",
+  "  if(!$('log').children.length)add('ila',fmt('Hi **'+S.name+'**, I\\'m Ila \ud83c\udf31\\nWhat would yo",
+  "u like to work on today? Pick one below, or just type. Malayalam and Manglish are fine too",
+  ".'));}\n",
+  "const saved=store.get('ila_s');if(saved&&saved.session){S=saved;openChat()}\n",
+  "$('start').onclick=()=>{ $('err').textContent='';const f={name:$('name').value,whatsapp:$(",
+  "'wa').value,email:$('email').value,iam:$('iam').value,district:$('district').value,consent",
+  ":$('consent').checked};\n",
+  "  $('start').disabled=true;google.script.run.withSuccessHandler(r=>{S={session:r.session,n",
+  "ame:f.name.trim(),wa:f.whatsapp};store.set('ila_s',S);openChat()})\n",
+  "  .withFailureHandler(e=>{$('err').textContent=e.message||e;$('start').disabled=false}).st",
+  "artSession(f)};\n",
+  "document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{\n",
+  "  if(c.dataset.m==='callreview'||c.dataset.m==='kili'){window.open(KURL,'_top');return}\n",
+  "  if(c.dataset.m==='interview'){window.open('{{IURL}}','_top');return}\n",
+  "  if(c.dataset.m==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('H",
+  "i Accent, I was chatting with Ila and would like to talk to a person. My name is '+S.name+",
+  "'.'));return}\n",
+  "  mode=c.dataset.m;$('msg').value=c.dataset.t;if(mode!=='resume'&&mode!=='linkedin')send()",
+  ";else $('msg').focus()});\n",
+  "$('attach').onclick=()=>$('file').click();\n",
+  "$('file').onchange=()=>{const f=$('file').files[0];if(!f)return;\n",
+  "  const done=(data,mime,name)=>{fileObj={name:name,mime:mime,data:data};$('fileTag').style",
+  ".display='flex';$('fileTag').textContent='\\ud83d\\udcce '+name+' attached';if(mode==='chat'",
+  ")mode='resume'};\n",
+  "  if(/^image\\//.test(f.type)){const img=new Image(),u=URL.createObjectURL(f);img.onload=()",
+  "=>{const k=Math.min(1,1400/Math.max(img.width,img.height));\n",
+  "    const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math",
+  ".round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);\n",
+  "    URL.revokeObjectURL(u);done(c.toDataURL('image/jpeg',0.8).split(',')[1],'image/jpeg',f",
+  ".name.replace(/\\.\\w+$/,'')+'.jpg')};img.src=u;return}\n",
+  "  if(f.size>3*1048576){alert('Please keep the PDF under 3 MB, or send a photo of your resu",
+  "me instead.');$('file').value='';return}\n",
+  "  const r=new FileReader();r.onload=()=>done(String(r.result).split(',')[1],'application/p",
+  "df',f.name);r.readAsDataURL(f)};\n",
+  "$('send').onclick=send;$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shif",
+  "tKey){e.preventDefault();send()}});\n",
+  "function send(){ if(busy)return;const t=$('msg').value.trim();if(!t&&!fileObj)return;busy=",
+  "true;\n",
+  "  add('me',fmt(t||'Attached '+fileObj.name));$('msg').value='';const typing=add('ila','<sp",
+  "an></span><span></span><span></span>','typing');\n",
+  "  const slow=setTimeout(()=>{const m=typing.querySelector('.m');if(m)m.innerHTML='<span></",
+  "span><span></span><span></span> '+(fileObj||usedFile?'Reading your file carefully\\u2026 th",
+  "is can take up to a minute.':'Still thinking\\u2026');},9000);const usedFile=!!fileObj;\n",
+  "  const req={session:S.session,name:S.name,mode:mode,message:t,history:hist,file:fileObj};",
+  "const usedMode=mode;\n",
+  "  const ok=r=>{clearTimeout(slow);typing.remove();add('ila',fmt(r.reply));hist.push({role:",
+  "'user',text:t||'(file)'},{role:'model',text:r.reply});hist=hist.slice(-12);\n",
+  "      if(/Get it done for you/.test(r.reply))upsell(/LinkedIn makeover|LinkedIn score/i.te",
+  "st(r.reply)?'linkedin':'resume');busy=false};\n",
+  "  const go=n=>google.script.run.withSuccessHandler(ok).withFailureHandler(e=>{const msg=St",
+  "ring(e.message||e);\n",
+  "      if(n<1&&/NetworkError|HTTP 0|timed out/i.test(msg)){setTimeout(()=>go(n+1),2500);ret",
+  "urn}\n",
+  "      clearTimeout(slow);typing.remove();add('ila',fmt(/NetworkError|HTTP 0/i.test(msg)?'T",
+  "he connection dropped before I could reply. Please check your internet and send again.\\nIf",
+  " it keeps happening, open this link in a **private tab** or in **Chrome**.':'Sorry, someth",
+  "ing went wrong: '+msg));busy=false}).chat(req);\n",
+  "  go(0);\n",
+  "  fileObj=null;$('fileTag').style.display='none';$('file').value='';if(mode!=='mentor')mode='chat';}\n",
+  "function upsell(kind){const d=document.createElement('div');d.className='upsell';\n",
+  "  const list=SERVICES.filter(s=>kind==='resume'?s.id!=='linkedin':s.id!=='resume');\n",
+  "  d.innerHTML='<div class=\"eyebrow\">Accent Careers</div><h3>Get it done for you</h3><p>Our",
+  " team rewrites it professionally, ready to send to employers.</p>'+\n",
+  "    list.map(s=>'<button data-id=\"'+s.id+'\"><span>'+s.name+'</span><span>'+(s.price||'\u2192')+",
+  "'</span></button>').join('');\n",
+  "  d.querySelectorAll('button').forEach(b=>b.onclick=()=>{b.disabled=true;google.script.run",
+  ".withSuccessHandler(r=>{\n",
+  "    d.innerHTML='<div class=\"eyebrow\">Request sent</div><h3>We\\'ll WhatsApp you</h3><p>Our",
+  " team is preparing your '+r.service+' and will WhatsApp you with the next steps.</p><butto",
+  "n class=\"wa\" id=\"w\"><svg class=\"i\" viewBox=\"0 0 24 24\"><path d=\"M21 11.5a8.4 8.4 0 0 1-12.",
+  "2 7.5L3 21l2-5.8A8.4 8.4 0 1 1 21 11.5z\"/></svg>Message us now</button>';\n",
+  "    d.querySelector('#w').onclick=()=>window.open('https://wa.me/'+WA+'?text='+encodeURICo",
+  "mponent('Hi Accent, I requested a '+r.service+' through Ila. My name is '+S.name+'.'));\n",
+  "  }).requestService({session:S.session,name:S.name,whatsapp:S.wa,service:b.dataset.id})});\n",
+  "  $('log').appendChild(d);$('log').scrollTop=1e9}\n",
+  "</script></body></html>\n",
+  "\n",
+  "\n",
+  "\n"
+].join('');
+
+/* Accent logo (light, for dark backgrounds) */
+const LOGO_LIGHT = [
+  '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',
+  'l9v5J2erMKNWgZOIAAAAAElFTkSuQmCC'
+].join('');
+
+/* ================= analytics helpers (inline SVG, no libraries) ================= */
+function anDays_(rows, dateCol, n) {
+  var out = [], idx = {}, tz = 'Asia/Kolkata', now = new Date();
+  for (var i = n - 1; i >= 0; i--) { var d = new Date(now.getTime() - i * 864e5), k = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    idx[k] = out.length; out.push({ k: k, label: Utilities.formatDate(d, tz, 'd MMM'), rows: [] }); }
+  rows.forEach(function (r) { try { var k = Utilities.formatDate(new Date(r[dateCol]), tz, 'yyyy-MM-dd'); if (k in idx) out[idx[k]].rows.push(r); } catch (e) {} });
+  return out;
+}
+function anEsc_(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+/** Bar chart; optional line (second series, own scale 0..lineMax). */
+function anChart_(labels, bars, line, lineMax, barName, lineName) {
+  var W = 640, H = 200, P = 28, n = labels.length, bw = (W - P * 2) / n, max = Math.max.apply(null, bars.concat([1]));
+  var g = '<svg viewBox="0 0 ' + W + ' ' + (H + 36) + '" width="100%" role="img" style="display:block">';
+  [0, .5, 1].forEach(function (f) { var y = P + (H - P * 2) * (1 - f); g += '<line x1="' + P + '" x2="' + (W - P) + '" y1="' + y + '" y2="' + y + '" stroke="#DCE5DE"/>' +
+    '<text x="' + (P - 6) + '" y="' + (y + 4) + '" font-size="10" text-anchor="end" fill="#8A968E">' + Math.round(max * f) + '</text>'; });
+  bars.forEach(function (v, i) { var h = (H - P * 2) * v / max, x = P + i * bw + bw * .18;
+    g += '<rect x="' + x + '" y="' + (H - P - h) + '" width="' + (bw * .64) + '" height="' + h + '" rx="3" fill="#16A34A"><title>' + anEsc_(labels[i]) + ': ' + v + '</title></rect>'; });
+  if (line) { var pts = []; line.forEach(function (v, i) { if (v == null) return; pts.push((P + i * bw + bw / 2) + ',' + (P + (H - P * 2) * (1 - v / lineMax))); });
+    if (pts.length) g += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#0B3D1E" stroke-width="2.5"/>' + pts.map(function (p) { var a = p.split(','); return '<circle cx="' + a[0] + '" cy="' + a[1] + '" r="3.5" fill="#0B3D1E"/>'; }).join(''); }
+  var step = Math.ceil(n / 8);
+  labels.forEach(function (l, i) { if (i % step === 0 || (i === n - 1 && (n - 1) % step > step / 2)) g += '<text x="' + (P + i * bw + bw / 2) + '" y="' + (H - P + 16) + '" font-size="10" text-anchor="middle" fill="#8A968E">' + anEsc_(l) + '</text>'; });
+  g += '<rect x="' + P + '" y="' + (H + 12) + '" width="10" height="10" fill="#16A34A"/><text x="' + (P + 14) + '" y="' + (H + 21) + '" font-size="11" fill="#2C3A31">' + anEsc_(barName) + '</text>';
+  if (line) g += '<line x1="' + (P + 150) + '" x2="' + (P + 164) + '" y1="' + (H + 17) + '" y2="' + (H + 17) + '" stroke="#0B3D1E" stroke-width="2.5"/><text x="' + (P + 168) + '" y="' + (H + 21) + '" font-size="11" fill="#2C3A31">' + anEsc_(lineName) + '</text>';
+  return g + '</svg>';
+}
+/** Horizontal bars for a {label: count} map. */
+function anHBars_(map, top) {
+  var arr = Object.keys(map).map(function (k) { return [k, map[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, top || 6);
+  var max = arr.length ? arr[0][1] : 1;
+  return arr.length ? arr.map(function (a) { return '<div style="display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px"><span style="width:44%;color:#0B3D1E">' + anEsc_(a[0]) +
+    '</span><div style="flex:1;height:10px;background:#DCE5DE;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:' + Math.round(a[1] / max * 100) + '%;background:#16A34A"></i></div><b style="width:30px;text-align:right">' + a[1] + '</b></div>'; }).join('')
+    : '<p style="color:#8A968E;font-size:13px">No data yet.</p>';
+}
+function anKpi_(items) {
+  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0">' + items.map(function (k) {
+    return '<div style="background:#fff;border:1px solid #DCE5DE;border-radius:14px;padding:14px"><div style="font-size:11px;letter-spacing:1.5px;color:#16A34A;font-weight:600">' + anEsc_(k[0]) +
+      '</div><div style="font-size:28px;font-weight:700;color:#0B3D1E;margin-top:4px">' + anEsc_(k[1]) + '</div>' + (k[2] ? '<div style="font-size:12px;color:#8A968E">' + anEsc_(k[2]) + '</div>' : '') + '</div>'; }).join('') + '</div>';
+}
+function anCard_(title, inner) { return '<div style="background:#fff;border:1px solid #DCE5DE;border-radius:16px;padding:16px;margin:14px 0"><h3 style="margin:0 0 10px;font-size:15px;color:#0B3D1E">' + anEsc_(title) + '</h3>' + inner + '</div>'; }
+function anAll_(sheet, cols) { return sheet && sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, cols).getValues() : []; }
