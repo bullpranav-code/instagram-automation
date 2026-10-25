@@ -68,6 +68,7 @@ async function main(){
   jobs.push({key:`${day}_${prefix}`,prefix,cap});
   state.done.push(m.id);
  }
+ if(process.env.DRY==='1'){console.log('::notice::DRY run rendered '+jobs.map(j=>j.key).join(', ')+' | '+jobs.map(j=>j.cap.split('\n')[0]).join(' / '));return;}
  // push media
  sh('git',['-C',GHP,'add','m/'+day]);
  sh('git',['-C',GHP,'commit','-m','Appu27 robot: full-time media '+day]);

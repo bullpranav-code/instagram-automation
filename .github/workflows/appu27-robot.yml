@@ -8,6 +8,10 @@ on:
         description: "Optional manual result as JSON, for example home KBFC, away MCFC, hg 2, ag 1 (see tools/robot.js)"
         required: false
         default: ''
+      dry:
+        description: 'Dry run (render only, no posting)'
+        required: false
+        default: '0'
 permissions:
   contents: write
 concurrency:
@@ -23,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
         with: { ref: gh-pages, fetch-depth: 1, path: ghp }
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with: { node-version: 22 }
       - name: Tools
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg imagemagick fonts-noto-color-emoji >/dev/null
@@ -37,4 +41,5 @@ jobs:
         env:
           GHP_DIR: ${{ github.workspace }}/ghp
           MANUAL: ${{ github.event.inputs.manual }}
+          DRY: ${{ github.event.inputs.dry }}
         run: node tools/robot.js
