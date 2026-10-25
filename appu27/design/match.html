@@ -1,0 +1,166 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- Match-day artboards driven by data. Load as match.html#<url-encoded JSON>
+     {mode:"kickoff"|"ft", home:"KBFC", away:"MCFC", hg:2, ag:1, date:"SUN 25 OCT", venue:"JLN, KOCHI", time:"7:30 PM",
+      scorers:{home:["Luna 23'"],away:[...]}, tag:"Malayalam line", next:"Next: ..."}
+     #post 1080x1350 (static) · #story 1080x1920 (animated, also used for the reel) -->
+<style>
+@font-face{font-family:Anton;src:url(../node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2)}
+@font-face{font-family:Anton;src:url(../node_modules/@fontsource/anton/files/anton-latin-ext-400-normal.woff2);unicode-range:U+0100-024F}
+@font-face{font-family:Baloo;font-weight:800;src:url(../node_modules/@fontsource/baloo-chettan-2/files/baloo-chettan-2-malayalam-800-normal.woff2)}
+@font-face{font-family:Baloo;font-weight:800;src:url(../node_modules/@fontsource/baloo-chettan-2/files/baloo-chettan-2-latin-800-normal.woff2);unicode-range:U+0000-00FF}
+@font-face{font-family:Pop;font-weight:600;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-600-normal.woff2)}
+@font-face{font-family:Pop;font-weight:600;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-ext-600-normal.woff2);unicode-range:U+0100-024F}
+@font-face{font-family:Pop;font-weight:800;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-800-normal.woff2)}
+@font-face{font-family:Pop;font-weight:800;src:url(../node_modules/@fontsource/poppins/files/poppins-latin-ext-800-normal.woff2);unicode-range:U+0100-024F}
+:root{--y:#FFC629;--y2:#F7A600;--r:#E03A3E;--r2:#B8282C;--ink:#141414;--blue:#1E3A8A}
+*{box-sizing:border-box;margin:0}
+body{background:#222;padding:20px;display:flex;flex-wrap:wrap;gap:20px}
+.ab{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:Pop}
+.st{height:1920px}
+.sun-y{background:repeating-conic-gradient(from 0deg at 50% 62%,var(--y) 0 7.5deg,var(--y2) 7.5deg 15deg)}
+.sun-r{background:repeating-conic-gradient(from 0deg at 50% 62%,var(--r) 0 7.5deg,var(--r2) 7.5deg 15deg)}
+.pill{position:absolute;left:64px;top:64px;display:flex;align-items:center;gap:12px;padding:12px 26px;border:4px solid var(--ink);border-radius:999px;font:800 30px Pop;letter-spacing:.04em;background:var(--y);color:var(--ink)}
+.pill:before{content:"";width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.pill.red{background:var(--r);color:#fff;border-color:#fff}.pill.red:before{background:#fff}
+.pill.live:before{background:#E03A3E;box-shadow:0 0 0 4px rgba(224,58,62,.35)}
+.handle{position:absolute;right:64px;top:70px;font:800 30px Pop;color:var(--ink);background:#fff;border:4px solid var(--ink);border-radius:14px;padding:8px 18px}
+.st .pill,.st .handle{top:180px}
+.h{font-family:Anton;color:#fff;-webkit-text-stroke:14px var(--ink);paint-order:stroke fill;text-shadow:10px 12px 0 var(--ink);line-height:.98;text-align:center;letter-spacing:.01em}
+.h.gold{color:var(--y)}
+.tag{display:inline-block;font:800 54px Baloo;padding:10px 34px 4px;border:5px solid var(--ink);border-radius:16px;transform:rotate(-2deg);box-shadow:8px 8px 0 var(--ink)}
+.tag.red{background:var(--r);color:#fff}.tag.white{background:#fff;color:var(--ink)}
+.center{position:absolute;left:0;right:0;text-align:center}
+.foot{position:absolute;left:0;right:0;bottom:0;height:96px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 64px;font:600 28px Pop}
+.foot b{font-weight:800;color:var(--y)}
+.foot small{font-size:20px;opacity:.6}
+.badge{width:190px;height:190px;border-radius:50%;border:8px solid var(--ink);display:grid;place-items:center;font:400 58px Anton;box-shadow:8px 10px 0 var(--ink)}
+.card{background:#fff;border:6px solid var(--ink);border-radius:28px;box-shadow:10px 12px 0 var(--ink);color:var(--ink)}
+.appu{position:absolute}
+.emoji{position:absolute;font-size:100px;filter:drop-shadow(4px 5px 0 rgba(0,0,0,.25))}
+.score{display:flex;align-items:center;justify-content:center;gap:40px}
+.score .num{font:400 260px Anton;color:#fff;-webkit-text-stroke:16px var(--ink);paint-order:stroke fill;text-shadow:12px 14px 0 var(--ink);line-height:1}
+.score .dash{font:400 160px Anton;color:var(--ink)}
+.scorers{display:grid;grid-template-columns:1fr 1fr;gap:20px;font:600 32px Pop;line-height:1.5}
+.scorers .t{font:400 40px Anton;margin-bottom:6px}
+/* animation (story/reel) */
+#story .pill,#story .handle{animation:pop .5s .1s both cubic-bezier(.2,1.6,.4,1)}
+#story .h{animation:pop .6s .35s both cubic-bezier(.2,1.6,.4,1)}
+#story .tag{animation:pop .5s .9s both cubic-bezier(.2,1.6,.4,1)}
+#story .bl{animation:slideL .6s 1.3s both cubic-bezier(.2,1.4,.4,1)}
+#story .br{animation:slideR .6s 1.3s both cubic-bezier(.2,1.4,.4,1)}
+#story .num{animation:pop .6s 1.3s both cubic-bezier(.2,1.6,.4,1)}
+#story .card{animation:up .6s 1.8s both cubic-bezier(.2,1.2,.4,1)}
+#story .emoji{animation:pop .5s 2.6s both cubic-bezier(.2,1.6,.4,1)}
+#story svg.appu{animation:up .7s 2.2s both cubic-bezier(.2,1.6,.4,1), bounce .43s 3s infinite alternate ease-in-out}
+#story .pill.live:before{animation:blink .8s 0s infinite alternate}
+@keyframes pop{from{transform:scale(0) rotate(-6deg);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes slideL{from{transform:translateX(-500px)}to{transform:none}}
+@keyframes slideR{from{transform:translateX(500px)}to{transform:none}}
+@keyframes up{from{transform:translateY(500px);opacity:0}to{transform:none;opacity:1}}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-28px)}}
+@keyframes blink{from{opacity:1}to{opacity:.2}}
+</style></head><body>
+<div class="ab" id="post"></div>
+<div class="ab st" id="story"></div>
+<script>
+const TEAMS={ // short code: [display, badge bg, badge ink, word for headline]
+ KBFC:['Kerala Blasters','#FFC629','#1E3A8A','BLASTERS'], MCFC:['Mumbai City','#5DB3E6','#0E2240','MUMBAI'],
+ BFC:['Bengaluru FC','#0E3B8C','#fff','BENGALURU'], CFC:['Chennaiyin','#1F4EA1','#fff','CHENNAIYIN'],
+ EBFC:['East Bengal','#C8102E','#FFD100','EAST BENGAL'], MBSG:['Mohun Bagan','#7A1F2B','#2E8B57','MOHUN BAGAN'],
+ FCG:['FC Goa','#F7941D','#1E3A8A','GOA'], HFC:['Hyderabad','#F5C400','#141414','HYDERABAD'],
+ JFC:['Jamshedpur','#1C3F94','#fff','JAMSHEDPUR'], NEU:['NorthEast United','#C8102E','#fff','NORTHEAST'],
+ OFC:['Odisha','#4B2E83','#fff','ODISHA'], PFC:['Punjab FC','#D7262E','#fff','PUNJAB'],
+ IK:['Inter Kashi','#5B2A86','#fff','INTER KASHI'], DEL:['Delhi','#E4002B','#fff','DELHI'], MSC:['Mohammedan','#111','#fff','MOHAMMEDAN'], CBFC:['Chennai','#C8102E','#fff','CHENNAI']};
+const T=c=>TEAMS[c]||[c,'#fff','#141414',c];
+const M=JSON.parse(decodeURIComponent(location.hash.slice(1)||'%7B%7D'));
+const fan='Fan page · not affiliated with ISL or clubs';
+const badge=(c,style,cls='')=>`<div class="badge ${cls}" style="position:absolute;${style};background:${T(c)[1]};color:${T(c)[2]};${c.length>3?'font-size:46px':''}">${c}</div>`;
+let mood='happy',sun='sun-y';
+if(M.mode==='ft'){
+  const kb=M.home==='KBFC'?'h':M.away==='KBFC'?'a':null;
+  const gf=kb==='h'?M.hg:M.ag, ga=kb==='h'?M.ag:M.hg;
+  if(kb){mood=gf>ga?'happy':gf<ga?'sad':'shock'; sun=gf<ga?'sun-r':'sun-y';}
+  else mood='shock';
+}
+const P=document.getElementById('post'),S=document.getElementById('story');
+P.classList.add(sun);S.classList.add(sun);
+const red=sun==='sun-r';
+const list=a=>(a&&a.length?a.map(x=>'⚽ '+x).join('<br>'):'<span style="opacity:.5">No goals</span>');
+
+if(M.mode==='kickoff'){
+  P.innerHTML=`<div class="pill live">LIVE · KICK-OFF</div><div class="handle">@appu27.isl</div>
+   <div class="center" style="top:170px"><div class="h" style="font-size:190px">${T(M.home)[3]}</div></div>
+   <div class="center" style="top:385px"><div class="h gold" style="font-size:96px">vs</div></div>
+   <div class="center" style="top:490px"><div class="h" style="font-size:190px">${T(M.away)[3]}</div></div>
+   <div class="center" style="top:720px"><span class="tag red">${M.tag}</span></div>
+   ${badge(M.home,'left:64px;top:1010px','bl')}${badge(M.away,'right:64px;top:1010px','br')}
+   <svg class="appu" data-mood="happy" style="left:345px;top:965px;width:390px"></svg>
+   <div class="card" style="position:absolute;left:64px;right:64px;top:840px;height:110px;display:flex;align-items:center;justify-content:space-around;font:800 34px Pop">
+    <span>${M.date}</span><span style="opacity:.3">|</span><span>${M.time}</span><span style="opacity:.3">|</span><span>${M.venue}</span></div>
+   <div class="foot"><span>Your final score? <b>Comment ↓</b></span><small>${fan}</small></div>`;
+  S.innerHTML=`<div class="pill live">LIVE NOW</div><div class="handle">@appu27.isl</div>
+   <div class="center" style="top:360px"><div class="h" style="font-size:200px">IT'S ON!</div></div>
+   <div class="center" style="top:600px"><span class="tag red">${M.tag}</span></div>
+   ${badge(M.home,'left:150px;top:760px','bl')}
+   <div class="center h gold" style="top:815px"><span style="font-size:90px">vs</span></div>
+   ${badge(M.away,'right:150px;top:760px','br')}
+   <div class="card" style="position:absolute;left:90px;right:90px;top:1020px;height:100px;display:flex;align-items:center;justify-content:space-around;font:800 32px Pop">
+    <span>${M.date}</span><span style="opacity:.3">|</span><span>${M.time}</span><span style="opacity:.3">|</span><span>${M.venue}</span></div>
+   <svg class="appu" data-mood="happy" style="left:340px;top:1300px;width:400px"></svg>
+   <div class="emoji" style="left:130px;top:1380px">📣</div><div class="emoji" style="right:130px;top:1340px">💛</div>`;
+} else {
+  const pillTxt=M.pill||'FULL TIME';
+  const sc=(top,size)=>`<div class="center" style="top:${top}px"><div class="score">
+     ${badge(M.home,'position:static','bl')}<span class="num">${M.hg}</span><span class="dash">–</span><span class="num">${M.ag}</span>${badge(M.away,'position:static','br')}</div></div>`;
+  const card=(top)=>`<div class="card" style="position:absolute;left:64px;right:64px;top:${top}px;padding:28px 40px"><div class="scorers">
+     <div><div class="t" style="color:${T(M.home)[1]==='#FFC629'?'#1E3A8A':T(M.home)[1]}">${T(M.home)[0].toUpperCase()}</div>${list(M.scorers&&M.scorers.home)}</div>
+     <div><div class="t" style="color:${T(M.away)[1]==='#FFC629'?'#1E3A8A':T(M.away)[1]}">${T(M.away)[0].toUpperCase()}</div>${list(M.scorers&&M.scorers.away)}</div></div></div>`;
+  const em=mood==='happy'?['🎉','💛']:mood==='sad'?['💔','😢']:['😮','🤝'];
+  P.innerHTML=`<div class="pill${red?' red':''}">${pillTxt}</div><div class="handle">@appu27.isl</div>
+   ${sc(170)}
+   <div class="center" style="top:470px"><span class="tag ${red?'white':'red'}">${M.tag}</span></div>
+   ${card(590)}
+   <svg class="appu" data-mood="${mood}" style="left:360px;top:${M.scorers&&Math.max(M.scorers.home.length,M.scorers.away.length)>2?975:925}px;width:360px"></svg>
+   <div class="emoji" style="left:130px;top:1020px">${em[0]}</div><div class="emoji" style="right:130px;top:1060px">${em[1]}</div>
+   <div class="foot"><span>${M.date} · ${M.venue}${M.next?` · <b>${M.next}</b>`:''}</span><small>${M.source?'Source: '+M.source:'Fan page'}</small></div>`;
+  S.innerHTML=`<div class="pill${red?' red':''}">${pillTxt}</div><div class="handle">@appu27.isl</div>
+   <div class="center" style="top:360px"><div class="h${red?' gold':''}" style="font-size:180px">${mood==='happy'?'WE WON!':mood==='sad'?'WE LOST':mood==='shock'&&(M.home==='KBFC'||M.away==='KBFC')?'ALL SQUARE':'FULL TIME'}</div></div>
+   <div class="center" style="top:590px"><span class="tag ${red?'white':'red'}">${M.tag}</span></div>
+   ${sc(720)}
+   ${card(1010)}
+   <svg class="appu" data-mood="${mood}" style="left:350px;top:1400px;width:380px"></svg>
+   <div class="emoji" style="left:130px;top:1480px">${em[0]}</div><div class="emoji" style="right:130px;top:1440px">${em[1]}</div>`;
+}
+
+function appu(mood){
+  const Sx='stroke="#141414" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"';
+  const skin='#8A5634', jer='#FFC629';
+  const arms = mood==='happy'
+    ? `<path d="M95 300 L40 150 Q35 120 62 118 L80 120 L120 270Z" fill="${skin}" ${Sx}/><path d="M305 300 L360 150 Q365 120 338 118 L320 120 L280 270Z" fill="${skin}" ${Sx}/>
+       <path d="M40 160 L70 110 L95 140 L72 185Z" fill="${jer}" ${Sx}/><path d="M360 160 L330 110 L305 140 L328 185Z" fill="${jer}" ${Sx}/>`
+    : mood==='shock'
+    ? `<path d="M100 300 Q40 230 70 170 L100 175 Q90 230 130 280Z" fill="${skin}" ${Sx}/><path d="M300 300 Q360 230 330 170 L300 175 Q310 230 270 280Z" fill="${skin}" ${Sx}/>`
+    : `<path d="M95 300 Q60 330 70 400 L105 400 L125 310Z" fill="${skin}" ${Sx}/><path d="M305 300 Q340 330 330 400 L295 400 L275 310Z" fill="${skin}" ${Sx}/>`;
+  const mouth = mood==='happy'
+    ? `<path d="M165 238 Q200 290 235 238 Z" fill="#fff" ${Sx}/><path d="M178 258 Q200 282 222 258 Q200 266 178 258Z" fill="#E86A7A"/>`
+    : mood==='shock' ? `<ellipse cx="200" cy="255" rx="22" ry="28" fill="#7A1E2A" ${Sx}/>`
+    : `<path d="M172 262 Q200 236 228 262" fill="none" ${Sx}/>`;
+  const extra = mood==='sad' ? `<path d="M150 205 q-6 18 0 26 q8 6 10 -6 q0 -10 -10 -20z" fill="#7CC7F2" stroke="#141414" stroke-width="4"/>` : '';
+  const brows = mood==='sad' ? `<path d="M135 150 L172 162" ${Sx}/><path d="M265 150 L228 162" ${Sx}/>` : mood==='shock' ? `<path d="M135 140 Q152 128 172 140" fill="none" ${Sx}/><path d="M228 140 Q248 128 265 140" fill="none" ${Sx}/>` : '';
+  return `<svg viewBox="0 0 400 430" xmlns="http://www.w3.org/2000/svg">${arms}
+   <path d="M105 290 Q105 270 135 266 L265 266 Q295 270 295 290 L300 420 L100 420Z" fill="${jer}" ${Sx}/>
+   <rect x="102" y="392" width="196" height="22" fill="#1E3A8A"/>
+   <text x="200" y="378" text-anchor="middle" font-family="Anton" font-size="96" fill="#1E3A8A">27</text>
+   <path d="M170 266 L200 296 L230 266" fill="none" stroke="#1E3A8A" stroke-width="10"/>
+   <ellipse cx="96" cy="190" rx="20" ry="26" fill="${skin}" ${Sx}/><ellipse cx="304" cy="190" rx="20" ry="26" fill="${skin}" ${Sx}/>
+   <ellipse cx="200" cy="185" rx="108" ry="100" fill="${skin}" ${Sx}/>
+   <path d="M94 165 Q92 80 200 78 Q308 80 306 165 Q290 130 270 140 L262 112 L245 136 L228 106 L212 134 L196 104 L180 134 L163 108 L148 138 L132 114 L124 145 Q110 135 94 165Z" fill="#1A1A1A" ${Sx}/>
+   ${brows}
+   <circle cx="158" cy="190" r="${mood==='shock'?26:22}" fill="#fff" ${Sx}/><circle cx="242" cy="190" r="${mood==='shock'?26:22}" fill="#fff" ${Sx}/>
+   <circle cx="${mood==='sad'?158:160}" cy="${mood==='sad'?196:192}" r="10" fill="#141414"/><circle cx="${mood==='sad'?242:244}" cy="${mood==='sad'?196:192}" r="10" fill="#141414"/>
+   <ellipse cx="128" cy="232" rx="18" ry="10" fill="#E8838C" opacity=".8"/><ellipse cx="272" cy="232" rx="18" ry="10" fill="#E8838C" opacity=".8"/>
+   ${mouth}${extra}</svg>`;
+}
+document.querySelectorAll('svg.appu').forEach(s=>{s.outerHTML=appu(s.dataset.mood).replace('<svg ','<svg class="appu" style="'+s.getAttribute('style')+'" ')});
+document.body.dataset.mood=mood;
+</script></body></html>
