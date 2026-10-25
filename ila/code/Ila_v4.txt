@@ -264,7 +264,8 @@ const GROUPS = [
 ];
 const DEFAULT_COMMUNITY = 'https://chat.whatsapp.com/HmdSdlbiWd1GPBjl2Xiacs';
 const DEFAULT_LINKS = {   // group invite links (admin can override in the app)
-  interview: 'https://chat.whatsapp.com/HnZ68IeYPbWFXhyNS2Mmeg'
+  interview: 'https://chat.whatsapp.com/HnZ68IeYPbWFXhyNS2Mmeg',
+  sales: 'https://chat.whatsapp.com/E9YGfD9ujW4BBpE0TlK4Zm'
 };
 function communityLinks_() {
   let links = {};
