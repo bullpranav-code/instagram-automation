@@ -257,7 +257,7 @@ $('w-go').onclick=()=>{
   .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
 };
 function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
-$('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone?')){store.del('accent_ai');location.hash='';location.reload();}};
+$('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone? You will need your course PIN to sign back in.')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
   if(g==='course'){openCourse();return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
@@ -485,15 +485,22 @@ const COURSE={id:'sales-basics',title:'Sales Basics in Malayalam',fee:'₹149',d
 /* ---------- course ---------- */
 const PAY_URL='';   // Razorpay payment link goes here when ready
 let CS=null;
-function cpost(b){b.wa=S.wa;return ila(b);}
+function cpost(b){b.wa=S.wa;if(S.pin)b.pin=S.pin;return ila(b);}
 function openCourse(){show('course');$('c-wrap').innerHTML='<div class="card"><span class="typing"><span></span><span></span><span></span></span> Loading your course…</div>';
-  cpost({action:'course_state'}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-wrap').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p><button class="btn" onclick="openCourse()">Try again</button></div>';});}
+  cpost({action:'course_state'}).then(s=>{CS=s;renderCourse();}).catch(e=>{const m=String(e.message||e);if(/^PIN_/.test(m)){pinCard(m);return}$('c-wrap').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p><button class="btn" onclick="openCourse()">Try again</button></div>';});}
+function pinCard(code){
+  $('c-wrap').innerHTML='<div class="card"><h2 style="font-size:19px">🔒 Enter your course PIN</h2><p class="sub">'+(code==='PIN_WRONG'?'That PIN didn\'t match. Try again.':code==='PIN_LOCKED'?'Too many wrong tries. Please wait an hour, or WhatsApp us to reset your PIN.':'This keeps your paid course safe. Enter the 4-digit PIN you created when you joined.')+'</p>'+
+    (code==='PIN_LOCKED'?'':'<input id="pin-in" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" style="letter-spacing:8px;font-size:22px;text-align:center"><button class="btn" id="pin-go">Unlock my course</button>')+
+    '<a class="btn alt" target="_blank" href="https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I forgot my Sales Basics course PIN. Name: '+S.name+', WhatsApp: '+S.wa)+'">Forgot PIN? WhatsApp us</a></div>';
+  if($('pin-go')){$('pin-in').focus();$('pin-go').onclick=()=>{const p=$('pin-in').value.trim();if(!/^\d{4}$/.test(p)){$('pin-in').focus();return}S.pin=p;store.set('accent_ai',S);openCourse();};}
+}
 function doneCount(){return Object.keys((CS&&CS.done)||{}).length;}
 function renderCourse(){
   const st=CS.status,app=st==='Approved',dc=doneCount();let h='<div class="hero"><small>ACCENT ACADEMY · BETA</small><h2>'+esc(COURSE.title)+'</h2><p>'+esc(COURSE.blurb)+'</p>'+
     (app?'<div class="progbar"><i style="width:'+(dc*10)+'%"></i></div><p style="margin-top:6px">'+dc+' of 10 lessons done · 🍃 '+(CS.points||0)+' Leaf Points</p>':'')+'</div>';
   if(st==='none')h+='<div class="card"><h2 style="font-size:18px">Join the course</h2><p class="sub">'+COURSE.fee+' course fee + '+COURSE.deposit+' Green Deposit (fully refunded when you complete the Green Task). Lessons 1–2 are free to watch now.</p>'+
-    '<button class="btn green" id="c-pay">Pay & join</button><p class="sub" style="margin:10px 0 0">After paying, tap below so we can approve you.</p><button class="btn alt" id="c-paid">I have paid · request access</button></div>';
+    '<button class="btn green" id="c-pay">1 · Pay & join</button><p class="sub" style="margin:14px 0 0"><b>2 · After paying</b>, create a 4-digit PIN (you\'ll use it on any new phone) and request access.</p>'+
+    '<input id="c-pin" inputmode="numeric" maxlength="4" placeholder="Create 4-digit PIN" style="letter-spacing:6px;text-align:center;font-size:18px;margin-top:8px"><input id="c-ref" placeholder="Payment reference / UPI ID (optional)" style="margin-top:8px"><button class="btn alt" id="c-paid">I have paid · request access</button><div class="err" id="c-err"></div></div>';
   else if(st==='Pending')h+='<div class="card" style="border-color:var(--warn)"><b style="color:var(--f)">⏳ Waiting for approval</b><p class="sub" style="margin:6px 0 0">We\'re checking your payment. Lessons unlock as soon as the Accent team approves (usually the same day). Questions? WhatsApp 99958 42727.</p><button class="btn alt" onclick="openCourse()">Check again</button></div>';
   h+='<h3 style="margin:18px 0 10px;color:var(--f);font-size:15px">Lessons</h3>';
   COURSE.lessons.forEach(l=>{const open=!!(CS.videos&&CS.videos[l.n]),done=CS.done&&CS.done[l.n];
@@ -510,7 +517,8 @@ function renderCourse(){
   $('c-wrap').innerHTML=h;
   $('c-wrap').querySelectorAll('.lesson').forEach(x=>x.onclick=()=>{const n=+x.dataset.n;if(!(CS.videos&&CS.videos[n])){alert('This lesson unlocks after you join and get approved.');return}openLesson(n);});
   if($('c-pay'))$('c-pay').onclick=()=>{window.open(PAY_URL||('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I want to join the Sales Basics course (₹149 + ₹99 Green Deposit). Name: '+S.name+', WhatsApp: '+S.wa+'. Please share the payment link.')),'_blank');};
-  if($('c-paid'))$('c-paid').onclick=()=>{const note=prompt('Payment reference or UPI transaction ID (optional)')||'';$('c-paid').disabled=true;cpost({action:'course_join',name:S.name,note:note}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-paid').disabled=false;alert(netMsg(e));});};
+  if($('c-paid'))$('c-paid').onclick=()=>{const pin=$('c-pin').value.trim();if(!/^\d{4}$/.test(pin)){$('c-err').textContent='Create a 4-digit PIN first.';$('c-pin').focus();return}
+    S.pin=pin;store.set('accent_ai',S);$('c-paid').disabled=true;$('c-paid').textContent='Sending…';cpost({action:'course_join',name:S.name,note:$('c-ref').value.trim()}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-paid').disabled=false;$('c-paid').textContent='I have paid · request access';$('c-err').textContent=netMsg(e);});};
   if($('c-final'))$('c-final').onclick=finalQuiz;if($('c-cert'))$('c-cert').onclick=showCert;
   if($('c-gt')){$('c-gt').onclick=()=>$('c-photo').click();$('c-photo').onchange=()=>{const f=$('c-photo').files[0];if(!f)return;$('c-gt').disabled=true;$('c-gt').textContent='Uploading…';
     const img=new Image(),u=URL.createObjectURL(f);img.onload=()=>{const k=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);
@@ -529,7 +537,7 @@ function openLesson(n){const L=COURSE.lessons[n-1];show('lesson');$('title').tex
   if(src&&src!=='private')put(src);
   else{$('vbox').innerHTML='<span><span class="typing"><span></span><span></span><span></span></span><br>Loading your lesson… (about 10 seconds)</span>';
     cpost({action:'course_video',lesson:n}).then(r=>{const b=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));blobUrl=URL.createObjectURL(new Blob([b],{type:r.mime}));put(blobUrl);})
-    .catch(e=>{$('vbox').innerHTML='<span style="padding:20px">'+esc(netMsg(e))+'</span>';});}
+    .catch(e=>{if(/^PIN_/.test(String(e.message))){openCourse();return}$('vbox').innerHTML='<span style="padding:20px">'+esc(netMsg(e))+'</span>';});}
   const picked={};$('chk').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const q=+b.dataset.q,j=+b.dataset.j;if(picked[q]!=null)return;picked[q]=j;
     $('chk').querySelectorAll('.opt[data-q="'+q+'"]').forEach(x=>{const k=+x.dataset.j;if(k===L.check[q].a)x.classList.add('right');else if(k===j)x.classList.add('wrong');});
     if(Object.keys(picked).length===L.check.length){const sc=L.check.filter((c,i)=>picked[i]===c.a).length;$('chk-r').textContent=sc===L.check.length?'Perfect! '+sc+'/'+sc+' 🎉':sc+'/'+L.check.length+' · the green answers show the right idea.';cpost({action:'course_event',lesson:n,event:'check',score:sc,name:S.name}).catch(()=>{});}});
@@ -645,8 +653,9 @@ function renderAdmin(){
   const ab=(wa,what,label)=>'<button class="icon" data-wa="'+esc(wa)+'" data-what="'+what+'" style="border-color:var(--g);color:var(--g)">'+label+'</button>';
   if(pend.length)ch+='<h3 style="color:var(--f);font-size:15px">⏳ Waiting for approval</h3>'+pend.map(e=>row(e,ab(e.wa,'access','✓ Approve access'))).join('');
   if(greens.length)ch+='<h3 style="color:var(--f);font-size:15px">🌱 Green Tasks to check</h3>'+greens.map(e=>row(e,ab(e.wa,'green','✓ Approve Green Task'))).join('');
+  const rp=E.filter(e=>e.hasPin);
   if(dueRef.length)ch+='<h3 style="color:var(--f);font-size:15px">💸 ₹99 refunds due</h3>'+dueRef.map(e=>row(e,ab(e.wa,'refunded','✓ Mark refunded'))).join('');
-  ch+='<h3 style="color:var(--f);font-size:15px">All learners</h3>'+(E.slice().reverse().map(e=>row(e,'')).join('')||'<p class="sub">No enrolments yet.</p>');
+  ch+='<h3 style="color:var(--f);font-size:15px">All learners</h3>'+(E.slice().reverse().map(e=>row(e,e.hasPin?ab(e.wa,'resetpin','↺ Reset PIN'):'')).join('')||'<p class="sub">No enrolments yet.</p>');
   $('a-crs').innerHTML=ch;
   $('a-crs').querySelectorAll('button[data-what]').forEach(b=>b.onclick=()=>{b.disabled=true;b.textContent='Saving…';post(ILA,{action:'admin_approve',key:AK,wa:b.dataset.wa,what:b.dataset.what}).then(()=>loadAdmin()).catch(e=>{b.disabled=false;alert(netMsg(e));});});
   // feedback
