@@ -6,6 +6,7 @@ const CONFIG = {
   SHEET_ID: '1BS0sL3Hy09wLYVsjRuGJLpiD9PFJkNE-yE0vw4xJqrU',   // same Google Sheet as CallVibe (Script property SHEET_ID overrides)
   WHATSAPP: '919995842727',
   INTERVIEW_URL: 'https://bullpranav-code.github.io/instagram-automation/ila/interview.html',   // voice mock interview page (real mic + voice on iPhone)
+  KB_URL: 'https://raw.githubusercontent.com/bullpranav-code/instagram-automation/main/accent/ila/knowledge.json',
   KILI_URL: 'https://script.google.com/macros/s/AKfycbzm5pCgvF4zDj7oGMvGiFY-hl_OHOhJjl8oTl0RrzuayQjeVQpBfyYoYG6DkYZqqspO/exec',
   DAILY_MESSAGE_LIMIT: 40,                                     // per person per day, protects the free quota
   MAX_UPLOAD_MB: 4,
@@ -39,6 +40,7 @@ function setup() {
 /* ================= web ================= */
 function doGet(e) {
   const p = (e && e.parameter) || {};
+  housekeeping_();
   const url = ScriptApp.getService().getUrl();
   if (p.view === 'voice') return page_(goPage_(CONFIG.INTERVIEW_URL, 'Open the mock interview'));
   if (p.view === 'call' || p.view === 'calls') return page_(goPage_(CONFIG.KILI_URL + (p.view === 'calls' ? '?view=calls&key=' + encodeURIComponent(p.key || '') : ''), 'Open Kili (call review)'));
@@ -126,6 +128,13 @@ function ilaStt_(req) {
   return String(out).trim();
 }
 
+/** Once a day: remove the old knowledge-sync timer (knowledge now loads straight from GitHub). */
+function housekeeping_() {
+  const c = CacheService.getScriptCache();
+  if (c.get('hk_done')) return;
+  try { ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === 'kbSync') ScriptApp.deleteTrigger(t); }); } catch (e) {}
+  c.put('hk_done', '1', 21600);
+}
 function goPage_(to, label) {
   return '<div style="font-family:Poppins,Arial;padding:40px 24px;text-align:center"><p style="color:#0B3D1E">Opening\u2026</p>' +
     '<a href="' + to + '" target="_top" style="display:inline-block;background:#0B3D1E;color:#fff;padding:14px 22px;border-radius:12px;text-decoration:none">' + label + '</a></div>' +
@@ -296,9 +305,16 @@ function systemPrompt_(name, q) {
   let raw = cache.get('ila_kb_rows'), rows;
   if (raw) rows = JSON.parse(raw);
   else {
-    const k = ss_().getSheetByName(TABS.know[0]);
-    rows = (k && k.getLastRow() > 1 ? k.getRange(2, 1, k.getLastRow() - 1, 2).getValues() : DEFAULT_KNOWLEDGE)
-      .filter(r => r[0] || r[1]).map(r => [String(r[0]), String(r[1])]);
+    rows = null;
+    try {   // knowledge base lives on GitHub (accent/ila/knowledge.json); the sheet tab is the backup
+      const r = UrlFetchApp.fetch(CONFIG.KB_URL + '?t=' + Date.now(), { muteHttpExceptions: true });
+      if (r.getResponseCode() === 200) rows = (JSON.parse(r.getContentText()).rows || []).filter(x => x[0] || x[1]).map(x => [String(x[0]), String(x[1])]);
+    } catch (e) { rows = null; }
+    if (!rows || !rows.length) {
+      const k = ss_().getSheetByName(TABS.know[0]);
+      rows = (k && k.getLastRow() > 1 ? k.getRange(2, 1, k.getLastRow() - 1, 2).getValues() : DEFAULT_KNOWLEDGE)
+        .filter(r => r[0] || r[1]).map(r => [String(r[0]), String(r[1])]);
+    }
     try { cache.put('ila_kb_rows', JSON.stringify(rows), 600); } catch (e) {}
   }
   const words = String(q || '').toLowerCase().split(/[^a-z0-9ഀ-ൿ]+/).filter(w => w.length > 2);
