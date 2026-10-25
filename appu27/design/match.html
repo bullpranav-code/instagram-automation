@@ -70,7 +70,7 @@ const TEAMS={ // short code: [display, badge bg, badge ink, word for headline]
  FCG:['FC Goa','#F7941D','#1E3A8A','GOA'], HFC:['Hyderabad','#F5C400','#141414','HYDERABAD'],
  JFC:['Jamshedpur','#1C3F94','#fff','JAMSHEDPUR'], NEU:['NorthEast United','#C8102E','#fff','NORTHEAST'],
  OFC:['Odisha','#4B2E83','#fff','ODISHA'], PFC:['Punjab FC','#D7262E','#fff','PUNJAB'],
- IK:['Inter Kashi','#5B2A86','#fff','INTER KASHI'], DEL:['Delhi','#E4002B','#fff','DELHI'], MSC:['Mohammedan','#111','#fff','MOHAMMEDAN'], CBFC:['Chennai','#C8102E','#fff','CHENNAI']};
+ IK:['Inter Kashi','#5B2A86','#fff','INTER KASHI'], DEL:['SC Delhi','#E4002B','#fff','DELHI'], CHB:['Churchill Brothers','#C8102E','#fff','CHURCHILL'], MSC:['Mohammedan','#111','#fff','MOHAMMEDAN'], CBFC:['Chennai','#C8102E','#fff','CHENNAI']};
 const T=c=>TEAMS[c]||[c,'#fff','#141414',c];
 const tc=c=>['#FFC629','#5DB3E6','#F5C400','#fff','#F7941D'].includes(T(c)[1])?(T(c)[2]==='#fff'?'#141414':T(c)[2]):T(c)[1];
 const M=JSON.parse(decodeURIComponent(location.hash.slice(1)||'%7B%7D'));
