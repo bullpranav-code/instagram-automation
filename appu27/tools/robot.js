@@ -28,6 +28,7 @@ async function main(){
   const today=istDate(), yday=istDate(new Date(Date.now()-864e5));
   const j=await data(`from=${yday}&to=${today}`);
   if(j.error||!Array.isArray(j.response)) throw new Error('no fixture data: '+JSON.stringify(j).slice(0,300));
+  console.log('::notice::fixtures '+yday+'..'+today+': '+j.response.length+' | '+j.response.filter(f=>/kerala/i.test(f.teams.home.name+f.teams.away.name)).map(f=>`${f.teams.home.name} ${f.goals.home}-${f.goals.away} ${f.teams.away.name} [${f.fixture.status.short} ${f.fixture.status.elapsed||''}']`).join('; '));
   for(const f of j.response){
    const st=f.fixture.status.short, H=f.teams.home.name, A=f.teams.away.name;
    if(!['FT','AET','PEN'].includes(st)||!/kerala/i.test(H+A)||state.done.includes(f.fixture.id)) continue;
