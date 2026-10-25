@@ -83,9 +83,9 @@ async function main(){
  const idxF=path.join(ROOT,'jobs','index.json'), idx=JSON.parse(fs.readFileSync(idxF,'utf8'));
  for(const j of jobs){
   const w=(name,obj)=>{fs.writeFileSync(path.join(ROOT,'jobs',name),JSON.stringify(obj,null,1));if(!idx.includes(name))idx.push(name);};
-  w(j.key+'_story.json',{type:'STORY',files:[u(j.prefix+'_story.jpg')],preview:u(j.prefix+'_story.jpg'),caption:'',group:j.key+'_story'});
-  w(j.key+'_post.json',{type:'POST',files:[u(j.prefix+'_post.jpg')],preview:u(j.prefix+'_post.jpg'),caption:j.cap,group:j.key+'_post'});
-  w(j.key+'_reel.json',{type:'REEL',files:[u(j.prefix+'_reel.mp4')],preview:u(j.prefix+'_cover.jpg'),caption:j.cap,group:j.key+'_reel'});
+  w(j.key+'_story.json',{type:'STORY',files:[u(j.prefix+'_story.jpg')],preview:u(j.prefix+'_story.jpg'),caption:'',group:j.key+'_story',format:'Full time',topic:j.prefix.slice(3).toUpperCase().replace('_',' vs ')});
+  w(j.key+'_post.json',{type:'POST',files:[u(j.prefix+'_post.jpg')],preview:u(j.prefix+'_post.jpg'),caption:j.cap,group:j.key+'_post',format:'Full time',topic:j.prefix.slice(3).toUpperCase().replace('_',' vs ')});
+  w(j.key+'_reel.json',{type:'REEL',files:[u(j.prefix+'_reel.mp4')],preview:u(j.prefix+'_cover.jpg'),caption:j.cap,group:j.key+'_reel',format:'Full time',topic:j.prefix.slice(3).toUpperCase().replace('_',' vs ')});
  }
  fs.writeFileSync(idxF,JSON.stringify(idx));
  fs.mkdirSync(path.dirname(STATE),{recursive:true});fs.writeFileSync(STATE,JSON.stringify(state,null,1));
