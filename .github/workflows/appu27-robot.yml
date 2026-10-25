@@ -1,7 +1,7 @@
 name: Appu27 match robot
 on:
-  schedule:
-    - cron: '*/10 13-18 * * *'   # every 10 min, 6:30 PM to 12:30 AM IST
+  # Free API-Football plan has no current-season data, so no schedule: Claude triggers this
+  # after each Blasters match with the verified score (MANUAL input). Re-add a schedule if the API plan is upgraded.
   workflow_dispatch:
     inputs:
       manual:
