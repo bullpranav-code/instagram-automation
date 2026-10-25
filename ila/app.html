@@ -253,7 +253,7 @@ $('w-go').onclick=()=>{
   if(f.whatsapp.replace(/\D/g,'').length<10)return $('w-err').textContent='Please enter a valid WhatsApp number.';
   if(!f.consent)return $('w-err').textContent='Please tick the box to continue.';
   $('w-go').disabled=true;$('w-go').textContent='Setting up…';
-  post(ILA,f).then(r=>{S={session:r.session,name:f.name,wa:f.whatsapp};store.set('accent_ai',S);openHome();})
+  post(ILA,f).then(r=>{S={session:r.session,name:f.name,wa:f.whatsapp};store.set('accent_ai',S);openHome();if(H0==='course')openCourse();else if(H0==='interview')openInterview();else if(H0==='kili')openKili();})
   .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
 };
 function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
@@ -667,6 +667,6 @@ function callDetail(c){const s=(t,v)=>v?'<div class="sec"><h4>'+t+'</h4><p>'+esc
 /* ---------- start ---------- */
 const H0=location.hash.slice(1);
 if(H0==='admin'){if(S&&S.session)openHome();openAdmin();}
-else if(S&&S.session){openHome();if(H0==='interview')openInterview();else if(H0==='kili')openKili();}
+else if(S&&S.session){openHome();if(H0==='interview')openInterview();else if(H0==='kili')openKili();else if(H0==='course')openCourse();}
 else{show('welcome',false);}
 </script></body></html>
