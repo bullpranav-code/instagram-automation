@@ -72,6 +72,7 @@ const TEAMS={ // short code: [display, badge bg, badge ink, word for headline]
  OFC:['Odisha','#4B2E83','#fff','ODISHA'], PFC:['Punjab FC','#D7262E','#fff','PUNJAB'],
  IK:['Inter Kashi','#5B2A86','#fff','INTER KASHI'], DEL:['Delhi','#E4002B','#fff','DELHI'], MSC:['Mohammedan','#111','#fff','MOHAMMEDAN'], CBFC:['Chennai','#C8102E','#fff','CHENNAI']};
 const T=c=>TEAMS[c]||[c,'#fff','#141414',c];
+const tc=c=>['#FFC629','#5DB3E6','#F5C400','#fff','#F7941D'].includes(T(c)[1])?(T(c)[2]==='#fff'?'#141414':T(c)[2]):T(c)[1];
 const M=JSON.parse(decodeURIComponent(location.hash.slice(1)||'%7B%7D'));
 const fan='Fan page · not affiliated with ISL or clubs';
 const badge=(c,style,cls='')=>`<div class="badge ${cls}" style="position:absolute;${style};background:${T(c)[1]};color:${T(c)[2]};${c.length>3?'font-size:46px':''}">${c}</div>`;
@@ -113,14 +114,14 @@ if(M.mode==='kickoff'){
   const sc=(top,size)=>`<div class="center" style="top:${top}px"><div class="score">
      ${badge(M.home,'position:static','bl')}<span class="num">${M.hg}</span><span class="dash">–</span><span class="num">${M.ag}</span>${badge(M.away,'position:static','br')}</div></div>`;
   const card=(top)=>`<div class="card" style="position:absolute;left:64px;right:64px;top:${top}px;padding:28px 40px"><div class="scorers">
-     <div><div class="t" style="color:${T(M.home)[1]==='#FFC629'?'#1E3A8A':T(M.home)[1]}">${T(M.home)[0].toUpperCase()}</div>${list(M.scorers&&M.scorers.home)}</div>
-     <div><div class="t" style="color:${T(M.away)[1]==='#FFC629'?'#1E3A8A':T(M.away)[1]}">${T(M.away)[0].toUpperCase()}</div>${list(M.scorers&&M.scorers.away)}</div></div></div>`;
+     <div><div class="t" style="color:${tc(M.home)}">${T(M.home)[0].toUpperCase()}</div>${list(M.scorers&&M.scorers.home)}</div>
+     <div><div class="t" style="color:${tc(M.away)}">${T(M.away)[0].toUpperCase()}</div>${list(M.scorers&&M.scorers.away)}</div></div></div>`;
   const em=mood==='happy'?['🎉','💛']:mood==='sad'?['💔','😢']:['😮','🤝'];
   P.innerHTML=`<div class="pill${red?' red':''}">${pillTxt}</div><div class="handle">@appu27.isl</div>
    ${sc(170)}
    <div class="center" style="top:470px"><span class="tag ${red?'white':'red'}">${M.tag}</span></div>
    ${card(590)}
-   <svg class="appu" data-mood="${mood}" style="left:360px;top:${M.scorers&&Math.max(M.scorers.home.length,M.scorers.away.length)>2?975:925}px;width:360px"></svg>
+   <svg class="appu" data-mood="${mood}" style="left:360px;top:${M.scorers&&Math.max(M.scorers.home.length,M.scorers.away.length)>2?905:860}px;width:350px"></svg>
    <div class="emoji" style="left:130px;top:1020px">${em[0]}</div><div class="emoji" style="right:130px;top:1060px">${em[1]}</div>
    <div class="foot"><span>${M.date} · ${M.venue}${M.next?` · <b>${M.next}</b>`:''}</span><small>${M.source?'Source: '+M.source:'Fan page'}</small></div>`;
   S.innerHTML=`<div class="pill${red?' red':''}">${pillTxt}</div><div class="handle">@appu27.isl</div>

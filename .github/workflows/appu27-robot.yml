@@ -1,0 +1,40 @@
+name: Appu27 match robot
+on:
+  schedule:
+    - cron: '*/10 13-18 * * *'   # every 10 min, 6:30 PM to 12:30 AM IST
+  workflow_dispatch:
+    inputs:
+      manual:
+        description: 'Optional manual result JSON, e.g. {"home":"KBFC","away":"MCFC","hg":2,"ag":1,"scorers":{"home":["Luna 23'"],"away":[]}}'
+        required: false
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: appu27-robot
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, fetch-depth: 1 }
+      - uses: actions/checkout@v4
+        with: { ref: gh-pages, fetch-depth: 1, path: ghp }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg imagemagick fonts-noto-color-emoji >/dev/null
+          git config --global user.name "appu27-robot"
+          git config --global user.email "appu27-robot@users.noreply.github.com"
+      - name: Install
+        working-directory: appu27
+        run: npm i --no-audit --no-fund && npx playwright install --with-deps chromium
+      - name: Run robot
+        working-directory: appu27
+        env:
+          GHP_DIR: ${{ github.workspace }}/ghp
+          MANUAL: ${{ github.event.inputs.manual }}
+        run: node tools/robot.js
