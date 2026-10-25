@@ -1,0 +1,19 @@
+// KILI LOADER v1 - loads the latest Kili code from Accent's GitHub. Do not edit.
+var KILI_CODE_URL = 'https://bullpranav-code.github.io/instagram-automation/ila/code/Kili_v4.txt';
+function load_() {
+  if (globalThis.__KILI_READY) return;
+  var c = CacheService.getScriptCache(), code = c.get('kili_code');
+  if (!code) {
+    var r = UrlFetchApp.fetch(KILI_CODE_URL + '?t=' + Date.now(), { muteHttpExceptions: true });
+    if (r.getResponseCode() !== 200) throw new Error('Could not load Kili code (' + r.getResponseCode() + ')');
+    code = r.getContentText();
+    try { c.put('kili_code', code, 600); } catch (e) {}
+  }
+  (0, eval)(code);
+  globalThis.__KILI_READY = true;
+}
+function doGet(e) { load_(); return doGet(e); }
+function ccReview(f) { load_(); return ccReview(f); }
+function ccFeedback(f) { load_(); return ccFeedback(f); }
+function setup() { load_(); return setup(); }
+function refreshCode() { CacheService.getScriptCache().remove('kili_code'); load_(); Logger.log('Kili code reloaded.'); }

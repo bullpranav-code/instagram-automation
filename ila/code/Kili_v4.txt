@@ -1,0 +1,346 @@
+// KILI v4.0 BETA - Accent sales call auditor (standalone app, separate from Ila).
+// Own Apps Script project + own GEMINI_API_KEY, so Kili never slows Ila down.
+// Script properties needed: GEMINI_API_KEY, ADMIN_KEY.  (SHEET_ID is created automatically.)
+// Learners open: KILI_LINK          Trainers open: KILI_LINK?view=calls&key=YOUR_ADMIN_KEY
+
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (p.view === 'calls') {
+    var k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+    return kPage_(k && p.key === k ? ccTrainer_() : '<p style="font-family:Arial;padding:30px">Wrong or missing key.</p>');
+  }
+  return kPage_(ccPage_());
+}
+function kPage_(html) {
+  return HtmlService.createHtmlOutput(html).setTitle('Kili \u00b7 ACCENT \u00b7 Call feedback')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+function ss_() {
+  var pr = PropertiesService.getScriptProperties(), id = pr.getProperty('SHEET_ID');
+  if (id) return SpreadsheetApp.openById(id);
+  var ss = SpreadsheetApp.create('Kili - Call Reviews');
+  pr.setProperty('SHEET_ID', ss.getId());
+  return ss;
+}
+function folder_(sub) {
+  var top = DriveApp.getFoldersByName('Kili - Accent Calls');
+  var root = top.hasNext() ? top.next() : DriveApp.createFolder('Kili - Accent Calls');
+  var it = root.getFoldersByName(sub);
+  return it.hasNext() ? it.next() : root.createFolder(sub);
+}
+/** Run once from the editor (pick "setup", tap Run) to create the sheet and allow permissions. */
+function setup() { ccSheet_(); folder_('Calls'); Logger.log('Kili ready. Sheet: ' + ss_().getUrl()); }
+
+var CC = { MODEL: 'gemini-flash-latest', BACKUP: 'gemini-2.5-flash', MAX_MB: 30, TAB: 'AI Call Reviews' };
+var CC_HEADERS = ['Submitted', 'Learner ID', 'Email', 'Call type', 'Product', 'Goal', 'Language',
+  'Recording link', 'Status', 'Score /10', 'Score /100', 'Buyer interest', 'Talk ratio',
+  'Summary', 'What went well', 'Fix next time', 'Objections', 'Red flags', 'Next action',
+  'Follow-up message', 'Transcript', 'Overall verdict', 'Accent checklist', 'Word fixes'];
+
+function ccPage_() { return CC_HTML; }
+
+function ccReview(f) {
+  var learner = String(f.learner || '').trim();
+  if (learner.length < 2) throw new Error('Enter your name or Learner ID.');
+  if (!f.consent) throw new Error('Please confirm the call recording consent.');
+  if (!f.data) throw new Error('Choose a recording first.');
+  var bytes = Utilities.base64Decode(f.data);
+  if (bytes.length > CC.MAX_MB * 1024 * 1024) throw new Error('File is over ' + CC.MAX_MB + ' MB. Send a shorter clip or an MP3.');
+  var mime = ccMime_(f.fileName, f.mime);
+  var stamp = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyyMMdd_HHmm');
+  var name = learner.replace(/[^\w-]+/g, '_') + '_' + stamp + '_' + String(f.fileName || 'call').replace(/[^\w.\-]+/g, '_').slice(-50);
+  var url = '';
+  try { url = folder_('Calls').createFile(Utilities.newBlob(bytes, mime, name)).getUrl(); } catch (e) { url = '(not saved: ' + e.message + ')'; }
+  var sh = ccSheet_();
+  var row = sh.getLastRow() + 1;
+  sh.getRange(row, 1, 1, 9).setValues([[new Date(), learner, String(f.email || '').trim(), f.type || '', f.product || '', f.goal || '', f.language || '', url, 'Processing']]);
+  SpreadsheetApp.flush();
+  try {
+    var card = ['LEARNER: ' + learner, 'DATE: ' + stamp, 'CALL TYPE: ' + (f.type || ''), 'PRODUCT: ' + (f.product || ''),
+      'GOAL OF CALL: ' + (f.goal || ''), 'LANGUAGE: ' + (f.language || '')].join('\n');
+    var res = ccGemini_(card, f.data, mime, bytes);
+    var c = res.course_scores || {}, p = res.callvibe_scores || {};
+    var score10 = ['opening', 'questions', 'listening', 'objections', 'close'].reduce(function (s, k) { return s + ccClamp_(c[k], 0, 2); }, 0);
+    var parts = { opening: 15, discovery: 25, listening: 15, pitch: 15, objections: 15, close: 15 };
+    var score100 = Object.keys(parts).reduce(function (s, k) { return s + ccClamp_(p[k], 0, parts[k]); }, 0);
+    var well = (res.went_well || []).map(String);
+    var fixes = (res.fix_next_time || []).map(function (x) { return typeof x === 'string' ? { moment: '', why: x, better_line: '' } : { moment: x.moment || '', why: x.why || '', better_line: x.better_line || '' }; });
+    var objs = (res.objections || []).map(function (o) { return typeof o === 'string' ? { objection: o, handled: '', better_answer: '' } : o; });
+    var flags = (res.red_flags || []).map(String);
+    var checklist = (res.checklist || []).map(function (x) { return { item: x.item || '', done: !!x.done, note: x.note || '' }; });
+    var words = (res.word_fixes || []).map(function (w) { return { said: w.said || '', use: w.use_instead || w.use || '' }; });
+    var verdict = res.overall_verdict || '';
+    sh.getRange(row, 9, 1, 16).setValues([['Done', score10, score100,
+      (res.buyer_interest || '') + (res.interest_quote ? ': "' + res.interest_quote + '"' : ''), res.talk_ratio || '', res.summary || '',
+      well.map(function (w) { return '- ' + w; }).join('\n'),
+      fixes.map(function (x, i) { return (i + 1) + '. "' + x.moment + '": ' + x.why + ' Say: ' + x.better_line; }).join('\n'),
+      objs.map(function (o) { return (o.objection || '') + ' -> ' + (o.handled || '') + ' -> Better: ' + (o.better_answer || ''); }).join('\n') || 'None raised',
+      flags.length ? flags.join('; ') : 'None', res.next_action || '', res.followup_message || '', res.transcript || '', verdict,
+      checklist.map(function (x) { return (x.done ? '[x] ' : '[ ] ') + x.item + (x.note ? ': ' + x.note : ''); }).join('\n'),
+      words.map(function (w) { return '"' + w.said + '" -> "' + w.use + '"'; }).join('\n') || 'None']]);
+    return { learner: learner, type: f.type || '', score10: score10, score100: score100, course: c, parts: p,
+      interest: res.buyer_interest || '', interestQuote: res.interest_quote || '', talk: res.talk_ratio || '',
+      summary: res.summary || '', well: well, fixes: fixes, objections: objs, flags: flags,
+      next: res.next_action || '', followup: res.followup_message || '', verdict: verdict, checklist: checklist, words: words };
+  } catch (err) {
+    sh.getRange(row, 9).setValue('Error: ' + err.message);
+    throw err;
+  }
+}
+
+/** Big recordings (over 14 MB) go to Gemini's file store first; small ones go inline. */
+function ccUpload_(key, bytes, mime) {
+  var start = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/upload/v1beta/files', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { 'x-goog-api-key': key, 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start',
+      'X-Goog-Upload-Header-Content-Length': String(bytes.length), 'X-Goog-Upload-Header-Content-Type': mime },
+    payload: JSON.stringify({ file: { display_name: 'kili_call' } }) });
+  var h = start.getAllHeaders(), up = h['x-goog-upload-url'] || h['X-Goog-Upload-URL'];
+  if (!up) throw new Error('Could not upload the recording (' + start.getResponseCode() + '). Try again.');
+  var done = UrlFetchApp.fetch(up, { method: 'post', contentType: mime, muteHttpExceptions: true, payload: bytes,
+    headers: { 'X-Goog-Upload-Offset': '0', 'X-Goog-Upload-Command': 'upload, finalize' } });
+  var file = (JSON.parse(done.getContentText()) || {}).file;
+  if (!file || !file.uri) throw new Error('Upload did not finish (' + done.getResponseCode() + '). Try again.');
+  for (var i = 0; i < 20 && file.state === 'PROCESSING'; i++) {
+    Utilities.sleep(3000);
+    file = JSON.parse(UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/' + file.name,
+      { headers: { 'x-goog-api-key': key }, muteHttpExceptions: true }).getContentText());
+  }
+  if (file.state === 'FAILED') throw new Error('Google could not read this recording. Send an MP3.');
+  return { fileData: { mimeType: file.mimeType || mime, fileUri: file.uri } };
+}
+
+function ccGemini_(card, b64, mime, bytes) {
+  var key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (!key) throw new Error('Kili is not set up yet (missing GEMINI_API_KEY).');
+  var audio = bytes && bytes.length > 14 * 1048576 ? ccUpload_(key, bytes, mime) : { inlineData: { mimeType: mime, data: b64 } };
+  var models = [CC.MODEL, CC.BACKUP], last = '';
+  for (var m = 0; m < models.length; m++) {
+    var body = { systemInstruction: { parts: [{ text: CC_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: card }, audio] }],
+      generationConfig: { responseMimeType: 'application/json', responseSchema: CC_SCHEMA, temperature: 0 } };
+    for (var t = 0; t < 2; t++) {
+      var r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[m] + ':generateContent', {
+        method: 'post', contentType: 'application/json', headers: { 'x-goog-api-key': key }, payload: JSON.stringify(body), muteHttpExceptions: true });
+      var code = r.getResponseCode(), text = r.getContentText();
+      if (code === 200) {
+        var cand = (JSON.parse(text).candidates || [])[0];
+        if (!cand || !cand.content) throw new Error('Kili could not hear this recording. Check it plays, then retry.');
+        return JSON.parse(cand.content.parts.map(function (x) { return x.text || ''; }).join('').replace(/^```json\s*|```\s*$/g, ''));
+      }
+      last = code + '';
+      if (code === 400 && body.generationConfig.responseSchema) { delete body.generationConfig.responseSchema; continue; }
+      if (code === 429) throw new Error('Too many reviews right now. Try again in a few minutes.');
+      if (code !== 503 && code !== 500) break;
+      Utilities.sleep(2000);
+    }
+  }
+  throw new Error('Review failed (' + last + '). If it mentions the file type, send an MP3.');
+}
+
+function ccMime_(name, mime) {
+  var n = String(name || '').toLowerCase();
+  if (/\.mp3$/.test(n)) return 'audio/mp3';
+  if (/\.(m4a|mp4|aac)$/.test(n)) return 'audio/aac';
+  if (/\.(ogg|opus)$/.test(n)) return 'audio/ogg';
+  if (/\.wav$/.test(n)) return 'audio/wav';
+  if (/\.flac$/.test(n)) return 'audio/flac';
+  return mime && /^audio\//.test(mime) ? mime : 'audio/mp3';
+}
+
+/** Beta feedback from the result screen. */
+function ccFeedback(f) {
+  var ss = ss_(), sh = ss.getSheetByName('Beta Feedback');
+  if (!sh) { sh = ss.insertSheet('Beta Feedback'); sh.appendRow(['Timestamp', 'Learner', 'Rating', 'Comment', 'Kili score /100']); sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF'); sh.setFrozenRows(1); }
+  sh.appendRow([new Date(), String(f.learner || '').slice(0, 80), String(f.rating || '').slice(0, 10), String(f.comment || '').slice(0, 1000), f.score || '']);
+  return { ok: true };
+}
+
+function ccClamp_(x, lo, hi) { var n = Number(x) || 0; return Math.max(lo, Math.min(hi, n)); }
+
+function ccSheet_() {
+  var ss = ss_(), s = ss.getSheetByName(CC.TAB);
+  if (!s) { s = ss.insertSheet(CC.TAB); }
+  if (s.getRange(1, 1).getValue() === '') {
+    s.getRange(1, 1, 1, CC_HEADERS.length).setValues([CC_HEADERS]).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF');
+    s.setFrozenRows(1);
+  }
+  return s;
+}
+
+function ccTrainer_() {
+  var ss = ss_(), esc = anEsc_, rows = anAll_(ss.getSheetByName(CC.TAB), 24), fbs = anAll_(ss.getSheetByName('Beta Feedback'), 5);
+  var dt = function (x) { try { return Utilities.formatDate(new Date(x), 'Asia/Kolkata', 'dd MMM HH:mm'); } catch (e) { return ''; } };
+  var done = rows.filter(function (r) { return r[8] === 'Done'; }), sc = done.map(function (r) { return Number(r[10]) || 0; });
+  var avg = sc.length ? Math.round(sc.reduce(function (a, b) { return a + b; }, 0) / sc.length) : '-';
+  var days = anDays_(done, 0, 30);
+  var wk = days.slice(-7).reduce(function (a, x) { return a + x.rows.length; }, 0), pwk = days.slice(-14, -7).reduce(function (a, x) { return a + x.rows.length; }, 0);
+  var learners = {}; rows.forEach(function (r) { learners[String(r[1]).toLowerCase()] = 1; });
+  var dist = { '0–49 (weak)': 0, '50–69 (average)': 0, '70–84 (good)': 0, '85–100 (excellent)': 0 };
+  sc.forEach(function (x) { dist[x < 50 ? '0–49 (weak)' : x < 70 ? '50–69 (average)' : x < 85 ? '70–84 (good)' : '85–100 (excellent)']++; });
+  var missed = {}, words = {}, types = {}, interest = {};
+  done.forEach(function (r) {
+    String(r[22] || '').split('\n').forEach(function (l) { var m = l.match(/^\[ \]\s*([^:]+)/); if (m) missed[m[1].trim()] = (missed[m[1].trim()] || 0) + 1; });
+    String(r[23] || '').split('\n').forEach(function (l) { var m = l.match(/^"([^"]+)"/); if (m) words[m[1].toLowerCase()] = (words[m[1].toLowerCase()] || 0) + 1; });
+    types[r[3] || 'Other'] = (types[r[3] || 'Other'] || 0) + 1;
+    var it = String(r[11] || '').split(':')[0].trim(); if (it) interest[it] = (interest[it] || 0) + 1;
+  });
+  var errors = rows.filter(function (r) { return /^Error/.test(r[8]); }).length;
+  var up = fbs.filter(function (r) { return /👍/.test(r[2]); }).length, rated = fbs.filter(function (r) { return /👍|👎/.test(r[2]); }).length;
+  var calls = rows.slice(-30).reverse().map(function (r) {
+    var v = Number(r[10]) || 0, col = v >= 70 ? '#16A34A' : v >= 50 ? '#C97A2B' : '#B42318';
+    return '<tr><td>' + esc(dt(r[0])) + '</td><td><b>' + esc(r[1]) + '</b><br><small>' + esc(r[3]) + '</small></td><td>' + (r[8] === 'Done' ? '<b style="color:' + col + '">' + esc(r[10]) + '</b> <small>(' + esc(r[9]) + '/10)</small>' : esc(r[8])) +
+      '</td><td>' + esc(String(r[21] || '').slice(0, 140)) + '</td><td>' + esc(String(r[18] || '').slice(0, 120)) + '</td><td>' + (/^http/.test(r[7]) ? '<a href="' + esc(r[7]) + '" target="_blank">Play</a>' : '') + '</td></tr>'; }).join('');
+  var fb = fbs.slice(-20).reverse().map(function (r) { return '<tr><td>' + esc(dt(r[0])) + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td></tr>'; }).join('');
+  var table = function (h, body, empty) { return '<div style="overflow-x:auto"><table><tr>' + h.map(function (x) { return '<th>' + x + '</th>'; }).join('') + '</tr>' + (body || '<tr><td colspan="' + h.length + '">' + empty + '</td></tr>') + '</table></div>'; };
+  return '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">' +
+    '<style>body{margin:0;background:#F7FAF8;font-family:Poppins,Arial;color:#0B3D1E}table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}th{background:#0B3D1E;color:#fff;text-align:left;font-weight:600}th,td{padding:8px 10px;border-bottom:1px solid #DCE5DE;vertical-align:top}small{color:#8A968E}a{color:#16A34A}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.two{grid-template-columns:1fr}}</style>' +
+    '<div style="background:#0B3D1E;color:#fff;padding:16px 20px"><div style="color:#79C24A;font-size:11px;letter-spacing:3px;font-weight:600">ACCENT · KILI · BETA</div><div style="font-size:20px;font-weight:600">Call review analytics</div></div>' +
+    '<div style="max-width:1100px;margin:0 auto;padding:12px 20px 40px"><p style="font-size:13px;color:#8A968E">Updated ' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd MMM yyyy, HH:mm') + ' · every review is kept in the sheet · <a href="' + ss.getUrl() + '" target="_blank">Open sheet</a></p>' +
+    anKpi_([['CALLS REVIEWED', done.length, wk + ' this week (' + (wk >= pwk ? '+' : '') + (wk - pwk) + ')'], ['LEARNERS', Object.keys(learners).length, ''], ['AVG KILI SCORE', avg + (avg === '-' ? '' : '/100'), ''],
+      ['GOOD CALLS', sc.length ? Math.round(sc.filter(function (x) { return x >= 70; }).length / sc.length * 100) + '%' : '-', 'scored 70+'], ['FAILED REVIEWS', errors, 'busy / bad file'], ['BETA 👍', rated ? Math.round(up / rated * 100) + '%' : '-', rated + ' ratings']]) +
+    anCard_('Calls reviewed per day · average score (last 30 days)', anChart_(days.map(function (x) { return x.label; }), days.map(function (x) { return x.rows.length; }),
+      days.map(function (x) { var v = x.rows.map(function (r) { return Number(r[10]) || 0; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null; }), 100, 'Calls', 'Avg score /100')) +
+    '<div class="two">' + anCard_('Score spread', anHBars_(dist, 4)) + anCard_('Most-missed checklist steps (coach on these)', anHBars_(missed, 6)) + '</div>' +
+    '<div class="two">' + anCard_('Words learners should stop using', anHBars_(words, 6)) + anCard_('Buyer interest on calls', anHBars_(interest, 5)) + '</div>' +
+    anCard_('Call types', anHBars_(types, 5)) +
+    anCard_('Latest calls', table(['When', 'Learner', 'Score', 'Verdict', 'Next action', 'Audio'], calls, 'No calls yet.')) +
+    anCard_('Beta feedback', table(['When', 'Learner', 'Rating', 'Comment'], fb, 'None yet.')) + '</div>';
+}
+
+var CC_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    transcript: { type: 'STRING' },
+    summary: { type: 'STRING' },
+    overall_verdict: { type: 'STRING' },
+    course_scores: { type: 'OBJECT', properties: {
+      opening: { type: 'INTEGER' }, questions: { type: 'INTEGER' }, listening: { type: 'INTEGER' },
+      objections: { type: 'INTEGER' }, close: { type: 'INTEGER' } },
+      required: ['opening', 'questions', 'listening', 'objections', 'close'] },
+    callvibe_scores: { type: 'OBJECT', properties: {
+      opening: { type: 'INTEGER' }, discovery: { type: 'INTEGER' }, listening: { type: 'INTEGER' },
+      pitch: { type: 'INTEGER' }, objections: { type: 'INTEGER' }, close: { type: 'INTEGER' } },
+      required: ['opening', 'discovery', 'listening', 'pitch', 'objections', 'close'] },
+    buyer_interest: { type: 'STRING', enum: ['High intent', 'Warm', 'Sceptical', 'Disengaged'] },
+    interest_quote: { type: 'STRING' },
+    talk_ratio: { type: 'STRING' },
+    went_well: { type: 'ARRAY', items: { type: 'STRING' } },
+    fix_next_time: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      moment: { type: 'STRING' }, why: { type: 'STRING' }, better_line: { type: 'STRING' } },
+      required: ['moment', 'why', 'better_line'] } },
+    checklist: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      item: { type: 'STRING' }, done: { type: 'BOOLEAN' }, note: { type: 'STRING' } },
+      required: ['item', 'done', 'note'] } },
+    word_fixes: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      said: { type: 'STRING' }, use_instead: { type: 'STRING' } }, required: ['said', 'use_instead'] } },
+    objections: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      objection: { type: 'STRING' }, handled: { type: 'STRING' }, better_answer: { type: 'STRING' } },
+      required: ['objection', 'handled', 'better_answer'] } },
+    red_flags: { type: 'ARRAY', items: { type: 'STRING' } },
+    next_action: { type: 'STRING' },
+    followup_message: { type: 'STRING' },
+    tracker_well: { type: 'STRING' },
+    tracker_fix: { type: 'STRING' }
+  },
+  required: ['transcript', 'summary', 'overall_verdict', 'course_scores', 'callvibe_scores', 'buyer_interest',
+    'interest_quote', 'talk_ratio', 'went_well', 'fix_next_time', 'checklist', 'word_fixes', 'objections',
+    'red_flags', 'next_action', 'followup_message', 'tracker_well', 'tracker_fix']
+};
+
+var CC_PROMPT = [
+  "\nYou are Kili, the call-review coach for the Accent Sales Program in Kerala.\nYou revie",
+  "w calls the way Accent's founder coaches his teams: a supportive senior\nsales manager who ",
+  "first recognises everything the seller did well, then gives a\nfew precise corrections. You",
+  " receive a call card and an AUDIO recording. First\ntranscribe it, then review it.\n\nLANGUAG",
+  "E: English, Malayalam or Manglish. Transcribe in the language spoken. Write\nfeedback in En",
+  "glish (Manglish phrases are fine inside \"better lines\"). Write the\nfollow-up message in th",
+  "e language the buyer mostly used. Never judge accent,\ngrammar or English fluency; judge se",
+  "lling skill only.\n\nHOW SALES WORKS HERE (do not apply a Western \"talk less\" rule blindly)\n",
+  "Most calls are education and course counselling in Kerala. Educating the buyer IS\nselling ",
+  "when it is tailored to them: exam difficulty, syllabus depth, module-wise\nweightage, NET v",
+  "s JRF style comparisons, salary or stipend benefits, refund policy,\nmentor support. Credit",
+  " this as value building. A seller share of up to about 70%\nis acceptable on a counselling ",
+  "call if the seller collected the buyer's details,\nasked at least a few real questions and ",
+  "kept checking understanding. Call it a\n\"lecture\" only if the seller asked almost nothing a",
+  "nd ignored the buyer's answers.\nUrgency built on real facts (days left to the exam, batch ",
+  "start, seats) is GOOD.\nScolding or shaming the buyer (\"you are not serious\") is a fault; n",
+  "ame it gently.\n\nACCENT CHECKLIST: mark each done true/false with a short note (quote if po",
+  "ssible)\n1. Intro and clear purpose of the call\n2. Rapport and a warm, smiling tone\n3. Coll",
+  "ected the buyer's basic details early (background, goal, current status)\n4. Asked a though",
+  "t-provoking question (e.g. \"how many days are left for the exam?\")\n5. Built value or urgen",
+  "cy with specifics (syllabus, modules, comparison, benefits)\n6. Asked how they heard about ",
+  "us (lead source)\n7. Explained support (class timing, mentors, refund policy) naturally, no",
+  "t pushy\n8. Guided a confused buyer towards a decision like a counsellor\n9. Handled price c",
+  "learly when asked; value before or with the fee\n10. Attempted a booking or commitment (slo",
+  "t, demo, seat)\n11. Fixed a specific callback time AND asked for feedback after the demo or",
+  " class\n12. Used the right words (see WORD RULES)\n\nWORD RULES (always report violations in ",
+  "word_fixes)\n- Never \"offer\", \"one-time offer\", \"limited offer\", \"last chance\". Use \"fee re",
+  "duction\",\n  \"fee reduction for the first few members\", \"early-bird fee reduction\".\n- Never",
+  " \"100% placement\" or \"guaranteed job\". Use \"placement support\" or \"placement assistance\".\n",
+  "- Never \"cheap\". Use \"affordable\" or explain the value.\n\nGROUND RULES\n1. Label speakers \"S",
+  "eller:\" and \"Buyer:\" in the transcript.\n2. Quote only words actually spoken. Never invent ",
+  "a quote.\n3. If the call is under about 1 minute or unclear, say so and score only what you",
+  " hear.\n4. Do not repeat phone numbers, addresses or personal details.\n5. Every fix must co",
+  "ntain the exact quote, why it matters, and the exact better line.\n\nSCORING: be consistent.",
+  " Score from the checklist evidence, not from mood.\nCourse scorecard, each 0/1/2:\nopening (",
+  "1 = polite, 2 = intro + purpose + rapport) \u00b7 questions (1 = some details\ncollected, 2 = de",
+  "tails + at least one thought-provoking question) \u00b7 listening\n(1 = listens, 2 = uses the bu",
+  "yer's answers in the pitch) \u00b7 objections (1 = answers,\n2 = acknowledges, explores, answers",
+  ", confirms) \u00b7 close (1 = vague next step,\n2 = booking attempt or fixed callback time).\nCal",
+  "lVibe score: opening 0-15 \u00b7 discovery 0-25 \u00b7 listening 0-15 \u00b7 value pitch 0-15 \u00b7\nobjection",
+  "s 0-15 \u00b7 close 0-15. Calibration: a call with most checklist items done and\nonly small wor",
+  "d or follow-up errors scores 7-8/10 and 70-80/100. A call with no\nquestions, no value buil",
+  "ding and no next step scores 2-3/10 and under 40/100.\n\nOUTPUT (JSON matching the schema)\n-",
+  " overall_verdict: one line in the founder's style, e.g. \"Good call. Work on two small erro",
+  "rs; the rest is strong.\"\n- went_well: 4 to 8 specific strengths, each with a short quote w",
+  "here possible.\n- fix_next_time: 2 or 3 fixes, most important first.\n- checklist: all 12 it",
+  "ems in order.\n- word_fixes: every word-rule violation heard (empty list if none).\n- red_fl",
+  "ags: false or guaranteed promises, pressure, shaming, rudeness, wrong price,\n  or not tell",
+  "ing a real customer the call is recorded. Empty list if none.\n"
+].join('');
+
+var CC_HTML = "<!doctype html><html><head><meta charset=\"utf-8\">\n<link href=\"https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\">\n<style>\n:root{--forest:#0B3D1E;--green:#16A34A;--leaf:#79C24A;--mint:#E9F5EA;--cream:#F7FAF8;--ink:#2C3A31;--line:#DCE5DE;--red:#B42318}\n*{box-sizing:border-box}body{margin:0;background:var(--cream);font-family:Poppins,Arial,sans-serif;color:var(--forest)}\nheader{background:var(--forest);color:#fff;padding:22px 20px}\nheader .in,main{max-width:720px;margin:0 auto}\nheader small{color:var(--leaf);font-weight:700;letter-spacing:3px;font-size:12px}\nheader h1{margin:6px 0 0;font-size:28px;line-height:1.15}\nmain{padding:20px 16px 60px}\n.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}\nlabel{display:block;font-size:13px;font-weight:600;margin:14px 0 6px}\ninput,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:15px;background:#fff;color:var(--forest)}\n.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}\n@media(max-width:560px){.row{grid-template-columns:1fr}}\n.drop{border:2px dashed var(--leaf);border-radius:14px;padding:22px;text-align:center;background:var(--mint);cursor:pointer}\n.drop b{display:block;font-size:16px}.drop span{font-size:13px;color:var(--ink)}\n.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin-top:16px}\n.chk input{width:20px;height:20px;margin-top:2px}\nbutton{width:100%;margin-top:18px;padding:15px;border:0;border-radius:999px;background:var(--forest);color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer}\nbutton:disabled{opacity:.5;cursor:wait}\n.err{color:var(--red);font-size:14px;margin-top:10px;min-height:20px}\n.steps{display:none}.steps.on{display:block}\n.step{display:flex;gap:12px;align-items:center;padding:10px 0;font-size:15px;color:#8A968E}\n.step i{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;flex:none}\n.step.now{color:var(--forest);font-weight:600}.step.now i{border-color:var(--green);background:var(--green);animation:p 1s infinite}\n.step.ok{color:var(--green)}.step.ok i{background:var(--green);border-color:var(--green)}\n@keyframes p{50%{opacity:.3}}\n#result{display:none}\n.scores{display:grid;grid-template-columns:1fr 1fr;gap:12px}\n.big{background:var(--forest);color:#fff;border-radius:16px;padding:18px}\n.big b{font-size:44px;line-height:1;display:block}.big span{font-size:13px;color:var(--mint)}\n.big.alt{background:var(--mint);color:var(--forest)}.big.alt span{color:var(--ink)}\nh3{margin:0 0 10px;font-size:15px;letter-spacing:2px;color:var(--green)}\np,li{font-size:15px;line-height:1.55;color:var(--ink)}\nul{padding-left:20px;margin:0}\n.fix{border-left:3px solid var(--leaf);padding:4px 0 4px 12px;margin:10px 0}\n.fix q{display:block;font-style:italic;color:var(--ink)}.fix b{color:var(--forest)}\n.pill{display:inline-block;background:var(--forest);color:#fff;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600}\n.msg{background:var(--mint);border-radius:12px;padding:14px;white-space:pre-wrap;font-size:15px}\n.verdict{font-size:17px;font-weight:700;color:var(--forest);margin:16px 0 0}\n.cl{list-style:none;padding:0}.cl li{padding:8px 0;border-bottom:1px solid var(--line)}.cl li b{display:inline-block;width:22px}\n.cl li.y b{color:var(--green)}.cl li.n b{color:var(--red)}.cl small{display:block;color:#8A968E;margin-left:22px;font-size:13px}\n.copy{width:auto;padding:10px 18px;margin-top:10px;font-size:14px}\n.again{background:#fff;color:var(--forest);border:2px solid var(--forest)}\nfooter{text-align:center;font-size:12px;color:#8A968E;padding:10px}\n</style></head><body>\n<header><div class=\"in\"><small>ACCENT \u00b7 KILI \u00b7 BETA</small><h1>Get feedback on your sales call \ud83d\udc26</h1><p style=\"margin:6px 0 0;color:#E9F5EA;font-size:14px\">Upload a call. Kili listens like a sales coach and tells you exactly what to fix.</p></div></header>\n<main>\n<div id=\"formCard\" class=\"card\">\n  <div class=\"row\">\n    <div><label>Your name or Learner ID</label><input id=\"learner\" placeholder=\"e.g. Anu or AS01-03\" autocomplete=\"off\"></div>\n    <div><label>Email (optional)</label><input id=\"email\" type=\"email\" placeholder=\"you@gmail.com\"></div>\n  </div>\n  <div class=\"row\">\n    <div><label>Call type</label><select id=\"type\"><option>Role-play</option><option>Practice call</option><option>Real lead</option><option>Field call</option></select></div>\n    <div><label>Goal of the call</label><select id=\"goal\"><option>Book a meeting</option><option>Qualify the lead</option><option>Close the sale</option><option>Follow-up</option></select></div>\n  </div>\n  <div class=\"row\">\n    <div><label>Product and price</label><input id=\"product\" placeholder=\"e.g. Accent Sales Basics, \u20b9149\"></div>\n    <div><label>Language</label><select id=\"language\"><option>Manglish</option><option>Malayalam</option><option>English</option><option>Mixed</option></select></div>\n  </div>\n  <label>Call recording</label>\n  <div class=\"drop\" id=\"drop\"><b id=\"fname\">Tap to choose a recording</b><span>MP3, WAV, AAC or WhatsApp voice note \u00b7 max 30 MB</span></div>\n  <input type=\"file\" id=\"file\" accept=\"audio/*,.mp3,.wav,.aac,.ogg,.opus,.m4a,.flac\" hidden>\n  <div class=\"chk\"><input type=\"checkbox\" id=\"consent\"><span>The other person knew this call was recorded for training.</span></div>\n  <button id=\"go\">Get my feedback</button>\n  <div class=\"err\" id=\"err\"></div>\n</div>\n<div id=\"steps\" class=\"card steps\">\n  <div class=\"step\" id=\"s1\"><i></i>Uploading your recording</div>\n  <div class=\"step\" id=\"s2\"><i></i>Listening to the call</div>\n  <div class=\"step\" id=\"s3\"><i></i>Writing your feedback</div>\n  <p id=\"wait\" style=\"font-size:13px;color:#8A968E;margin:8px 0 0\">Short calls take about 30 seconds, long calls 1\u20133 minutes. Please keep this page open.</p>\n</div>\n<div id=\"result\"></div>\n<footer>Your recording is stored privately in Accent's Drive and used only for your training.<br><a href=\"https://script.google.com/macros/s/AKfycbxeg3TnuiM5YzhW5nzM5CBatFa2PHTkaOdPjzWULSONS5BNu5HBh5bsfr1i44jbTdeW/exec\" target=\"_top\" style=\"color:#16A34A\">\u2190 Back to Ila</a></footer>\n</main>\n<script>\nconst $=id=>document.getElementById(id);let picked=null;\ntry{$('learner').value=localStorage.getItem('cv_id')||'';$('email').value=localStorage.getItem('cv_mail')||''}catch(e){}\n$('drop').onclick=()=>$('file').click();\n$('file').onchange=()=>{picked=$('file').files[0];$('fname').textContent=picked?picked.name+' \u00b7 '+(picked.size/1048576).toFixed(1)+' MB':'Tap to choose a recording'};\nfunction step(n){['s1','s2','s3'].forEach((s,i)=>{$(s).className='step'+(i<n-1?' ok':i===n-1?' now':'')})}\nfunction fail(m){$('err').textContent=m;$('go').disabled=false;$('steps').classList.remove('on');$('formCard').style.display='block'}\n$('go').onclick=()=>{\n  $('err').textContent='';\n  const id=$('learner').value.trim();\n  if(!id)return fail('Enter your name or Learner ID.');\n  if(!picked)return fail('Choose a recording.');\n  if(picked.size>30*1048576)return fail('That file is over 30 MB. Send a shorter or compressed recording.');\n  if(!$('consent').checked)return fail('Please confirm the recording consent.');\n  try{localStorage.setItem('cv_id',id);localStorage.setItem('cv_mail',$('email').value.trim())}catch(e){}\n  $('go').disabled=true;$('formCard').style.display='none';$('steps').classList.add('on');step(1);\n  const rd=new FileReader();\n  rd.onload=()=>{\n    step(2);setTimeout(()=>step(3),6000);setTimeout(()=>{if($('steps').classList.contains('on'))$('wait').textContent='Still working on a long call\u2026 almost there. Please keep this page open.'},90000);\n    google.script.run.withSuccessHandler(show).withFailureHandler(e=>fail(e.message||String(e))).ccReview({\n      learner:id,email:$('email').value.trim(),type:$('type').value,goal:$('goal').value,product:$('product').value.trim(),\n      language:$('language').value,consent:true,fileName:picked.name,mime:picked.type||'audio/mpeg',data:String(rd.result).split(',')[1]});\n  };\n  rd.onerror=()=>fail('Could not read that file.');\n  rd.readAsDataURL(picked);\n};\nfunction copyFU(b){const t=document.getElementById('fu').innerText;const ok=()=>b.textContent='Copied \u2713';(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(ok).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();ok()})}\nfunction esc(s){return String(s==null?'':s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}\nfunction show(o){\n  $('steps').classList.remove('on');\n  const fixes=(o.fixes||[]).map(f=>'<div class=\"fix\">'+(f.moment?'<q>'+esc(f.moment)+'</q>':'')+'<p>'+esc(f.why)+'</p>'+(f.better_line?'<b>Say instead: '+esc(f.better_line)+'</b>':'')+'</div>').join('');\n  const checks=(o.checklist||[]).map(x=>'<li class=\"'+(x.done?'y':'n')+'\"><b>'+(x.done?'\u2713':'\u2717')+'</b> '+esc(x.item)+(x.note?'<small>'+esc(x.note)+'</small>':'')+'</li>').join('');\n  const words=(o.words||[]).map(w=>'<li>\u201c'+esc(w.said)+'\u201d \u2192 say <b>\u201c'+esc(w.use)+'\u201d</b></li>').join('');\n  const objs=(o.objections||[]).filter(x=>x.objection).map(x=>'<li><b>'+esc(x.objection)+'</b>: '+esc(x.better_answer)+'</li>').join('');\n  $('result').innerHTML=\n   '<div class=\"card\"><div class=\"scores\"><div class=\"big\"><b>'+o.score10+'/10</b><span>Course scorecard</span></div><div class=\"big alt\"><b>'+o.score100+'</b><span>Kili score /100</span></div></div>'+\n   (o.verdict?'<p class=\"verdict\">'+esc(o.verdict)+'</p>':'')+'<p style=\"margin-top:14px\"><span class=\"pill\">'+esc(o.interest)+'</span> '+(o.interestQuote?'\u201c'+esc(o.interestQuote)+'\u201d':'')+'</p><p>'+esc(o.summary)+'</p><p><b>Talk ratio:</b> '+esc(o.talk)+'</p></div>'+\n   (checks?'<div class=\"card\"><h3>ACCENT CHECKLIST</h3><ul class=\"cl\">'+checks+'</ul></div>':'')+\n   (words?'<div class=\"card\"><h3>WORDS TO CHANGE</h3><ul>'+words+'</ul></div>':'')+\n   '<div class=\"card\"><h3>WHAT WENT WELL</h3><ul>'+(o.well||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>'+\n   '<div class=\"card\"><h3>FIX NEXT TIME</h3>'+fixes+'</div>'+\n   (objs?'<div class=\"card\"><h3>OBJECTIONS</h3><ul>'+objs+'</ul></div>':'')+\n   ((o.flags||[]).length?'<div class=\"card\" style=\"border-color:#F3B8B2\"><h3 style=\"color:#B42318\">RED FLAGS</h3><ul>'+o.flags.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul></div>':'')+\n   '<div class=\"card\"><h3>NEXT ACTION</h3><p>'+esc(o.next)+'</p><h3 style=\"margin-top:16px\">FOLLOW-UP MESSAGE</h3><div class=\"msg\" id=\"fu\">'+esc(o.followup)+'</div><button class=\"copy\" onclick=\"copyFU(this)\">Copy message</button></div>'+\n   '<div class=\"card\" id=\"fb\"><h3>BETA \u00b7 WAS THIS FEEDBACK USEFUL?</h3><div style=\"display:flex;gap:10px\"><button class=\"copy rate\" data-v=\"\ud83d\udc4d\">\ud83d\udc4d Yes</button><button class=\"copy rate\" data-v=\"\ud83d\udc4e\">\ud83d\udc4e Not really</button></div>'+\n   '<input id=\"fbt\" placeholder=\"What should Kili do better? (optional)\" style=\"margin-top:12px\"><button class=\"copy\" id=\"fbs\">Send feedback</button></div>'+\n   '<button class=\"again\" onclick=\"location.reload()\">Review another call</button>';\n  let rating='';document.querySelectorAll('.rate').forEach(b=>b.onclick=()=>{rating=b.dataset.v;document.querySelectorAll('.rate').forEach(x=>x.style.opacity=x===b?1:.45)});\n  $('fbs').onclick=()=>{if(!rating&&!$('fbt').value.trim())return;$('fbs').disabled=true;$('fbs').textContent='Sending\u2026';\n    google.script.run.withSuccessHandler(()=>{$('fb').innerHTML='<h3>THANK YOU \ud83c\udf31</h3><p>Your feedback helps us make Kili better.</p>'}).withFailureHandler(()=>{$('fbs').disabled=false;$('fbs').textContent='Try again'})\n    .ccFeedback({learner:o.learner,rating:rating,comment:$('fbt').value.trim(),score:o.score100});};\n  $('result').style.display='block';window.scrollTo(0,0);\n}\n</script></body></html>";
+// END of Kili
+
+/* ================= analytics helpers (inline SVG, no libraries) ================= */
+function anDays_(rows, dateCol, n) {
+  var out = [], idx = {}, tz = 'Asia/Kolkata', now = new Date();
+  for (var i = n - 1; i >= 0; i--) { var d = new Date(now.getTime() - i * 864e5), k = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    idx[k] = out.length; out.push({ k: k, label: Utilities.formatDate(d, tz, 'd MMM'), rows: [] }); }
+  rows.forEach(function (r) { try { var k = Utilities.formatDate(new Date(r[dateCol]), tz, 'yyyy-MM-dd'); if (k in idx) out[idx[k]].rows.push(r); } catch (e) {} });
+  return out;
+}
+function anEsc_(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+/** Bar chart; optional line (second series, own scale 0..lineMax). */
+function anChart_(labels, bars, line, lineMax, barName, lineName) {
+  var W = 640, H = 200, P = 28, n = labels.length, bw = (W - P * 2) / n, max = Math.max.apply(null, bars.concat([1]));
+  var g = '<svg viewBox="0 0 ' + W + ' ' + (H + 36) + '" width="100%" role="img" style="display:block">';
+  [0, .5, 1].forEach(function (f) { var y = P + (H - P * 2) * (1 - f); g += '<line x1="' + P + '" x2="' + (W - P) + '" y1="' + y + '" y2="' + y + '" stroke="#DCE5DE"/>' +
+    '<text x="' + (P - 6) + '" y="' + (y + 4) + '" font-size="10" text-anchor="end" fill="#8A968E">' + Math.round(max * f) + '</text>'; });
+  bars.forEach(function (v, i) { var h = (H - P * 2) * v / max, x = P + i * bw + bw * .18;
+    g += '<rect x="' + x + '" y="' + (H - P - h) + '" width="' + (bw * .64) + '" height="' + h + '" rx="3" fill="#16A34A"><title>' + anEsc_(labels[i]) + ': ' + v + '</title></rect>'; });
+  if (line) { var pts = []; line.forEach(function (v, i) { if (v == null) return; pts.push((P + i * bw + bw / 2) + ',' + (P + (H - P * 2) * (1 - v / lineMax))); });
+    if (pts.length) g += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#0B3D1E" stroke-width="2.5"/>' + pts.map(function (p) { var a = p.split(','); return '<circle cx="' + a[0] + '" cy="' + a[1] + '" r="3.5" fill="#0B3D1E"/>'; }).join(''); }
+  var step = Math.ceil(n / 8);
+  labels.forEach(function (l, i) { if (i % step === 0 || (i === n - 1 && (n - 1) % step > step / 2)) g += '<text x="' + (P + i * bw + bw / 2) + '" y="' + (H - P + 16) + '" font-size="10" text-anchor="middle" fill="#8A968E">' + anEsc_(l) + '</text>'; });
+  g += '<rect x="' + P + '" y="' + (H + 12) + '" width="10" height="10" fill="#16A34A"/><text x="' + (P + 14) + '" y="' + (H + 21) + '" font-size="11" fill="#2C3A31">' + anEsc_(barName) + '</text>';
+  if (line) g += '<line x1="' + (P + 150) + '" x2="' + (P + 164) + '" y1="' + (H + 17) + '" y2="' + (H + 17) + '" stroke="#0B3D1E" stroke-width="2.5"/><text x="' + (P + 168) + '" y="' + (H + 21) + '" font-size="11" fill="#2C3A31">' + anEsc_(lineName) + '</text>';
+  return g + '</svg>';
+}
+/** Horizontal bars for a {label: count} map. */
+function anHBars_(map, top) {
+  var arr = Object.keys(map).map(function (k) { return [k, map[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, top || 6);
+  var max = arr.length ? arr[0][1] : 1;
+  return arr.length ? arr.map(function (a) { return '<div style="display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px"><span style="width:44%;color:#0B3D1E">' + anEsc_(a[0]) +
+    '</span><div style="flex:1;height:10px;background:#DCE5DE;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:' + Math.round(a[1] / max * 100) + '%;background:#16A34A"></i></div><b style="width:30px;text-align:right">' + a[1] + '</b></div>'; }).join('')
+    : '<p style="color:#8A968E;font-size:13px">No data yet.</p>';
+}
+function anKpi_(items) {
+  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0">' + items.map(function (k) {
+    return '<div style="background:#fff;border:1px solid #DCE5DE;border-radius:14px;padding:14px"><div style="font-size:11px;letter-spacing:1.5px;color:#16A34A;font-weight:600">' + anEsc_(k[0]) +
+      '</div><div style="font-size:28px;font-weight:700;color:#0B3D1E;margin-top:4px">' + anEsc_(k[1]) + '</div>' + (k[2] ? '<div style="font-size:12px;color:#8A968E">' + anEsc_(k[2]) + '</div>' : '') + '</div>'; }).join('') + '</div>';
+}
+function anCard_(title, inner) { return '<div style="background:#fff;border:1px solid #DCE5DE;border-radius:16px;padding:16px;margin:14px 0"><h3 style="margin:0 0 10px;font-size:15px;color:#0B3D1E">' + anEsc_(title) + '</h3>' + inner + '</div>'; }
+function anAll_(sheet, cols) { return sheet && sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, cols).getValues() : []; }

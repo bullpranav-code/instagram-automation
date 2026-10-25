@@ -1,0 +1,23 @@
+// ILA LOADER v1 - loads the latest Ila code from Accent's GitHub. Do not edit.
+var ILA_CODE_URL = 'https://bullpranav-code.github.io/instagram-automation/ila/code/Ila_v4.txt';
+function load_() {
+  if (globalThis.__ILA_READY) return;
+  var c = CacheService.getScriptCache(), code = c.get('ila_code');
+  if (!code) {
+    var r = UrlFetchApp.fetch(ILA_CODE_URL + '?t=' + Date.now(), { muteHttpExceptions: true });
+    if (r.getResponseCode() !== 200) throw new Error('Could not load Ila code (' + r.getResponseCode() + ')');
+    code = r.getContentText();
+    try { c.put('ila_code', code, 600); } catch (e) {}
+  }
+  (0, eval)(code);
+  globalThis.__ILA_READY = true;
+}
+function doGet(e) { load_(); return doGet(e); }
+function doPost(e) { load_(); return doPost(e); }
+function startSession(f) { load_(); return startSession(f); }
+function chat(r) { load_(); return chat(r); }
+function requestService(r) { load_(); return requestService(r); }
+function processDrafts() { load_(); return processDrafts(); }
+function feedback(r) { load_(); return feedback(r); }
+function setup() { load_(); return setup(); }
+function refreshCode() { CacheService.getScriptCache().remove('ila_code'); load_(); Logger.log('Ila code reloaded.'); }
