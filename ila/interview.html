@@ -63,7 +63,7 @@ input:focus,textarea:focus{outline:2px solid var(--l);border-color:transparent}
   <label>LANGUAGE</label>
   <div class="pills" id="langs"><button class="pill on" data-v="en-IN">English</button><button class="pill" data-v="ml-IN">Malayalam</button></div>
   <button class="btn" id="go">Start interview</button>
-  <div class="tips">💡 <b>To answer by voice:</b> tap the green 🎤 and speak, or tap the answer box and use the <b>🎙 on your keyboard</b>. Turn your volume up to hear Ila. Sit somewhere quiet.</div>
+  <div class="tips">💡 <b>To answer by voice:</b> tap the green 🎤, speak, then tap ■. Ila writes your answer, you check it and tap Send. Turn your volume up to hear Ila. Sit somewhere quiet.</div>
 </div>
 
 <div id="live" class="hide">
@@ -76,7 +76,7 @@ input:focus,textarea:focus{outline:2px solid var(--l);border-color:transparent}
   </div>
   <div class="card">
     <label style="margin-top:0">YOUR ANSWER</label>
-    <textarea id="ans" rows="5" placeholder="Tap 🎤 to speak, or type here."></textarea>
+    <textarea id="ans" rows="5" placeholder="Tap 🎤 to record your answer, or type here."></textarea>
     <div class="row">
       <button id="mic" class="hide" aria-label="Speak">🎤</button>
       <button class="btn green" id="send" style="margin-top:0">Send answer</button>
@@ -93,7 +93,7 @@ const $=id=>document.getElementById(id);
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const API='https://script.google.com/macros/s/AKfycbxeg3TnuiM5YzhW5nzM5CBatFa2PHTkaOdPjzWULSONS5BNu5HBh5bsfr1i44jbTdeW/exec';
-function callIla(req){return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)}).then(r=>r.json()).then(j=>{if(j.error)throw new Error(j.error);return j;});}
+function callIla(req){req.session=session;return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)}).then(r=>r.json()).then(j=>{if(j.error)throw new Error(j.error);return j;});}
 let hist=[],lang='en-IN',name='',role='',exp='Fresher',answers=0,busy=false,done=false,lastQ='',rec=null,listening=false;
 const session='IL-'+(Math.random().toString(36).slice(2)+'XXXXXXXX').slice(0,8).toUpperCase();
 try{const s=JSON.parse(localStorage.getItem('ila_s')||'null');if(s&&s.name)$('nm').value=s.name;}catch(e){}
@@ -101,14 +101,25 @@ function pick(box,cb){box.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{bo
 pick($('roles'),v=>{role=v;$('role').classList.toggle('hide',v!=='');if(v==='')$('role').focus();});
 pick($('exps'),v=>exp=v);pick($('langs'),v=>lang=v);
 function langName(){return lang==='ml-IN'?'Malayalam':'English'}
-function rules(){return '[VOICE INTERVIEW RULES. These override every other interview rule. You are a professional but friendly HR interviewer in a live spoken interview for the role: '+role+' ('+exp+'). Speak in '+langName()+'. Do NOT give feedback, scores or tips during the interview. React in at most one short natural sentence (like a real interviewer: "Okay, thank you." or ONE short follow-up if the answer was vague or very short), then ask the next question and start it with "Question N/6:". Max 40 words per message, no bullet points, no bold. Questions in order: 1 tell me about yourself, 2 why this role and company, 3 a skill question for this role, 4 a real situation (tell me about a time you...), 5 a practical task for this role (for sales roles: sell me this pen), 6 salary expectation or do you have any questions for us.]';}
-function reportRules(){return '[The interview is over. Now write my INTERVIEW REPORT based ONLY on what I actually said. First line exactly: REPORT\nThen exactly these sections, each on its own line, short and specific:\nSCORE: N/10 | Communication N/10 | Confidence N/10 | Content N/10\nBEST PART: quote my strongest line in quotes, then why it works\nCORRECTIONS:\n- You said: "..." => Better: "..."\n- You said: "..." => Better: "..."\n- You said: "..." => Better: "..."\nWORDS: up to 4 fixes as  wrong => right  (or None)\nPRACTISE NEXT: 2 short tips in one or two lines\nREADY: one honest sentence on whether I am interview-ready for this role and what to fix first.\nWrite in '+langName()+'. No other text. Never invent facts.]';}
+function rules(){return '[VOICE INTERVIEW RULES. These override every other interview rule. You are a professional but friendly HR interviewer in a live spoken interview for the role: '+role+' ('+exp+'). Speak in '+langName()+(lang==='ml-IN'?' using formal, professional standard Malayalam in Malayalam script, like an HR manager at a reputed Kerala company: polite forms (താങ്കൾ), complete sentences, no slang, no Manglish; keep job terms like sales, target, customer in English':'')+'. Do NOT give feedback, scores or tips during the interview. React in at most one short natural sentence (like a real interviewer: "Okay, thank you." or ONE short follow-up if the answer was vague or very short), then ask the next question and start it with "Question N/6:". Max 40 words per message, no bullet points, no bold. Questions in order: 1 tell me about yourself, 2 why this role and company, 3 a skill question for this role, 4 a real situation (tell me about a time you...), 5 a practical task for this role (for sales roles: sell me this pen), 6 salary expectation or do you have any questions for us.]';}
+function reportRules(){return '[The interview is over. Now write my INTERVIEW REPORT based ONLY on what I actually said. First line exactly: REPORT\nThen exactly these sections, each on its own line, short and specific:\nSCORE: N/10 | Communication N/10 | Confidence N/10 | Content N/10\nBEST PART: quote my strongest line in quotes, then why it works\nCORRECTIONS:\n- You said: "..." => Better: "..."\n- You said: "..." => Better: "..."\n- You said: "..." => Better: "..."\nWORDS: up to 4 fixes as  wrong => right  (or None)\nPRACTISE NEXT: 2 short tips in one or two lines\nREADY: one honest sentence on whether I am interview-ready for this role and what to fix first.\nWrite in '+langName()+(lang==='ml-IN'?' (formal, professional Malayalam; quotes of what I said stay as I said them)':'')+'. No other text. Never invent facts.]';}
 function voices(){return window.speechSynthesis?speechSynthesis.getVoices():[]}
+const player=new Audio();player.preload='auto';let ttsSeq=0;
+const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+function stopVoice(){try{speechSynthesis.cancel();}catch(e){}try{player.pause();}catch(e){}}
+function browserSpeak(t){
+  if(!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(t);u.lang='en-IN';u.rate=1;
+  const v=voices().find(x=>/en-IN|en_IN/.test(x.lang))||voices().find(x=>/^en/.test(x.lang));if(v)u.voice=v;speechSynthesis.speak(u);
+}
 function speak(t){
-  if(!window.speechSynthesis||!t)return;try{speechSynthesis.cancel();}catch(e){}
-  const u=new SpeechSynthesisUtterance(t.replace(/[*#_]/g,'').replace(/Question (\d)\/6:?/g,'Question $1.'));u.lang=lang;u.rate=1;
-  const v=voices().find(x=>x.lang&&x.lang.replace('_','-')===lang)||voices().find(x=>/en-IN|en_IN/.test(x.lang))||voices().find(x=>/^en/.test(x.lang));
-  if(v)u.voice=v;speechSynthesis.speak(u);
+  if(!t)return;stopVoice();
+  const clean=t.replace(/[*#_]/g,'').replace(/Question\s*(\d)\s*\/\s*6\s*:?/gi,lang==='ml-IN'?'ചോദ്യം $1. ':'Question $1. ');
+  if(lang!=='ml-IN'){browserSpeak(clean);return}
+  const my=++ttsSeq;$('replay').textContent='🔊 Loading voice…';
+  callIla({action:'tts',text:clean,lang:lang}).then(r=>{
+    if(my!==ttsSeq)return;player.src='data:audio/wav;base64,'+r.audio;$('replay').textContent='🔊 Hear again';
+    player.play().catch(()=>{$('replay').textContent='🔊 Tap to hear';});
+  }).catch(()=>{if(my===ttsSeq){$('replay').textContent='🔊 Voice busy · read the question';}});
 }
 function setProg(){[...$('prog').children].forEach((b,i)=>b.classList.toggle('on',i<answers));}
 function thinking(on,slowMsg){
@@ -117,8 +128,8 @@ function thinking(on,slowMsg){
   else{clearTimeout(window._slow);$('send').disabled=false;$('hint').textContent='';}
 }
 function showQ(t){
-  lastQ=t;const m=t.match(/Question\s*(\d)\s*\/\s*6/i);
-  $('qn').textContent=m?'QUESTION '+m[1]+' OF 6':'ILA';$('qt').textContent=t.replace(/\*\*/g,'');
+  lastQ=t;const m=t.match(/(?:Question|ചോദ്യം)\s*(\d)\s*\/\s*6/i);
+  $('qn').textContent=m?'QUESTION '+m[1]+' OF 6':'ILA';$('qt').textContent=t.replace(/\*\*/g,'');stopVoice();
   $('end').classList.toggle('hide',answers<3);speak(t);setTimeout(()=>{try{$('ans').focus({preventScroll:true})}catch(e){}},300);
 }
 function ask(msg,shown,attempt){
@@ -141,13 +152,14 @@ $('go').onclick=()=>{
   if(!role){alert('Please choose or type the job role.');return}
   $('setup').classList.add('hide');$('live').classList.remove('hide');window.scrollTo(0,0);
   try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '));}catch(e){}
-  if(SR)$('mic').classList.remove('hide');
+  try{player.src=SILENT;player.play().catch(()=>{});}catch(e){}
+  if(REC||SR)$('mic').classList.remove('hide');
   ask(rules()+'\n\nStart now: greet me by name in one short line and ask Question 1/6.','Start interview');
 };
 function submit(final){
   if(busy||done)return;const t=$('ans').value.trim();
   if(!t&&!final){$('hint').textContent='Say or type your answer first.';return}
-  if(listening)stopMic();
+  if(listening){stopMic();return}
   if(t){answers++;setProg();$('mine').textContent='You: '+t;}
   $('ans').value='';
   ask(((answers>=6||final)?reportRules():rules())+'\n\nMY ANSWER: '+(t||'(no answer)'),t||'(ended early)');
@@ -155,16 +167,44 @@ function submit(final){
 }
 $('send').onclick=()=>submit(false);
 $('end').onclick=()=>{if(confirm('End the interview and get your report now?'))submit(true)};
-$('replay').onclick=()=>speak(lastQ);
-$('mic').onclick=()=>{ if(listening){stopMic();return}
-  try{speechSynthesis.cancel();}catch(e){}
+$('replay').onclick=()=>{if(lang==='ml-IN'&&player.src&&player.src.length>200&&!/Voice busy/.test($('replay').textContent)){player.currentTime=0;player.play().catch(()=>{});}else speak(lastQ);};
+const REC=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+let mr=null,chunks=[],stream=null,recT=null,recStart=0;
+function recMime(){const c=['audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm','audio/ogg'];for(const m of c){try{if(MediaRecorder.isTypeSupported(m))return m}catch(e){}}return ''}
+$('mic').onclick=()=>{ if(busy)return; if(listening){stopMic();return}
+  stopVoice();
+  if(!REC){startSR();return}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{
+    stream=st;chunks=[];const mt=recMime();mr=mt?new MediaRecorder(st,{mimeType:mt}):new MediaRecorder(st);
+    mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+    mr.onstop=()=>{try{stream.getTracks().forEach(t=>t.stop())}catch(e){}transcribe(new Blob(chunks,{type:mr.mimeType||mt||'audio/mp4'}))};
+    mr.start();listening=true;recStart=Date.now();$('mic').classList.add('on');$('mic').textContent='■';
+    const tick=()=>{const s=Math.floor((Date.now()-recStart)/1000);$('hint').textContent='Recording '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' · tap ■ when you finish';if(s>=120)stopMic();};
+    tick();recT=setInterval(tick,500);
+  }).catch(()=>{$('hint').textContent='Microphone not allowed. Allow it in your browser settings, or use the 🎙 on your keyboard.';});
+};
+function startSR(){ if(!SR){$('hint').textContent='Use the 🎙 on your keyboard.';return}
   rec=new SR();rec.lang=lang;rec.interimResults=true;rec.continuous=true;const base=$('ans').value?($('ans').value+' '):'';
   rec.onresult=ev=>{let t='';for(const r of ev.results)t+=r[0].transcript;$('ans').value=base+t;};
-  rec.onerror=ev=>{$('hint').textContent=ev.error==='not-allowed'?'Mic blocked. Use the 🎙 on your keyboard instead.':'Mic stopped ('+ev.error+'). You can use the keyboard 🎙.';stopMic();};
+  rec.onerror=ev=>{$('hint').textContent='Mic stopped. Use the 🎙 on your keyboard.';stopMic();};
   rec.onend=()=>{if(listening)stopMic();};
-  try{rec.start();listening=true;$('mic').classList.add('on');$('hint').textContent='Listening… tap 🎤 again when you finish, then Send.';}catch(e){$('hint').textContent='Use the 🎙 on your keyboard.';}
-};
-function stopMic(){listening=false;$('mic').classList.remove('on');try{rec&&rec.stop();}catch(e){}$('hint').textContent='';}
+  try{rec.start();listening=true;$('mic').classList.add('on');$('mic').textContent='■';$('hint').textContent='Listening… tap ■ when you finish.';}catch(e){$('hint').textContent='Use the 🎙 on your keyboard.';}
+}
+function stopMic(){listening=false;clearInterval(recT);$('mic').classList.remove('on');$('mic').textContent='🎤';
+  if(mr&&mr.state==='recording'){try{mr.stop()}catch(e){}return}
+  try{rec&&rec.stop();}catch(e){}$('hint').textContent='';}
+function transcribe(blob){
+  if(!blob.size||Date.now()-recStart<800){$('hint').textContent='Too short. Tap 🎤 and speak your full answer.';return}
+  busy=true;$('send').disabled=true;$('mic').disabled=true;$('hint').textContent='Ila is writing down your answer…';
+  const fr=new FileReader();fr.onload=()=>{
+    callIla({action:'stt',audio:String(fr.result).split(',')[1],mime:blob.type,lang:lang}).then(r=>{
+      busy=false;$('send').disabled=false;$('mic').disabled=false;
+      const t=String(r.text||'').trim();
+      if(!t||/^\(no speech\)$/i.test(t)){$('hint').textContent='I could not hear you. Move closer and try again.';return}
+      $('ans').value=($('ans').value?$('ans').value+' ':'')+t;$('hint').textContent='Check your answer, edit if needed, then tap Send answer.';
+    }).catch(e=>{busy=false;$('send').disabled=false;$('mic').disabled=false;$('hint').textContent=String(e.message||'Could not read the recording. Try again or type.');});
+  };fr.readAsDataURL(blob);
+}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function showReport(txt){
   done=true;$('live').classList.add('hide');try{speechSynthesis.cancel();}catch(e){}
