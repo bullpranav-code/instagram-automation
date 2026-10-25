@@ -1,0 +1,221 @@
+// ILA v4.0 BETA - part 1 of 5. Apps Script file name: Ila1. Paste ALL of this.
+// ILA v4.0 BETA - Accent AI mentor (25 Oct 2026). This ONE file replaces all earlier Ila code in the main file.
+// Kili (call review) runs as its own app: CONFIG.KILI_URL
+const CONFIG = {
+  MODEL: 'gemini-flash-latest',
+  BACKUP_MODELS: ['gemini-flash-lite-latest', 'gemini-2.5-flash'],   // used when the main model is busy
+  SHEET_ID: '1BS0sL3Hy09wLYVsjRuGJLpiD9PFJkNE-yE0vw4xJqrU',   // same Google Sheet as CallVibe (Script property SHEET_ID overrides)
+  WHATSAPP: '919995842727',
+  INTERVIEW_URL: 'https://bullpranav-code.github.io/instagram-automation/ila/interview.html',   // voice mock interview page (real mic + voice on iPhone)
+  KILI_URL: 'https://script.google.com/macros/s/AKfycbzm5pCgvF4zDj7oGMvGiFY-hl_OHOhJjl8oTl0RrzuayQjeVQpBfyYoYG6DkYZqqspO/exec',
+  DAILY_MESSAGE_LIMIT: 40,                                     // per person per day, protects the free quota
+  MAX_UPLOAD_MB: 4,
+  DRIVE_FOLDER: 'Ila - Accent Careers',                        // uploads + drafts are saved here (private to you)
+  SERVICES: [                                                  // set prices when decided; blank = "price on WhatsApp"
+    { id: 'resume',   name: 'Resume rewrite',            price: '' },
+    { id: 'linkedin', name: 'LinkedIn profile makeover', price: '' },
+    { id: 'combo',    name: 'Resume + LinkedIn combo',   price: '' }
+  ]
+};
+
+const TABS = {
+  leads:    ['Ila Leads', ['Timestamp', 'Session', 'Name', 'WhatsApp', 'Email', 'I am', 'District', 'Consent']],
+  chats:    ['Ila Chats', ['Timestamp', 'Session', 'Name', 'Mode', 'Message', 'Ila reply', 'Flag', 'File link']],
+  services: ['Ila Service Requests', ['Timestamp', 'Session', 'Name', 'WhatsApp', 'Service', 'Price shown', 'Notes', 'Status', 'Draft doc']],
+  know:     ['Ila Knowledge', ['Topic', 'What Ila should know']],
+  reports:  ['Ila Interview Reports', ['Timestamp', 'Session', 'Name', 'Role', 'Language', 'Overall /10', 'Report']],
+  feedback: ['Beta Feedback', ['Timestamp', 'Product', 'Session', 'Name', 'Rating', 'Comment', 'Context']]
+};
+
+/* ================= set-up ================= */
+function setup() {
+  const ss = ss_();
+  Object.keys(TABS).forEach(k => tab_(ss, k));
+  const k = ss.getSheetByName(TABS.know[0]);
+  if (k.getLastRow() < 2) k.getRange(2, 1, DEFAULT_KNOWLEDGE.length, 2).setValues(DEFAULT_KNOWLEDGE);
+  folder_('Uploads'); folder_('Drafts');
+  Logger.log('Ready. Deploy \u2192 New deployment \u2192 Web app (Execute as Me, access Anyone).');
+}
+
+/* ================= web ================= */
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  const url = ScriptApp.getService().getUrl();
+  if (p.view === 'voice') return page_(goPage_(CONFIG.INTERVIEW_URL, 'Open the mock interview'));
+  if (p.view === 'call' || p.view === 'calls') return page_(goPage_(CONFIG.KILI_URL + (p.view === 'calls' ? '?view=calls&key=' + encodeURIComponent(p.key || '') : ''), 'Open Kili (call review)'));
+  if (p.view === 'admin') {
+    const key = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+    return page_(key && p.key === key ? adminHtml_() : '<p style="font-family:Arial;padding:30px">Wrong or missing key.</p>');
+  }
+  return page_(CHAT_HTML.split('{{LOGO}}').join(LOGO_LIGHT).split('{{LEAF}}').join(LEAF_SVG)
+    .replace('{{SERVICES}}', JSON.stringify(CONFIG.SERVICES)).replace('{{WA}}', CONFIG.WHATSAPP)
+    .split('{{URL}}').join(url).replace('{{KURL}}', CONFIG.KILI_URL).replace('{{IURL}}', CONFIG.INTERVIEW_URL));
+}
+/** API for the interview page hosted outside Google (it posts JSON here).
+ *  action 'chat' (interview turns), 'tts' (natural Gemini voice), 'stt' (voice answer -> text). */
+function doPost(e) {
+  let out;
+  try {
+    const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (!/^IL-[A-Z0-9]{8}$/.test(String(req.session || ''))) throw new Error('Session expired. Refresh the page.');
+    if (req.action === 'feedback') out = saveFeedback_(req);
+    else if (req.action === 'tts') { if (overCap_(req.session, 'tts', 40)) throw new Error('Voice limit reached for today'); out = { audio: ilaTts_(String(req.text || '').slice(0, 600), req.lang) }; }
+    else if (req.action === 'stt') { if (overCap_(req.session, 'stt', 40)) throw new Error('Recording limit reached for today. Please type your answer.'); out = { text: ilaStt_(req) }; }
+    else if (req.mode === 'interview') out = chat(req);
+    else throw new Error('Only interview requests are allowed here.');
+  } catch (err) { out = { error: String(err.message || err) }; }
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Natural voice (Gemini TTS). Returns base64 WAV. Throws if Google is busy, so the page falls back to text. */
+function ilaTts_(text, lang) {
+  if (!text) throw new Error('No text');
+  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  const style = lang === 'ml-IN'
+    ? 'Speak in clear, standard Malayalam like a calm, professional HR manager. Warm, unhurried, confident.'
+    : 'Speak in clear Indian English like a calm, professional HR manager. Warm, unhurried, confident.';
+  const models = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini-3.1-flash-tts-preview'];
+  for (let m = 0; m < models.length; m++) {
+    const r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': key },
+      payload: JSON.stringify({ model: models[m],
+        input: [{ type: 'user_input', content: [{ type: 'text', text: text, annotations: [{ type: 'speech_metadata', style: style }] }] }],
+        response_format: { type: 'audio', mime_type: 'audio/wav' },
+        generation_config: { speech_config: [{ voice: 'Puck' }] } }) });
+    if (r.getResponseCode() !== 200) continue;
+    const json = JSON.parse(r.getContentText());
+    let b64 = '';
+    (json.steps || []).forEach(st => (st.content || []).forEach(c => { if (c.type === 'audio' && c.data) b64 = c.data; }));
+    if (!b64 && json.output_audio) b64 = json.output_audio.data || '';
+    if (!b64) continue;
+    const bytes = Utilities.base64Decode(b64);
+    const head = String.fromCharCode(bytes[0] & 255, bytes[1] & 255, bytes[2] & 255, bytes[3] & 255);
+    return head === 'RIFF' ? b64 : Utilities.base64Encode(wav_(bytes, 24000));
+  }
+  throw new Error('Voice is busy');
+}
+function overCap_(session, kind, max) {
+  const c = CacheService.getScriptCache(), k = kind + '_' + session + '_' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyyMMdd');
+  const n = Number(c.get(k) || 0) + 1; c.put(k, String(n), 21600); return n > max;
+}
+/** Beta feedback from the interview page (and Ila chat). */
+function saveFeedback_(r) {
+  tab_(ss_(), 'feedback').appendRow([new Date(), String(r.product || 'Ila interview').slice(0, 40), String(r.session || ''), String(r.name || '').slice(0, 80),
+    String(r.rating || '').slice(0, 10), String(r.comment || '').slice(0, 1000), String(r.context || '').slice(0, 200)]);
+  return { ok: true };
+}
+function feedback(r) { return saveFeedback_(r || {}); }   // for google.script.run
+
+function wav_(pcm, rate) {
+  const h = [], s = t => { for (let i = 0; i < t.length; i++) h.push(t.charCodeAt(i)); };
+  const u32 = v => h.push(v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >> 24) & 255), u16 = v => h.push(v & 255, (v >> 8) & 255);
+  s('RIFF'); u32(36 + pcm.length); s('WAVE'); s('fmt '); u32(16); u16(1); u16(1); u32(rate); u32(rate * 2); u16(2); u16(16); s('data'); u32(pcm.length);
+  return h.map(b => b > 127 ? b - 256 : b).concat(pcm);
+}
+
+/** Voice answer -> text (Gemini listens to the recording). */
+function ilaStt_(req) {
+  const data = String(req.audio || '');
+  if (!data) throw new Error('No recording');
+  if (data.length > 6 * 1024 * 1024) throw new Error('Recording too long. Keep answers under 2 minutes.');
+  const mime = /mp4|m4a|aac/.test(req.mime || '') ? 'audio/aac' : /ogg/.test(req.mime || '') ? 'audio/ogg' : /wav/.test(req.mime || '') ? 'audio/wav' : /webm/.test(req.mime || '') ? 'audio/webm' : 'audio/aac';
+  const ask = 'Transcribe this spoken interview answer exactly as said, in ' + (req.lang === 'ml-IN' ? 'Malayalam script (keep English words in English)' : 'English') +
+    '. Fix nothing, add nothing, no labels or notes. If there is no speech, reply exactly: (no speech)';
+  const out = gemini_('You are a precise transcriber.', [{ role: 'user', parts: [{ text: ask }, { inlineData: { mimeType: mime, data: data } }] }],
+    { temperature: 0, maxOutputTokens: 800, thinkingConfig: { thinkingBudget: 0 } });
+  if (BUSY_RE.test(out)) throw new Error('Google is busy. Please record again in a moment.');
+  return String(out).trim();
+}
+
+function goPage_(to, label) {
+  return '<div style="font-family:Poppins,Arial;padding:40px 24px;text-align:center"><p style="color:#0B3D1E">Opening\u2026</p>' +
+    '<a href="' + to + '" target="_top" style="display:inline-block;background:#0B3D1E;color:#fff;padding:14px 22px;border-radius:12px;text-decoration:none">' + label + '</a></div>' +
+    '<script>try{window.top.location.href=' + JSON.stringify(to) + '}catch(e){}</script>';
+}
+function page_(html) {
+  return HtmlService.createHtmlOutput(html).setTitle('Ila \u00b7 ACCENT \u00b7 Choice Is Yours.')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/** Lead card from the welcome screen. */
+function startSession(f) {
+  const name = String(f.name || '').trim(), wa = String(f.whatsapp || '').replace(/[^\d+]/g, '');
+  if (!name) throw new Error('Please tell Ila your name.');
+  if (wa.replace(/\D/g, '').length < 10) throw new Error('Enter a valid WhatsApp number.');
+  if (!f.consent) throw new Error('Please tick the consent box to continue.');
+  const session = 'IL-' + Utilities.getUuid().slice(0, 8).toUpperCase();
+  tab_(ss_(), 'leads').appendRow([new Date(), session, name, wa, String(f.email || '').trim(), f.iam || '', f.district || '', 'Yes']);
+  return { session: session };
+}
+
+/** One chat turn. history = [{role:'user'|'model', text}] (last few turns, kept in the browser). */
+function chat(req) {
+  const session = String(req.session || ''), name = String(req.name || '');
+  if (!/^IL-[A-Z0-9]{8}$/.test(session)) throw new Error('Session expired. Refresh the page.');
+  if (overLimit_(session)) return { reply: "You've reached today's chat limit. Ila will be back tomorrow, or WhatsApp us on +91 99958 42727.", flag: 'limit' };
+
+  const mode = req.mode || 'chat';
+  const msg = String(req.message || '').slice(0, 4000);
+  let fileUrl = '';
+  const contents = (req.history || []).slice(mode === 'interview' ? -14 : -6).map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: String(h.text).slice(0, 4000) }] }));
+  const parts = [{ text: (mode !== 'chat' ? '[MODE: ' + mode + ']\n' : '') + (msg || '(attached file)') }];
+  if (req.file && req.file.data) {
+    const bytes = Utilities.base64Decode(req.file.data);
+    if (bytes.length > CONFIG.MAX_UPLOAD_MB * 1048576) throw new Error('File is over ' + CONFIG.MAX_UPLOAD_MB + ' MB.');
+    const mime = /pdf$/i.test(req.file.name || '') ? 'application/pdf' : (req.file.mime || 'application/pdf');
+    if (!/^(application\/pdf|image\/(png|jpe?g|webp))$/.test(mime)) throw new Error('Upload a PDF or a photo (JPG/PNG) of your resume.');
+    parts.push({ inlineData: { mimeType: mime, data: req.file.data } });
+    try { fileUrl = folder_('Uploads').createFile(Utilities.newBlob(bytes, mime, session + ' - ' + (req.file.name || 'resume'))).getUrl(); } catch (e) { fileUrl = ''; }
+  }
+  contents.push({ role: 'user', parts: parts });
+
+  const recent = (req.history || []).slice(-2).map(h => h.text).join(' ');
+  const out = gemini_(systemPrompt_(name, msg + ' ' + recent), contents,
+    mode === 'interview' ? { temperature: 0.5, maxOutputTokens: 1200, thinkingConfig: { thinkingBudget: 0 } } : null);
+  if (BUSY_RE.test(out)) return { reply: out, flag: 'busy' };
+  const flag = /\[HANDOFF\]/.test(out) ? 'handoff' : /\[CRISIS\]/.test(out) ? 'crisis' : '';
+  const reply = out.replace(/\[(HANDOFF|CRISIS)\]/g, '').trim();
+  const logMsg = mode === 'interview' ? msg.replace(/^\[[\s\S]*?\]\s*/, '').replace(/^MY ANSWER:\s*/, '') : msg;
+  tab_(ss_(), 'chats').appendRow([new Date(), session, name, mode, logMsg.slice(0, 1000) + (req.file ? ' [file: ' + (req.file.name || '') + ']' : ''), reply.slice(0, 4000), flag, fileUrl]);
+  if (/^\s*\**\s*REPORT/i.test(reply)) { try {
+    const sc = (reply.match(/SCORE:\s*(\d+(?:\.\d)?)/i) || [])[1] || '';
+    tab_(ss_(), 'reports').appendRow([new Date(), session, name, String(req.role || ''), String(req.lang || ''), sc, reply.slice(0, 5000)]);
+  } catch (e) {} }
+  return { reply: reply, flag: flag };
+}
+
+/** Paid service request (resume / LinkedIn rewrite). */
+function requestService(r) {
+  const svc = CONFIG.SERVICES.find(s => s.id === r.service);
+  if (!svc) throw new Error('Unknown service.');
+  tab_(ss_(), 'services').appendRow([new Date(), r.session || '', r.name || '', r.whatsapp || '', svc.name, svc.price || 'On WhatsApp', String(r.notes || '').slice(0, 500), 'New', '']);
+  try {                                       // build the draft in the background (about a minute)
+    ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'processDrafts').forEach(t => ScriptApp.deleteTrigger(t));
+    ScriptApp.newTrigger('processDrafts').timeBased().after(5000).create();
+  } catch (e) {}
+  return { ok: true, service: svc.name };
+}
+
+/* ================= paid drafts (resume / LinkedIn) ================= */
+/** Builds a Google Doc draft for every service request that has none yet.
+ *  Runs automatically after each request; you can also run it by hand from the editor. */
+function processDrafts() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'processDrafts').forEach(t => ScriptApp.deleteTrigger(t));
+  const sh = tab_(ss_(), 'services');
+  if (sh.getLastRow() < 2) return;
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 9).getValues();
+  rows.forEach((r, i) => {
+    if (r[8] || !/^New|^Draft failed/.test(String(r[7]))) return;
+    const row = i + 2;
+    sh.getRange(row, 8).setValue('Drafting\u2026');
+    SpreadsheetApp.flush();
+    try {
+      const url = buildDraft_(String(r[1]), String(r[2]), String(r[4]));
+      sh.getRange(row, 8, 1, 2).setValues([['Draft ready \u2014 check [brackets], send after payment', url]]);
+    } catch (e) {
+      sh.getRange(row, 8).setValue('Draft failed \u2014 ' + String(e.message || e).slice(0, 120));
+    }
+  });
+}
+

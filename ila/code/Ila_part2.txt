@@ -1,0 +1,132 @@
+// ILA v4.0 BETA - part 2 of 5. Apps Script file name: Ila2. Paste ALL of this.
+function buildDraft_(session, name, service) {
+  // 1. collect what the student shared: their messages, uploaded files and Ila's reviews
+  const ch = tab_(ss_(), 'chats');
+  const data = ch.getLastRow() > 1 ? ch.getRange(2, 1, ch.getLastRow() - 1, 8).getValues() : [];
+  const mine = data.filter(r => String(r[1]) === session);
+  if (!mine.length) throw new Error('No chat found for ' + session);
+  const texts = mine.map(r => 'STUDENT: ' + r[4] + '\nILA REVIEW: ' + String(r[5]).slice(0, 1500)).join('\n\n').slice(-12000);
+  const files = mine.map(r => String(r[7] || '')).filter(Boolean);
+  const parts = [{ text: 'Service ordered: ' + service + '\nStudent name: ' + name + '\n\nCONVERSATION:\n' + texts }];
+  if (files.length) {
+    const id = (files[files.length - 1].match(/[-\w]{25,}/) || [])[0];
+    if (id) { const b = DriveApp.getFileById(id).getBlob(); parts.push({ inlineData: { mimeType: b.getContentType(), data: Utilities.base64Encode(b.getBytes()) } }); }
+  }
+  // 2. ask Gemini for structured content
+  const raw = gemini_(DRAFT_PROMPT, [{ role: 'user', parts: parts }], { temperature: 0.3, maxOutputTokens: 6000, responseMimeType: 'application/json' });
+  let d;
+  try { d = JSON.parse(raw.replace(/^\x60\x60\x60(json)?|\x60\x60\x60$/g, '').trim()); } catch (e) { throw new Error('AI returned no usable draft (Google may be busy). Run processDrafts again later.'); }
+  // 3. write a clean Google Doc
+  const wantResume = !/^LinkedIn/i.test(service), wantLinkedIn = /LinkedIn/i.test(service);
+  const doc = DocumentApp.create((d.name || name) + ' \u2014 ' + service + ' (draft)');
+  const body = doc.getBody().setMarginTop(48).setMarginBottom(48).setMarginLeft(56).setMarginRight(56);
+  const F = '#0B3D1E', INK = '#2C3A31', GREY = '#8A968E';
+  const para = (t, size, opts) => { const p = body.appendParagraph(String(t || '')); const x = p.editAsText();
+    x.setFontFamily('Poppins').setFontSize(size).setForegroundColor((opts && opts.color) || INK).setBold(!!(opts && opts.bold));
+    p.setSpacingAfter((opts && opts.after) != null ? opts.after : 4).setSpacingBefore((opts && opts.before) || 0).setLineSpacing(1.15); return p; };
+  const head = t => { const p = para(t.toUpperCase(), 10.5, { bold: true, color: F, before: 14, after: 6 }); p.editAsText().setFontFamily('Poppins'); return p; };
+  const bullets = arr => (arr || []).forEach(b => { const li = body.appendListItem(String(b)); li.setGlyphType(DocumentApp.GlyphType.BULLET).setSpacingAfter(2);
+    li.editAsText().setFontFamily('Poppins').setFontSize(10).setForegroundColor(INK).setBold(false); });
+  body.clear();
+  if (wantResume) {
+    para(d.name || name, 22, { bold: true, color: F, after: 2 });
+    if (d.headline) para(d.headline, 11, { color: INK, after: 2 });
+    para(d.contact || '[Phone] \u00b7 [Email] \u00b7 [City] \u00b7 [LinkedIn URL]', 9.5, { color: GREY, after: 6 });
+    if (d.summary) { head('Professional summary'); para(d.summary, 10, {}); }
+    if (d.skills && d.skills.length) { head('Key skills'); para(d.skills.join('  \u00b7  '), 10, {}); }
+    if (d.experience && d.experience.length) { head('Experience'); d.experience.forEach(e => {
+      para([e.role, e.org].filter(Boolean).join(' \u2014 '), 10.5, { bold: true, color: F, before: 6, after: 0 });
+      if (e.dates || e.location) para([e.dates, e.location].filter(Boolean).join(' \u00b7 '), 9, { color: GREY, after: 2 });
+      bullets(e.bullets); }); }
+    if (d.projects && d.projects.length) { head('Projects'); d.projects.forEach(e => {
+      para(e.title, 10.5, { bold: true, color: F, before: 6, after: 0 }); bullets(e.bullets); }); }
+    if (d.education && d.education.length) { head('Education'); d.education.forEach(e => {
+      para([e.degree, e.institution].filter(Boolean).join(' \u2014 '), 10.5, { bold: true, color: F, before: 4, after: 0 });
+      if (e.dates || e.details) para([e.dates, e.details].filter(Boolean).join(' \u00b7 '), 9, { color: GREY, after: 2 }); }); }
+    if (d.certifications && d.certifications.length) { head('Certifications'); bullets(d.certifications); }
+    if (d.languages && d.languages.length) { head('Languages'); para(d.languages.join('  \u00b7  '), 10, {}); }
+  }
+  if (wantLinkedIn && d.linkedin) {
+    if (wantResume) body.appendPageBreak();
+    para('LinkedIn profile makeover', 18, { bold: true, color: F, after: 8 });
+    head('Headline (copy into LinkedIn)'); para(d.linkedin.headline, 11, { bold: true, color: F });
+    head('About section'); String(d.linkedin.about || '').split(/\n+/).forEach(t => para(t, 10, { after: 6 }));
+    if (d.linkedin.skills && d.linkedin.skills.length) { head('Top skills to add'); para(d.linkedin.skills.join('  \u00b7  '), 10, {}); }
+    if (d.linkedin.experience && d.linkedin.experience.length) { head('Experience descriptions'); d.linkedin.experience.forEach(e => {
+      para(e.role, 10.5, { bold: true, color: F, before: 6, after: 2 }); para(e.description, 10, {}); }); }
+    if (d.linkedin.actions && d.linkedin.actions.length) { head('Do this week'); bullets(d.linkedin.actions); }
+  }
+  para('Prepared with Accent Careers \u00b7 Choice Is Yours.', 8, { color: GREY, before: 18 });
+  try { const first = body.getChild(0); if (first.getType() === DocumentApp.ElementType.PARAGRAPH && !first.asParagraph().getText()) first.removeFromParent(); } catch (e) {}
+  doc.saveAndClose();
+  const f = DriveApp.getFileById(doc.getId()); f.moveTo(folder_('Drafts'));
+  return f.getUrl();
+}
+function folder_(sub) {
+  const top = DriveApp.getFoldersByName(CONFIG.DRIVE_FOLDER);
+  const root = top.hasNext() ? top.next() : DriveApp.createFolder(CONFIG.DRIVE_FOLDER);
+  const it = root.getFoldersByName(sub);
+  return it.hasNext() ? it.next() : root.createFolder(sub);
+}
+
+/* ================= brain ================= */
+const BUSY_RE = /^(Ila is a little busy|Sorry, I could not answer)/;
+
+function systemPrompt_(name, q) {
+  const cache = CacheService.getScriptCache();
+  let raw = cache.get('ila_kb_rows'), rows;
+  if (raw) rows = JSON.parse(raw);
+  else {
+    const k = ss_().getSheetByName(TABS.know[0]);
+    rows = (k && k.getLastRow() > 1 ? k.getRange(2, 1, k.getLastRow() - 1, 2).getValues() : DEFAULT_KNOWLEDGE)
+      .filter(r => r[0] || r[1]).map(r => [String(r[0]), String(r[1])]);
+    try { cache.put('ila_kb_rows', JSON.stringify(rows), 600); } catch (e) {}
+  }
+  const words = String(q || '').toLowerCase().split(/[^a-z0-9ഀ-ൿ]+/).filter(w => w.length > 2);
+  const scored = rows.map((r, i) => {
+    const hay = (r[0] + ' ' + r[1]).toLowerCase();
+    let s = 0; words.forEach(w => { if (hay.indexOf(w) > -1) s += r[0].toLowerCase().indexOf(w) > -1 ? 3 : 1; });
+    return { r: r, i: i, s: s };
+  });
+  const pick = scored.filter(x => x.i < 3 || x.s > 0).sort((a, b) => (b.i < 3) - (a.i < 3) || b.s - a.s).slice(0, 8);
+  const kb = pick.map(x => '## ' + x.r[0] + '\n' + x.r[1]).join('\n\n') +
+    '\n\n(Other topics exist: ' + rows.map(r => r[0]).join(', ') + '. If asked about one not shown above, give a short answer and suggest WhatsApp +91 99958 42727.)';
+  return ILA_PROMPT.replace('{{NAME}}', name || 'the student').replace('{{KNOWLEDGE}}', kb) + '\n\n' + INTERVIEW_RULES + '\n\n' + MENTOR_RULES;
+}
+
+const INTERVIEW_RULES = "MOCK INTERVIEW (this overrides the short interview rule above). Start it when the student taps Mock interview ([MODE: interview]) or asks for a mock interview. KEEP GOING with it while your last message in the chat was an interview question (it contains 'Question x/6'), even without the MODE tag. You are a friendly but real HR interviewer. STEP 1: if you don't know yet, ask ONE question: which job role, fresher or experienced, and English or Malayalam. STEP 2: ask 6 questions, ONE at a time, labelled 'Question 1/6' and so on: 1 tell me about yourself, 2 why this role, 3 a role-specific skill question, 4 a situation question (STAR), 5 for sales roles 'sell me this pen', otherwise a small role task, 6 salary expectation or 'any questions for us'. After each answer give only 2 short lines: 'Good:' one strength, 'Better:' one fix with a sample line they could say. Then ask the next question. Never ask two questions at once. STEP 3: after question 6, or if they type END, give a SCORECARD: Communication /10, Confidence /10, Content /10, Overall /10, the top 3 fixes, one improved model answer for their weakest question, and end with: 'Practise again any time. Want a live mock with an Accent trainer? Tap Talk to a person.' Keep every message short. Never invent company facts.";
+
+const MENTOR_RULES = "SALES MENTOR (trial, [MODE: sales course mentor] or [MODE: mentor], or when a learner asks for help with the Accent sales course). You are their personal sales mentor while they do the course. First ask which lesson they are on (if you don't know). Then help in short steps: explain the lesson idea simply with one Kerala example, give ONE small practice drill for today, and offer to role-play: you play a real customer (shop owner, parent, busy professional) and they sell; stay in character for 3 to 5 turns, then give 'Good:' one strength and 'Better:' one fix with a better line. Check homework or answers they share and give a better version. Keep them motivated and accountable (ask what they practised today). Use only the knowledge above for course facts; if a lesson detail is not there, say so. For real call recordings, suggest Kili (call review). For a spoken interview, suggest the Mock interview button. Calls they make should end with a callback time and a feedback request. Say fee reduction, never offer.";
+
+function gemini_(system, contents, cfg) {
+  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (!key) throw new Error('Ila is not set up yet (missing GEMINI_API_KEY).');
+  const models = [CONFIG.MODEL].concat(CONFIG.BACKUP_MODELS || []);
+  const gc = cfg || { temperature: 0.6, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } };  // no "thinking" = fast chat replies
+  let body = JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: contents, generationConfig: gc });
+  let last = 0;
+  for (let m = 0; m < models.length; m++) {
+    for (let t = 0; t < 2; t++) {
+      const resp = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' +
+        models[m] + ':generateContent', { method: 'post', contentType: 'application/json',
+        headers: { 'x-goog-api-key': key }, muteHttpExceptions: true, payload: body });
+      last = resp.getResponseCode();
+      if (last === 200) {
+        const c = (JSON.parse(resp.getContentText()).candidates || [])[0];
+        return c && c.content ? c.content.parts.map(p => p.text || '').join('')
+          : 'Sorry, I could not answer that. Could you rephrase?';
+      }
+      if (last === 400 && gc.thinkingConfig) {   // this model doesn't accept the speed setting: drop it and retry
+        delete gc.thinkingConfig;
+        body = JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: contents, generationConfig: gc });
+        t--; continue;
+      }
+      if (last === 400 || last === 403) throw new Error('Ila could not answer (' + last + '). Check the API key.');
+      if (last === 404) break;                 // model name not available, try the next one
+      Utilities.sleep(800);         // 429 / 500 / 503: wait, then retry
+    }
+  }
+  return 'Ila is a little busy right now (Google is overloaded). Please try again in a minute.';
+}
+
+/* ================= admin ================= */

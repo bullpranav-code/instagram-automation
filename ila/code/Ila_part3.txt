@@ -1,0 +1,162 @@
+// ILA v4.0 BETA - part 3 of 5. Apps Script file name: Ila3. Paste ALL of this.
+function adminHtml_() {
+  const ss = ss_(), sh = n => ss.getSheetByName(TABS[n][0]), esc = anEsc_;
+  const d = x => x instanceof Date ? Utilities.formatDate(x, 'Asia/Kolkata', 'dd MMM HH:mm') : esc(x);
+  const leads = anAll_(sh('leads'), 7), chats = anAll_(sh('chats'), 7), reps = anAll_(sh('reports'), 7), fbs = anAll_(sh('feedback'), 7), svcs = anAll_(sh('services'), 9);
+  const days = anDays_(reps, 0, 30), cdays = anDays_(chats, 0, 30);
+  const scores = reps.map(r => Number(r[5])).filter(x => x > 0);
+  const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '-';
+  const ready = scores.length ? Math.round(scores.filter(x => x >= 7).length / scores.length * 100) + '%' : '-';
+  const up = fbs.filter(r => /👍/.test(r[4])).length, rated = fbs.filter(r => /👍|👎/.test(r[4])).length;
+  const wk = days.slice(-7).reduce((a, x) => a + x.rows.length, 0), pwk = days.slice(-14, -7).reduce((a, x) => a + x.rows.length, 0);
+  const flagged = chats.slice(-300).filter(r => /handoff|crisis/.test(r[6])).length;
+  const modes = {}; chats.forEach(r => { const m = r[3] || 'chat'; modes[m] = (modes[m] || 0) + 1; });
+  const roles = {}; reps.forEach(r => { if (r[3]) roles[r[3]] = (roles[r[3]] || 0) + 1; });
+  const dist = {}; ['0–4 (needs work)', '5–6 (getting there)', '7–8 (ready)', '9–10 (strong)'].forEach(k => dist[k] = 0);
+  scores.forEach(x => { dist[x < 5 ? '0–4 (needs work)' : x < 7 ? '5–6 (getting there)' : x < 9 ? '7–8 (ready)' : '9–10 (strong)']++; });
+  const weak = { 'Salary answer': 0, 'Using numbers / proof': 0, 'Closing / next step': 0, 'Grammar & words': 0, 'Confidence': 0, 'Structure (STAR)': 0 };
+  reps.forEach(r => { const t = (String(r[6]).split(/CORRECTIONS:/i)[1] || '').toLowerCase();
+    if (/salary|ctc|expect/.test(t)) weak['Salary answer']++; if (/number|figure|data|result/.test(t)) weak['Using numbers / proof']++;
+    if (/close|closing|next step|callback/.test(t)) weak['Closing / next step']++; if (/grammar|words:|tense/.test(t) && !/words:\s*none/.test(t)) weak['Grammar & words']++;
+    if (/confiden|hesitat|filler/.test(t)) weak['Confidence']++; if (/star|structure|situation/.test(t)) weak['Structure (STAR)']++; });
+  const table = (head, rows, empty) => '<div style="overflow-x:auto"><table><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr>' + (rows || '<tr><td colspan=' + head.length + '>' + empty + '</td></tr>') + '</table></div>';
+  const lastRep = reps.slice(-15).reverse().map(r => { const sc = Number(r[5]) || 0, col = sc >= 7 ? '#16A34A' : sc >= 5 ? '#C97A2B' : '#B42318';
+    return '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td><td><b style="color:' + col + '">' + esc(r[5]) + '</b></td><td>' + esc((String(r[6]).match(/READY:\s*([^\n]+)/i) || [])[1] || '') + '</td></tr>'; }).join('');
+  const lastFb = fbs.slice(-15).reverse().map(r => '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td><td>' + esc(r[5]) + '</td></tr>').join('');
+  const lastLeads = leads.slice(-15).reverse().map(r => '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[5]) + '</td><td>' + esc(r[6]) + '</td></tr>').join('');
+  const lastSvc = svcs.slice(-15).reverse().map(r => '<tr><td>' + d(r[0]) + '</td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + esc(r[4]) + '</td><td>' + esc(r[7]) + '</td><td>' + (r[8] ? '<a href="' + esc(r[8]) + '" target="_blank">Open</a>' : '') + '</td></tr>').join('');
+  const key = encodeURIComponent(PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '');
+  return '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">' +
+    '<style>body{margin:0;background:#F7FAF8;font-family:Poppins,Arial;color:#0B3D1E}table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}th{background:#0B3D1E;color:#fff;text-align:left;font-weight:600}th,td{padding:8px 10px;border-bottom:1px solid #DCE5DE;vertical-align:top}a{color:#16A34A}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.two{grid-template-columns:1fr}}</style>' +
+    '<div style="background:#0B3D1E;padding:16px 20px;display:flex;justify-content:space-between;align-items:center"><div><div style="color:#79C24A;font-size:11px;letter-spacing:3px;font-weight:600">ACCENT · ILA · BETA</div><div style="color:#fff;font-size:20px;font-weight:600">Analytics dashboard</div></div><img src="data:image/png;base64,' + LOGO_LIGHT + '" style="height:34px"></div>' +
+    '<div style="max-width:1100px;margin:0 auto;padding:12px 20px 40px">' +
+    '<p style="font-size:13px;color:#8A968E">Updated ' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd MMM yyyy, HH:mm') + ' · every record is kept in the sheet · <a href="' + ss.getUrl() + '" target="_blank">Open sheet</a> · <a href="' + CONFIG.KILI_URL + '?view=calls&key=' + key + '" target="_top">Kili dashboard →</a></p>' +
+    (flagged ? '<p style="background:#FDECEA;color:#B42318;padding:10px 14px;border-radius:12px"><b>' + flagged + ' chats need a human.</b> Check rows flagged handoff/crisis in "Ila Chats".</p>' : '') +
+    anKpi_([['STUDENTS', leads.length, 'signed up'], ['CHAT MESSAGES', chats.length, ''], ['MOCK INTERVIEWS', reps.length, wk + ' this week (' + (wk >= pwk ? '+' : '') + (wk - pwk) + ')'],
+      ['AVG SCORE', avg + (avg === '-' ? '' : '/10'), 'all interviews'], ['INTERVIEW-READY', ready, 'scored 7+'], ['BETA 👍', rated ? Math.round(up / rated * 100) + '%' : '-', rated + ' ratings']]) +
+    anCard_('Mock interviews per day · average score (last 30 days)', anChart_(days.map(x => x.label), days.map(x => x.rows.length),
+      days.map(x => { const v = x.rows.map(r => Number(r[5])).filter(y => y > 0); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }), 10, 'Interviews', 'Avg score /10')) +
+    anCard_('Ila chat messages per day (last 30 days)', anChart_(cdays.map(x => x.label), cdays.map(x => x.rows.length), null, 0, 'Messages', '')) +
+    '<div class="two">' + anCard_('Score spread', anHBars_(dist, 4)) + anCard_('Most common weak areas (from reports)', anHBars_(weak, 6)) + '</div>' +
+    '<div class="two">' + anCard_('Roles practised', anHBars_(roles, 6)) + anCard_('What students use Ila for', anHBars_(modes, 7)) + '</div>' +
+    anCard_('Latest mock interviews', table(['When', 'Name', 'Role', 'Lang', 'Score', 'Ready?'], lastRep, 'None yet')) +
+    anCard_('Beta feedback', table(['When', 'Product', 'Name', 'Rating', 'Comment'], lastFb, 'None yet')) +
+    '<div class="two">' + anCard_('Latest students', table(['When', 'Name', 'WhatsApp', 'I am', 'District'], lastLeads, 'None yet')) +
+    anCard_('Service requests', table(['When', 'Name', 'WhatsApp', 'Service', 'Status', 'Draft'], lastSvc, 'None yet')) + '</div></div>';
+}
+
+/* ================= helpers ================= */
+function ss_() {
+  const id = String(PropertiesService.getScriptProperties().getProperty('SHEET_ID') || CONFIG.SHEET_ID || '').trim();
+  return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+}
+function tab_(ss, k) {
+  const [name, headers] = TABS[k];
+  let s = ss.getSheetByName(name);
+  if (!s) {
+    s = ss.insertSheet(name);
+    s.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF');
+    s.setFrozenRows(1);
+  } else if (s.getLastColumn() < headers.length) {
+    s.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#0B3D1E').setFontColor('#FFFFFF');
+  }
+  return s;
+}
+function overLimit_(session) {
+  const c = CacheService.getScriptCache(), key = 'n_' + session + '_' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyyMMdd');
+  const n = Number(c.get(key) || 0) + 1;
+  c.put(key, String(n), 21600);
+  return n > CONFIG.DAILY_MESSAGE_LIMIT;
+}
+
+/* ================= Ila's personality and rules ================= */
+const ILA_PROMPT = [
+  "",
+  "You are Ila (\u0d07\u0d32, \"leaf\"), the AI buddy of Accent, a skill and career ecosystem in Kerala",
+  "(tagline \"Choice Is Yours.\"). You are talking with {{NAME}}. You are warm, encouraging and",
+  "practical, like a smart elder sister or brother who works in industry. Short paragraphs,",
+  "simple words, no hype. Reply in the language the student uses (English, Malayalam or",
+  "Manglish). Use their name now and then.",
+  "",
+  "WHAT YOU DO",
+  "1. CAREER MENTOR: help students choose a direction. Ask 2\u20134 short questions first if you",
+  "   need them (degree, district, interests, strengths, salary goal, relocation, timeline).",
+  "   Then give: 3 suitable roles, why each fits, realistic Kerala entry salary (ONLY from the",
+  "   knowledge below; otherwise say \"varies by company\"), skills to build, and a simple",
+  "   30/60/90-day plan. Mention the matching Accent course or session when it genuinely fits.",
+  "2. COURSE HELP: answer questions about Accent programs using ONLY the knowledge below.",
+  "   If something is not there (e.g. a date not announced), say so and offer WhatsApp.",
+  "3. RESUME REVIEW ([MODE: resume], or any attached resume or pasted resume text):",
+  "   If a file or resume text is present, review it IMMEDIATELY. Never ask which review they",
+  "   want. If the document is clearly a LinkedIn profile (export or screenshot), do the",
+  "   LinkedIn review instead. If nothing is attached or pasted yet, reply in ONE short line",
+  "   asking them to tap the clip icon or paste the text, and do not score anything.",
+  "   A review contains: 'Resume score: NN/100', 3 things that work, 5 specific fixes (quote",
+  "   the line, then the improved line), a rewritten 2-3 line professional summary, and for",
+  "   freshers how to show projects, internships and field results with numbers.",
+  "   End the review with exactly: \"Want our team to rewrite your full resume professionally? Tap 'Get it done for you' below.\"",
+  "4. LINKEDIN REVIEW ([MODE: linkedin], or a LinkedIn profile is shared): same rules. Start",
+  "   with 'LinkedIn score: NN/100'. Review headline, About, experience, skills, featured and",
+  "   activity. Give a rewritten headline (Role \u00b7 who you help \u00b7 proof), a rewritten About",
+  "   (3 short paragraphs) and 5 quick wins. End with exactly: \"Want our team to do your full LinkedIn makeover? Tap 'Get it done for you' below.\"",
+  "   Only write the 'Get it done for you' line after a real review.",
+  "5. INTERVIEW PRACTICE: see MOCK INTERVIEW below. For a spoken interview, suggest the Mock interview button.",
+  "6. SALES COURSE MENTOR (trial): see SALES MENTOR below.",
+  "",
+  "RULES",
+  "- Never promise a job, placement or salary. Say \"placement support\", never \"guaranteed\".",
+  "- Never invent facts, prices, dates, companies or statistics. If unsure, say so.",
+  "- Sales language rule: say \"fee reduction\", never \"offer\" or \"one-time offer\".",
+  "- Do not ask for or repeat sensitive personal data (ID numbers, bank details).",
+  "- If the student wants to talk to a person, is angry, wants a refund, or you cannot help:",
+  "  give the WhatsApp number +91 99958 42727 and add the tag [HANDOFF] at the very end.",
+  "- If the student shows signs of distress, hopelessness or self-harm: respond with care,",
+  "  encourage them to talk to someone they trust, share Tele-MANAS (free mental health",
+  "  helpline in India: 14416) and Accent's WhatsApp, and add the tag [CRISIS] at the end.",
+  "  Do not continue career advice in that reply.",
+  "- Stay on careers, learning, Accent courses and professional growth. Politely decline",
+  "  unrelated requests (homework answers, coding someone's exam, etc.).",
+  "- Format: plain text with short lines; use \"\u2022\" for bullets and **bold** for key words.",
+  "",
+  "ACCENT KNOWLEDGE (the only source of facts about Accent)",
+  "{{KNOWLEDGE}}",
+  ""
+].join('\n');
+
+const DRAFT_PROMPT = [
+  "You are a senior resume writer at Accent Careers (Kerala). Using the student's uploaded",
+  "resume or LinkedIn profile and the conversation, write a complete, polished rewrite.",
+  "RULES:",
+  "- Use ONLY facts found in the material. Never invent employers, dates, degrees, numbers,",
+  "  awards or contact details. Where a number or detail would help but is missing, write a",
+  "  placeholder in square brackets, e.g. [add sales figure], [add year], [Phone].",
+  "- Strong action verbs, results first, 1-2 lines per bullet, 3-5 bullets per role.",
+  "- Indian/Kerala hiring context, ATS-friendly, plain English, no hype words.",
+  "- Never write 'guaranteed', 'offer' or '100%'.",
+  "Return ONLY JSON in this shape (omit empty sections):",
+  "{\"name\":\"\",\"headline\":\"\",\"contact\":\"phone \u00b7 email \u00b7 city \u00b7 linkedin, from the material or [placeholders]\",",
+  " \"summary\":\"3 lines\",\"skills\":[\"\"],",
+  " \"experience\":[{\"role\":\"\",\"org\":\"\",\"dates\":\"\",\"location\":\"\",\"bullets\":[\"\"]}],",
+  " \"projects\":[{\"title\":\"\",\"bullets\":[\"\"]}],",
+  " \"education\":[{\"degree\":\"\",\"institution\":\"\",\"dates\":\"\",\"details\":\"\"}],",
+  " \"certifications\":[\"\"],\"languages\":[\"\"],",
+  " \"linkedin\":{\"headline\":\"max 220 chars\",\"about\":\"3 short paragraphs separated by newlines\",",
+  "   \"skills\":[\"10 skills\"],\"experience\":[{\"role\":\"Role - Org\",\"description\":\"3-4 lines\"}],",
+  "   \"actions\":[\"5 concrete things to do this week\"]}}"
+].join('\n');
+
+const DEFAULT_KNOWLEDGE = [
+  ['About Accent', 'Accent started in 2015 (our founder Pranav\'s first year of college). Based in Manjeri, Malappuram, Kerala. Skill division of 27yOc. 724+ sessions delivered, on the road to 1,000. Tagline: Choice Is Yours. WhatsApp +91 99958 42727 \u00b7 Instagram @accent_tutors \u00b7 27yoc.com'],
+  ['Accent Sales Program', '28 days: 14 evenings of live classroom training (7:00\u20139:00 PM, 30 live hours, role-play every session) + 14 days of field work selling real products of partner companies with targets and a Daily Sales Diary. Then interview and placement support, plus a 90-Day Success Plan after joining (check-ins on day 1, 7, 30, 60, 90). Fee: \u20b94,999 + GST. Batch 01 dates: to be announced. Pass = 60% score and 80% attendance; full certificate = pass + field phase.'],
+  ['Orientation and refunds', 'Two free-to-decide orientation evenings before Day 1. Full refund if you leave by the end of orientation Evening 2. After that, no cash refund: you can refer a friend (refunded once they pay for the next batch) or move to the next batch once.'],
+  ['Admission', 'Apply by DMing "SALES" on Instagram @accent_tutors or WhatsApp +91 99958 42727. Screening includes a short video pitch (Sell Your District challenge), a voice note and a call. One free seat per batch for a woman or rural learner.'],
+  ['Sales salaries in Kerala (from Accent hiring network, Oct 2026)', 'Fixed per month: Sales Executive (fresher) \u20b910,000\u201315,000, sometimes \u20b918,000\u201320,000 depending on online/offline and company \u00b7 Senior Sales Executive \u20b920,000\u201325,000 \u00b7 Team Lead \u20b925,000\u201330,000 \u00b7 Sales Manager \u20b930,000\u201350,000. Plus incentives that vary by product and company. EdTech average performers can earn \u20b960,000+ a month with salary and incentives. Real estate pays strong commissions on high-value deals. These are ranges, not promises.'],
+  ['Sales roles hiring', 'Retail and showroom, inside sales (phone/WhatsApp), field sales, B2B/corporate, admissions counsellor (EdTech, colleges), banking and insurance, real estate (often Gulf-based buyers), tech/SaaS sales.'],
+  ['Resume and LinkedIn services', 'Free AI review inside Ila. Paid: resume rewrite, LinkedIn profile makeover, or both, done by the Accent team. Prices shared on WhatsApp.'],
+  ['CallVibe', 'Accent learners upload sales call recordings to CallVibe and get AI feedback with scores, coaching and a follow-up message. Link shared in the batch group.'],
+  ['Leaf Points', 'Earn points for webinars (25), workshops (50), posts tagging Accent (10), LinkedIn shares (25), projects (100), referrals who enrol (100), speaking (150), course completion (200), internship or job (500). Badges: Seed 0, Sapling 250, Tree 1,000, Forest 3,000. Every 1,000 points = 1 tree planted.']
+];
+
+/* ================= chat page ================= */
+const LEAF_SVG = '<svg class="i" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 ' +
+  '2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"/></svg>';

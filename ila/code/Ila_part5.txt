@@ -1,0 +1,158 @@
+// ILA v4.0 BETA - part 5 of 5. Apps Script file name: Ila5. Paste ALL of this.
+const LOGO_LIGHT = [
+  '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',
+  'l9v5J2erMKNWgZOIAAAAAElFTkSuQmCC'
+].join('');
+
+/* ================= analytics helpers (inline SVG, no libraries) ================= */
+function anDays_(rows, dateCol, n) {
+  var out = [], idx = {}, tz = 'Asia/Kolkata', now = new Date();
+  for (var i = n - 1; i >= 0; i--) { var d = new Date(now.getTime() - i * 864e5), k = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    idx[k] = out.length; out.push({ k: k, label: Utilities.formatDate(d, tz, 'd MMM'), rows: [] }); }
+  rows.forEach(function (r) { try { var k = Utilities.formatDate(new Date(r[dateCol]), tz, 'yyyy-MM-dd'); if (k in idx) out[idx[k]].rows.push(r); } catch (e) {} });
+  return out;
+}
+function anEsc_(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+/** Bar chart; optional line (second series, own scale 0..lineMax). */
+function anChart_(labels, bars, line, lineMax, barName, lineName) {
+  var W = 640, H = 200, P = 28, n = labels.length, bw = (W - P * 2) / n, max = Math.max.apply(null, bars.concat([1]));
+  var g = '<svg viewBox="0 0 ' + W + ' ' + (H + 36) + '" width="100%" role="img" style="display:block">';
+  [0, .5, 1].forEach(function (f) { var y = P + (H - P * 2) * (1 - f); g += '<line x1="' + P + '" x2="' + (W - P) + '" y1="' + y + '" y2="' + y + '" stroke="#DCE5DE"/>' +
+    '<text x="' + (P - 6) + '" y="' + (y + 4) + '" font-size="10" text-anchor="end" fill="#8A968E">' + Math.round(max * f) + '</text>'; });
+  bars.forEach(function (v, i) { var h = (H - P * 2) * v / max, x = P + i * bw + bw * .18;
+    g += '<rect x="' + x + '" y="' + (H - P - h) + '" width="' + (bw * .64) + '" height="' + h + '" rx="3" fill="#16A34A"><title>' + anEsc_(labels[i]) + ': ' + v + '</title></rect>'; });
+  if (line) { var pts = []; line.forEach(function (v, i) { if (v == null) return; pts.push((P + i * bw + bw / 2) + ',' + (P + (H - P * 2) * (1 - v / lineMax))); });
+    if (pts.length) g += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#0B3D1E" stroke-width="2.5"/>' + pts.map(function (p) { var a = p.split(','); return '<circle cx="' + a[0] + '" cy="' + a[1] + '" r="3.5" fill="#0B3D1E"/>'; }).join(''); }
+  var step = Math.ceil(n / 8);
+  labels.forEach(function (l, i) { if (i % step === 0 || (i === n - 1 && (n - 1) % step > step / 2)) g += '<text x="' + (P + i * bw + bw / 2) + '" y="' + (H - P + 16) + '" font-size="10" text-anchor="middle" fill="#8A968E">' + anEsc_(l) + '</text>'; });
+  g += '<rect x="' + P + '" y="' + (H + 12) + '" width="10" height="10" fill="#16A34A"/><text x="' + (P + 14) + '" y="' + (H + 21) + '" font-size="11" fill="#2C3A31">' + anEsc_(barName) + '</text>';
+  if (line) g += '<line x1="' + (P + 150) + '" x2="' + (P + 164) + '" y1="' + (H + 17) + '" y2="' + (H + 17) + '" stroke="#0B3D1E" stroke-width="2.5"/><text x="' + (P + 168) + '" y="' + (H + 21) + '" font-size="11" fill="#2C3A31">' + anEsc_(lineName) + '</text>';
+  return g + '</svg>';
+}
+/** Horizontal bars for a {label: count} map. */
+function anHBars_(map, top) {
+  var arr = Object.keys(map).map(function (k) { return [k, map[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, top || 6);
+  var max = arr.length ? arr[0][1] : 1;
+  return arr.length ? arr.map(function (a) { return '<div style="display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px"><span style="width:44%;color:#0B3D1E">' + anEsc_(a[0]) +
+    '</span><div style="flex:1;height:10px;background:#DCE5DE;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:' + Math.round(a[1] / max * 100) + '%;background:#16A34A"></i></div><b style="width:30px;text-align:right">' + a[1] + '</b></div>'; }).join('')
+    : '<p style="color:#8A968E;font-size:13px">No data yet.</p>';
+}
+function anKpi_(items) {
+  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0">' + items.map(function (k) {
+    return '<div style="background:#fff;border:1px solid #DCE5DE;border-radius:14px;padding:14px"><div style="font-size:11px;letter-spacing:1.5px;color:#16A34A;font-weight:600">' + anEsc_(k[0]) +
+      '</div><div style="font-size:28px;font-weight:700;color:#0B3D1E;margin-top:4px">' + anEsc_(k[1]) + '</div>' + (k[2] ? '<div style="font-size:12px;color:#8A968E">' + anEsc_(k[2]) + '</div>' : '') + '</div>'; }).join('') + '</div>';
+}
+function anCard_(title, inner) { return '<div style="background:#fff;border:1px solid #DCE5DE;border-radius:16px;padding:16px;margin:14px 0"><h3 style="margin:0 0 10px;font-size:15px;color:#0B3D1E">' + anEsc_(title) + '</h3>' + inner + '</div>'; }
+function anAll_(sheet, cols) { return sheet && sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, cols).getValues() : []; }
+
