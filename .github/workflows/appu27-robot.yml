@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       manual:
-        description: 'Optional manual result JSON, e.g. {"home":"KBFC","away":"MCFC","hg":2,"ag":1,"scorers":{"home":["Luna 23'"],"away":[]}}'
+        description: "Optional manual result as JSON, for example home KBFC, away MCFC, hg 2, ag 1 (see tools/robot.js)"
         required: false
         default: ''
 permissions:
