@@ -5,7 +5,7 @@ const CONFIG = {
   BACKUP_MODELS: ['gemini-flash-lite-latest', 'gemini-2.5-flash'],   // used when the main model is busy
   SHEET_ID: '1BS0sL3Hy09wLYVsjRuGJLpiD9PFJkNE-yE0vw4xJqrU',   // same Google Sheet as CallVibe (Script property SHEET_ID overrides)
   WHATSAPP: '919995842727',
-  INTERVIEW_URL: 'https://bullpranav-code.github.io/instagram-automation/ila/interview.html',   // voice mock interview page (real mic + voice on iPhone)
+  APP_URL: 'https://bullpranav-code.github.io/instagram-automation/ila/app.html',   // the Accent AI app (one home screen for everything)
   KB_URL: 'https://raw.githubusercontent.com/bullpranav-code/instagram-automation/main/accent/ila/knowledge.json',
   KILI_URL: 'https://script.google.com/macros/s/AKfycbzm5pCgvF4zDj7oGMvGiFY-hl_OHOhJjl8oTl0RrzuayQjeVQpBfyYoYG6DkYZqqspO/exec',
   DAILY_MESSAGE_LIMIT: 40,                                     // per person per day, protects the free quota
@@ -42,15 +42,16 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   housekeeping_();
   const url = ScriptApp.getService().getUrl();
-  if (p.view === 'voice') return page_(goPage_(CONFIG.INTERVIEW_URL, 'Open the mock interview'));
+  if (p.view === 'voice') return page_(goPage_(CONFIG.APP_URL, 'Open the mock interview'));
   if (p.view === 'call' || p.view === 'calls') return page_(goPage_(CONFIG.KILI_URL + (p.view === 'calls' ? '?view=calls&key=' + encodeURIComponent(p.key || '') : ''), 'Open Kili (call review)'));
   if (p.view === 'admin') {
     const key = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
     return page_(key && p.key === key ? adminHtml_() : '<p style="font-family:Arial;padding:30px">Wrong or missing key.</p>');
   }
+  if (p.view !== 'classic') return page_(goPage_(CONFIG.APP_URL, 'Open Accent AI'));
   return page_(CHAT_HTML.split('{{LOGO}}').join(LOGO_LIGHT).split('{{LEAF}}').join(LEAF_SVG)
     .replace('{{SERVICES}}', JSON.stringify(CONFIG.SERVICES)).replace('{{WA}}', CONFIG.WHATSAPP)
-    .split('{{URL}}').join(url).replace('{{KURL}}', CONFIG.KILI_URL).replace('{{IURL}}', CONFIG.INTERVIEW_URL));
+    .split('{{URL}}').join(url).replace('{{KURL}}', CONFIG.KILI_URL).replace('{{IURL}}', CONFIG.APP_URL));
 }
 /** API for the interview page hosted outside Google (it posts JSON here).
  *  action 'chat' (interview turns), 'tts' (natural Gemini voice), 'stt' (voice answer -> text). */
@@ -58,12 +59,13 @@ function doPost(e) {
   let out;
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    if (!/^IL-[A-Z0-9]{8}$/.test(String(req.session || ''))) throw new Error('Session expired. Refresh the page.');
-    if (req.action === 'feedback') out = saveFeedback_(req);
+    if (req.action === 'start') out = startSession(req);
+    else if (!/^IL-[A-Z0-9]{8}$/.test(String(req.session || ''))) throw new Error('Session expired. Please sign in again.');
+    else if (req.action === 'service') out = requestService(req);
+    else if (req.action === 'feedback') out = saveFeedback_(req);
     else if (req.action === 'tts') { if (overCap_(req.session, 'tts', 40)) throw new Error('Voice limit reached for today'); out = { audio: ilaTts_(String(req.text || '').slice(0, 600), req.lang) }; }
     else if (req.action === 'stt') { if (overCap_(req.session, 'stt', 40)) throw new Error('Recording limit reached for today. Please type your answer.'); out = { text: ilaStt_(req) }; }
-    else if (req.mode === 'interview') out = chat(req);
-    else throw new Error('Only interview requests are allowed here.');
+    else out = chat(req);   // career / resume / linkedin / mentor / interview turns
   } catch (err) { out = { error: String(err.message || err) }; }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
 }

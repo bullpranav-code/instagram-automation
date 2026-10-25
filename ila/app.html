@@ -1,0 +1,405 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Accent AI · Choice Is Yours.</title>
+<meta name="theme-color" content="#0B3D1E">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--f:#0B3D1E;--g:#16A34A;--l:#79C24A;--m:#E9F5EA;--s:#F7FAF8;--line:#DCE5DE;--ink:#2C3A31;--mute:#8A968E;--warn:#C97A2B;--red:#B42318}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--s);color:var(--ink);font-family:Poppins,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--f);color:#fff;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));display:flex;align-items:center;gap:12px;min-height:60px}
+#back{background:rgba(255,255,255,.12);border:0;color:#fff;width:38px;height:38px;border-radius:12px;font-size:20px;display:none}
+header .t{flex:1;min-width:0}header .t small{display:block;color:var(--l);letter-spacing:3px;font-weight:600;font-size:10px}
+header .t b{font-size:17px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header img{height:28px}
+.view{display:none}.view.on{display:block}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+h2{margin:0 0 4px;color:var(--f);font-size:21px;line-height:1.25}
+.sub{margin:0 0 12px;font-size:14px;color:var(--mute);line-height:1.55}
+label{font-size:12px;font-weight:600;color:var(--f);display:block;margin:14px 0 6px;letter-spacing:.5px}
+input,textarea,select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;color:var(--ink);background:#fff}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:transparent}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin-top:14px;line-height:1.5}.chk input{width:20px;height:20px;flex:none;margin-top:1px}
+.btn{display:block;width:100%;padding:15px;border:0;border-radius:14px;background:var(--f);color:#fff;font:inherit;font-weight:600;font-size:16px;margin-top:16px;text-align:center;text-decoration:none;cursor:pointer}
+.btn.alt{background:var(--m);color:var(--f)}.btn.green{background:var(--g)}.btn:disabled{opacity:.45}
+.err{color:var(--red);font-size:14px;min-height:18px;margin-top:10px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;color:var(--f);cursor:pointer}
+.pill.on{background:var(--f);color:#fff;border-color:var(--f)}
+/* home */
+.hero{background:var(--f);color:#fff;border-radius:20px;padding:20px;margin-bottom:14px}
+.hero small{color:var(--l);letter-spacing:3px;font-size:10px;font-weight:600}.hero h2{color:#fff;margin-top:6px}.hero p{color:var(--m);font-size:14px;margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;min-height:132px;display:flex;flex-direction:column}
+.tile .e{font-size:28px}.tile b{display:block;color:var(--f);font-size:15px;margin-top:8px}.tile span{font-size:12px;color:var(--mute);line-height:1.45;margin-top:4px}
+.tile.big{grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;min-height:0;border-color:var(--g)}
+.tile.big .e{font-size:36px}.tag{display:inline-block;background:var(--m);color:var(--g);font-size:10px;font-weight:700;letter-spacing:1px;border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+.foot{text-align:center;font-size:12px;color:var(--mute);margin-top:18px}
+/* chat */
+#chatlog{display:flex;flex-direction:column;gap:10px;padding:14px 16px 150px;max-width:640px;margin:0 auto}
+.b{padding:11px 14px;border-radius:16px;font-size:15px;line-height:1.55;max-width:88%;white-space:pre-wrap;word-wrap:break-word}
+.b.ila{background:#fff;border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:6px}
+.b.me{background:var(--f);color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+.b.note{align-self:center;background:var(--m);color:var(--f);font-size:13px}
+.typing{display:inline-flex;gap:5px;padding:4px 0}.typing span{width:8px;height:8px;border-radius:50%;background:var(--l);animation:bb 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}@keyframes bb{50%{opacity:.25;transform:translateY(-3px)}}
+#composer{position:fixed;left:0;right:0;bottom:0;background:var(--s);border-top:1px solid var(--line);padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));display:none}
+#composer.on{display:block}
+#composer .in{max-width:640px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+#msg{flex:1;resize:none;max-height:120px;border-radius:20px}
+.round{width:46px;height:46px;border-radius:50%;border:0;background:var(--f);color:#fff;font-size:18px;flex:none;cursor:pointer}
+.round.lite{background:#fff;border:1px solid var(--line);color:var(--f)}
+#fileTag{max-width:640px;margin:0 auto 8px;font-size:13px;color:var(--f);display:none}
+.upsell{align-self:stretch;background:#fff;border:1px solid var(--g);border-radius:16px;padding:14px}
+.upsell button{display:flex;justify-content:space-between;width:100%;padding:12px;margin-top:8px;border:1px solid var(--line);background:var(--s);border-radius:12px;font:inherit;color:var(--f)}
+/* interview */
+.prog{display:flex;gap:6px;margin:2px 0 14px}.prog i{flex:1;height:6px;border-radius:6px;background:var(--line)}.prog i.on{background:var(--g)}
+.q{border-left:4px solid var(--g)}.qn{font-size:11px;letter-spacing:2px;font-weight:700;color:var(--g)}
+.qt{font-size:18px;line-height:1.5;color:var(--f);margin-top:6px;white-space:pre-wrap}
+.row{display:flex;gap:8px;align-items:center;margin-top:12px}
+.icon{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font:inherit;font-size:13px;color:var(--f)}
+.mine{font-size:14px;color:var(--mute);margin-top:10px;white-space:pre-wrap}
+#mic{width:72px;height:72px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:28px;flex:none}
+#mic.on{background:var(--warn);animation:pp 1.2s infinite}@keyframes pp{0%{box-shadow:0 0 0 0 rgba(201,122,43,.5)}70%{box-shadow:0 0 0 16px rgba(201,122,43,0)}}
+.hint{font-size:13px;color:var(--mute);margin-top:8px;min-height:18px}
+.score{display:flex;align-items:baseline;gap:8px}.score b{font-size:54px;color:var(--f);line-height:1}.score span{color:var(--mute)}
+.bar{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}.bar em{font-style:normal;width:110px;color:var(--f)}
+.bar div{flex:1;height:8px;background:var(--line);border-radius:8px;overflow:hidden}.bar div i{display:block;height:100%;background:var(--g)}
+.sec{margin-top:16px}.sec h4{margin:0 0 6px;font-size:11px;letter-spacing:2px;color:var(--g)}
+.sec p,.sec li{margin:0;font-size:15px;line-height:1.6;white-space:pre-wrap}.sec ul{padding-left:18px;margin:0}
+.fix{background:var(--s);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px;line-height:1.55}
+.fix .bad{color:#9a4b12}.fix .good{color:var(--f);font-weight:600}
+/* kili */
+.drop{border:2px dashed var(--l);border-radius:14px;padding:22px;text-align:center;background:var(--m);cursor:pointer}
+.drop b{display:block;font-size:15px;color:var(--f)}.drop span{font-size:12px;color:var(--ink)}
+.step{display:flex;gap:12px;align-items:center;padding:10px 0;font-size:15px;color:var(--mute)}
+.step i{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;flex:none}
+.step.now{color:var(--f);font-weight:600}.step.now i{border-color:var(--g);background:var(--g);animation:pz 1s infinite}
+.step.ok{color:var(--g)}.step.ok i{background:var(--g);border-color:var(--g)}@keyframes pz{50%{opacity:.3}}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bigs{background:var(--f);color:#fff;border-radius:16px;padding:16px}.bigs b{font-size:38px;display:block;line-height:1}.bigs span{font-size:12px;color:var(--m)}
+.bigs.alt{background:var(--m);color:var(--f)}.bigs.alt span{color:var(--ink)}
+.hide{display:none!important}
+</style></head><body>
+<header><button id="back" aria-label="Back">‹</button><div class="t"><small id="eyebrow">ACCENT · AI · BETA</small><b id="title">Accent AI</b></div><img src="data:image/png;base64,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" alt="ACCENT"></header>
+
+<!-- WELCOME -->
+<section class="view" id="v-welcome"><div class="wrap">
+  <div class="hero"><small>MEET ILA &amp; KILI · YOUR AI COACHES</small><h2>Your career. Your choice.</h2><p>Practise interviews, get feedback on sales calls, plan your career and fix your resume. Free, any time.</p></div>
+  <div class="card">
+    <h2 style="font-size:18px">Let's get to know you</h2><p class="sub">One time only. It helps Ila guide you better.</p>
+    <label>YOUR NAME</label><input id="w-name" autocomplete="name" placeholder="Your name">
+    <label>WHATSAPP NUMBER</label><input id="w-wa" inputmode="tel" placeholder="98XXXXXXXX">
+    <label>I AM</label><select id="w-iam"><option>A student / fresher</option><option>An Accent learner</option><option>Working, want to switch</option><option>A parent</option></select>
+    <label>DISTRICT</label><select id="w-dist"><option value="">Choose your district</option><option>Kasaragod</option><option>Kannur</option><option>Wayanad</option><option>Kozhikode</option><option>Malappuram</option><option>Palakkad</option><option>Thrissur</option><option>Ernakulam</option><option>Idukki</option><option>Kottayam</option><option>Alappuzha</option><option>Pathanamthitta</option><option>Kollam</option><option>Thiruvananthapuram</option><option>Outside Kerala</option></select>
+    <div class="chk"><input type="checkbox" id="w-ok"><span>I agree that Accent can save my details and messages to guide me and contact me on WhatsApp.</span></div>
+    <button class="btn" id="w-go">Continue</button><div class="err" id="w-err"></div>
+  </div>
+</div></section>
+
+<!-- HOME -->
+<section class="view" id="v-home"><div class="wrap">
+  <div class="hero"><small>ACCENT AI · BETA</small><h2 id="hello">Hi!</h2><p>What would you like to work on today?</p></div>
+  <div class="grid">
+    <button class="tile big" data-go="interview"><span class="e">🎤</span><div><b>Mock interview<span class="tag">VOICE</span></b><span>Speak with Ila like a real HR round. Get a score and corrections.</span></div></button>
+    <button class="tile" data-go="kili"><span class="e">🐦</span><b>Call review</b><span>Upload a sales call. Kili tells you what to fix.</span></button>
+    <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Sales course mentor</b><span>Lesson help, daily drills, role-play.</span></button>
+    <button class="tile" data-go="chat:career"><span class="e">🧭</span><b>Plan my career</b><span>Roles, skills and a 30/60/90-day plan.</span></button>
+    <button class="tile" data-go="chat:resume"><span class="e">📄</span><b>Resume &amp; LinkedIn</b><span>Score, fixes and a better summary.</span></button>
+    <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
+    <button class="tile" data-go="human"><span class="e">👤</span><b>Talk to a person</b><span>WhatsApp the Accent team.</span></button>
+  </div>
+  <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Not you? Sign out</a></p>
+</div></section>
+
+<!-- CHAT -->
+<section class="view" id="v-chat"><div id="chatlog"></div></section>
+<div id="composer"><div id="fileTag"></div><div class="in">
+  <button class="round lite" id="attach" title="Attach resume (PDF or photo)">📎</button>
+  <textarea id="msg" rows="1" placeholder="Type a message…"></textarea>
+  <button class="round" id="send" aria-label="Send">➤</button>
+</div><input type="file" id="file" accept="application/pdf,image/*" hidden></div>
+
+<!-- INTERVIEW -->
+<section class="view" id="v-interview"><div class="wrap">
+  <div id="i-setup" class="card">
+    <h2>Practise like it's real 🎤</h2>
+    <p class="sub">6 questions, one at a time, like a real HR round. Speak or type. Full report at the end.</p>
+    <label>JOB ROLE</label>
+    <div class="pills" id="roles">
+      <button class="pill" data-v="Sales Executive">Sales Executive</button><button class="pill" data-v="Telecaller">Telecaller</button>
+      <button class="pill" data-v="Business Development Executive">BDE</button><button class="pill" data-v="Customer Support Executive">Customer Support</button>
+      <button class="pill" data-v="Team Lead (Sales)">Team Lead</button><button class="pill" data-v="">Other</button>
+    </div>
+    <input id="role" class="hide" placeholder="Type the job role" style="margin-top:8px">
+    <label>EXPERIENCE</label>
+    <div class="pills" id="exps"><button class="pill on" data-v="Fresher">Fresher</button><button class="pill" data-v="Experienced">Experienced</button></div>
+    <label>LANGUAGE <span style="font-weight:400;color:var(--mute)">· answer in Malayalam any time and Ila switches</span></label>
+    <div class="pills" id="langs"><button class="pill on" data-v="en-IN">English</button><button class="pill" data-v="ml-IN">Malayalam</button></div>
+    <button class="btn" id="i-go">Start interview</button>
+    <p class="sub" style="margin:12px 0 0">💡 Tap the green 🎤, speak, then tap ■. Ila writes your answer; you check it and tap Send. Turn the volume up. Your voice is not stored.</p>
+  </div>
+  <div id="i-live" class="hide">
+    <div class="prog" id="prog"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="card q"><div class="qn" id="qn">GETTING READY</div>
+      <div class="qt" id="qt"><span class="typing"><span></span><span></span><span></span></span></div>
+      <div class="row"><button class="icon" id="replay">🔊 Hear again</button></div><div class="mine" id="mine"></div></div>
+    <div class="card"><label style="margin-top:0">YOUR ANSWER</label>
+      <textarea id="ans" rows="5" placeholder="Tap 🎤 to record your answer, or type here."></textarea>
+      <div class="row"><button id="mic" aria-label="Record">🎤</button><button class="btn green" id="i-send" style="margin-top:0">Send answer</button></div>
+      <div class="hint" id="hint"></div>
+      <button class="btn alt hide" id="i-end">End now &amp; get my report</button></div>
+  </div>
+  <div id="i-report" class="hide"></div>
+</div></section>
+
+<!-- KILI -->
+<section class="view" id="v-kili"><div class="wrap">
+  <div id="k-form" class="card">
+    <h2>Get feedback on your sales call 🐦</h2><p class="sub">Upload a call recording. Kili listens like a sales coach and tells you exactly what to fix.</p>
+    <div class="two"><div><label>CALL TYPE</label><select id="k-type"><option>Role-play</option><option>Practice call</option><option>Real lead</option><option>Field call</option></select></div>
+      <div><label>GOAL</label><select id="k-goal"><option>Book a meeting</option><option>Qualify the lead</option><option>Close the sale</option><option>Follow-up</option></select></div></div>
+    <div class="two"><div><label>PRODUCT &amp; PRICE</label><input id="k-product" placeholder="e.g. Sales Basics, ₹149"></div>
+      <div><label>LANGUAGE</label><select id="k-lang"><option>Manglish</option><option>Malayalam</option><option>English</option><option>Mixed</option></select></div></div>
+    <label>CALL RECORDING</label>
+    <div class="drop" id="k-drop"><b id="k-fname">Tap to choose a recording</b><span>MP3, M4A, WAV, AAC or WhatsApp voice note · max 30 MB</span></div>
+    <input type="file" id="k-file" accept="audio/*,.mp3,.wav,.aac,.ogg,.opus,.m4a,.flac" hidden>
+    <div class="chk"><input type="checkbox" id="k-ok"><span>The other person knew this call was recorded for training.</span></div>
+    <button class="btn" id="k-go">Get my feedback</button><div class="err" id="k-err"></div>
+  </div>
+  <div id="k-steps" class="card hide">
+    <div class="step" id="ks1"><i></i>Uploading your recording</div><div class="step" id="ks2"><i></i>Kili is listening to the call</div><div class="step" id="ks3"><i></i>Writing your feedback</div>
+    <p class="sub" id="k-wait" style="margin:8px 0 0">Short calls take about 30 seconds, long calls 1–3 minutes. Please keep this screen open.</p>
+  </div>
+  <div id="k-result"></div>
+</div></section>
+
+<script>
+const ILA='https://script.google.com/macros/s/AKfycbxeg3TnuiM5YzhW5nzM5CBatFa2PHTkaOdPjzWULSONS5BNu5HBh5bsfr1i44jbTdeW/exec';
+const KILI='https://script.google.com/macros/s/AKfycbzm5pCgvF4zDj7oGMvGiFY-hl_OHOhJjl8oTl0RrzuayQjeVQpBfyYoYG6DkYZqqspO/exec';
+const WA='919995842727';
+const $=id=>document.getElementById(id);
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let S=store.get('accent_ai')||null;
+function post(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(r=>r.json()).then(j=>{if(j&&j.error)throw new Error(j.error);return j;});}
+function ila(body){body.session=S&&S.session;body.name=S&&S.name;return post(ILA,body);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function netMsg(e){const m=String(e&&e.message||e);return /Failed to fetch|Load failed|NetworkError/i.test(m)?'Connection problem. Check your internet and try again.':m;}
+function pick(box,cb){box.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{box.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');cb(p.dataset.v);});}
+
+/* ---------- navigation ---------- */
+const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review']};
+let current='';
+function show(v,push){
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  $('composer').classList.toggle('on',v==='chat');$('back').style.display=(v==='home'||v==='welcome')?'none':'block';
+  $('eyebrow').textContent=TITLES[v][0];if(v!=='chat')$('title').textContent=TITLES[v][1];
+  if(v!=='interview')stopVoice();
+  current=v;window.scrollTo(0,0);if(push!==false)try{history.pushState({v:v},'','#'+v)}catch(e){}
+}
+window.onpopstate=e=>{const v=(e.state&&e.state.v)||'home';show(S?(v==='welcome'?'home':v):'welcome',false);};
+$('back').onclick=()=>{if(history.state&&history.state.v&&history.length>1)history.back();else show('home');};
+
+/* ---------- welcome ---------- */
+$('w-go').onclick=()=>{
+  $('w-err').textContent='';const f={action:'start',name:$('w-name').value.trim(),whatsapp:$('w-wa').value.trim(),iam:$('w-iam').value,district:$('w-dist').value,consent:$('w-ok').checked};
+  if(!f.name)return $('w-err').textContent='Please enter your name.';
+  if(f.whatsapp.replace(/\D/g,'').length<10)return $('w-err').textContent='Please enter a valid WhatsApp number.';
+  if(!f.consent)return $('w-err').textContent='Please tick the box to continue.';
+  $('w-go').disabled=true;$('w-go').textContent='Setting up…';
+  post(ILA,f).then(r=>{S={session:r.session,name:f.name,wa:f.whatsapp};store.set('accent_ai',S);openHome();})
+  .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
+};
+function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
+$('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone?')){store.del('accent_ai');location.hash='';location.reload();}};
+document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
+  if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
+  if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g.startsWith('chat:'))openChat(g.slice(5));});
+
+/* ---------- chat ---------- */
+const CHAT={mentor:{title:'Sales course mentor',first:'Be my mentor for the Accent sales course.',hello:'Hi! I\'m your sales mentor 🌱 Which lesson are you on? I can explain it, give you a quick drill, or role-play as a customer.'},
+  career:{title:'Career mentor',first:'',hello:'Hi! Let\'s plan your career 🧭 Tell me your degree, your interests and the kind of job you want. Malayalam or Manglish is fine.'},
+  resume:{title:'Resume & LinkedIn',first:'',hello:'Send me your resume 📄 Tap 📎 to attach a PDF or a photo, or paste your resume / LinkedIn text here. I\'ll score it and show you exactly what to fix.'},
+  chat:{title:'Accent courses',first:'',hello:'Ask me anything about Accent courses 🎓: the Sales Program, Sales Basics, fees, batches or placement support.'}};
+let chatMode='chat',hist=[],fileObj=null,busy=false;
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+function bubble(cls,html){const d=document.createElement('div');d.className='b '+cls;d.innerHTML=html;$('chatlog').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;}
+function openChat(mode){
+  if(mode!==chatMode||!$('chatlog').children.length){chatMode=mode;hist=[];$('chatlog').innerHTML='';bubble('ila',fmt(CHAT[mode].hello));}
+  $('title').textContent=CHAT[mode].title;show('chat');$('attach').classList.toggle('hide',mode!=='resume');
+  setTimeout(()=>{try{$('msg').focus()}catch(e){}},200);
+}
+$('msg').addEventListener('input',()=>{$('msg').style.height='auto';$('msg').style.height=Math.min(120,$('msg').scrollHeight)+'px'});
+$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!/Mobi/.test(navigator.userAgent)){e.preventDefault();sendChat()}});
+$('send').onclick=sendChat;$('attach').onclick=()=>$('file').click();
+$('file').onchange=()=>{const f=$('file').files[0];if(!f)return;
+  const done=(data,mime,name)=>{fileObj={name:name,mime:mime,data:data};$('fileTag').style.display='block';$('fileTag').textContent='📎 '+name+' attached · tap ➤ to send';};
+  if(/^image\//.test(f.type)){const img=new Image(),u=URL.createObjectURL(f);img.onload=()=>{const k=Math.min(1,1400/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);done(c.toDataURL('image/jpeg',0.8).split(',')[1],'image/jpeg',f.name.replace(/\.\w+$/,'')+'.jpg')};img.src=u;return}
+  if(f.size>3*1048576){alert('Please keep the PDF under 3 MB, or send a photo of your resume instead.');$('file').value='';return}
+  const r=new FileReader();r.onload=()=>done(String(r.result).split(',')[1],'application/pdf',f.name);r.readAsDataURL(f);};
+function sendChat(){
+  if(busy)return;const t=$('msg').value.trim();if(!t&&!fileObj)return;busy=true;
+  bubble('me',fmt(t||('📎 '+fileObj.name)));$('msg').value='';$('msg').style.height='auto';
+  const typing=bubble('ila','<span class="typing"><span></span><span></span><span></span></span>');
+  const usedFile=!!fileObj,slow=setTimeout(()=>{typing.innerHTML='<span class="typing"><span></span><span></span><span></span></span> '+(usedFile?'Reading your file carefully… up to a minute.':'Still thinking…');},9000);
+  const mode=chatMode==='resume'&&!usedFile&&/linkedin/i.test(t)?'linkedin':chatMode;
+  const req={action:'chat',mode:mode==='chat'?'chat':mode,message:t,history:hist,file:fileObj};
+  fileObj=null;$('fileTag').style.display='none';$('file').value='';
+  ila(req).then(r=>{clearTimeout(slow);typing.innerHTML=fmt(r.reply);hist.push({role:'user',text:t||'(file)'},{role:'model',text:r.reply});hist=hist.slice(-12);
+    if(r.flag==='handoff'||r.flag==='crisis')waCard();
+    if(/Get it done for you/.test(r.reply))upsell(/LinkedIn makeover|LinkedIn score/i.test(r.reply)?'linkedin':'resume');})
+  .catch(e=>{clearTimeout(slow);typing.innerHTML=fmt(netMsg(e));}).finally(()=>{busy=false;});
+}
+function waCard(){const d=document.createElement('div');d.className='upsell';d.innerHTML='<b style="color:var(--f)">Talk to the Accent team</b><a class="btn green" style="margin-top:10px" target="_blank" href="https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I was chatting with Ila. My name is '+S.name+'.')+'">Open WhatsApp</a>';$('chatlog').appendChild(d);d.scrollIntoView({behavior:'smooth'});}
+function upsell(kind){const d=document.createElement('div');d.className='upsell';
+  const list=[{id:'resume',name:'Resume rewrite'},{id:'linkedin',name:'LinkedIn profile makeover'},{id:'combo',name:'Resume + LinkedIn combo'}].filter(s=>kind==='resume'?s.id!=='linkedin':s.id!=='resume');
+  d.innerHTML='<div class="qn">ACCENT CAREERS</div><b style="color:var(--f);font-size:16px">Get it done for you</b><p class="sub" style="margin:4px 0 0">Our team rewrites it professionally, ready to send to employers.</p>'+list.map(s=>'<button data-id="'+s.id+'"><span>'+s.name+'</span><span>→</span></button>').join('');
+  d.querySelectorAll('button').forEach(b=>b.onclick=()=>{b.disabled=true;ila({action:'service',service:b.dataset.id,whatsapp:S.wa}).then(r=>{
+    d.innerHTML='<div class="qn">REQUEST SENT</div><b style="color:var(--f)">We\'ll WhatsApp you</b><p class="sub" style="margin:4px 0 0">Our team is preparing your '+esc(r.service)+'.</p>';}).catch(e=>{b.disabled=false;alert(netMsg(e));});});
+  $('chatlog').appendChild(d);d.scrollIntoView({behavior:'smooth'});}
+
+/* ---------- interview ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const REC=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+let ihist=[],lang='en-IN',role='',exp='Fresher',answers=0,ibusy=false,idone=false,lastQ='',rec=null,listening=false,isession='';
+pick($('roles'),v=>{role=v;$('role').classList.toggle('hide',v!=='');if(v==='')$('role').focus();});pick($('exps'),v=>exp=v);pick($('langs'),v=>lang=v);
+function openInterview(){show('interview');}
+function langName(){return lang==='ml-IN'?'Malayalam':'English'}
+function rules(){return '[VOICE INTERVIEW RULES. These override every other interview rule. You are a professional but friendly HR interviewer in a live spoken interview for the role: '+role+' ('+exp+'). Speak in '+langName()+(lang!=='ml-IN'?'. If the candidate answers mostly in Malayalam, switch to formal, professional Malayalam (Malayalam script, polite forms like താങ്കൾ, job terms in English) for the rest of the interview':'')+(lang==='ml-IN'?' using formal, professional standard Malayalam in Malayalam script, like an HR manager at a reputed Kerala company: polite forms (താങ്കൾ), complete sentences, no slang, no Manglish; keep job terms like sales, target, customer in English':'')+'. Do NOT give feedback, scores or tips during the interview. React in at most one short natural sentence (like a real interviewer: "Okay, thank you." or ONE short follow-up if the answer was vague or very short), then ask the next question and start it with "Question N/6:". Max 40 words per message, no bullet points, no bold. Questions in order: 1 tell me about yourself, 2 why this role and company, 3 a skill question for this role, 4 a real situation (tell me about a time you...), 5 a practical task for this role (for sales roles: sell me this pen), 6 salary expectation or do you have any questions for us.]';}
+function reportRules(){return '[The interview is over. Now write my INTERVIEW REPORT based ONLY on what I actually said. First line exactly: REPORT\nThen exactly these sections, each on its own line, short and specific:\nSCORE: N/10 | Communication N/10 | Confidence N/10 | Content N/10\nBEST PART: quote my strongest line in quotes, then why it works\nCORRECTIONS:\n- You said: "..." => Better: "..."\n- You said: "..." => Better: "..."\n- You said: "..." => Better: "..."\nWORDS: up to 4 fixes as  wrong => right  (or None)\nPRACTISE NEXT: 2 short tips in one or two lines\nREADY: one honest sentence on whether I am interview-ready for this role and what to fix first.\nWrite in '+(lang==='ml-IN'?'Malayalam':'English, unless I answered mostly in Malayalam, then Malayalam')+(lang==='ml-IN'?' (formal, professional Malayalam; quotes of what I said stay as I said them)':'')+'. No other text. Never invent facts.]';}
+const player=new Audio();player.preload='auto';let ttsSeq=0;
+const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+function voices(){return window.speechSynthesis?speechSynthesis.getVoices():[]}
+function stopVoice(){try{speechSynthesis.cancel();}catch(e){}try{player.pause();}catch(e){}}
+function browserSpeak(t){if(!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(t);u.lang='en-IN';u.rate=1;const v=voices().find(x=>/en-IN|en_IN/.test(x.lang))||voices().find(x=>/^en/.test(x.lang));if(v)u.voice=v;speechSynthesis.speak(u);}
+function speak(t){
+  if(!t)return;stopVoice();const ml=/[ഀ-ൿ]/.test(t);
+  const clean=t.replace(/[*#_]/g,'').replace(/(?:Question|ചോദ്യം)\s*(\d)\s*\/\s*6\s*:?/gi,ml?'ചോദ്യം $1. ':'Question $1. ');
+  if(!ml){browserSpeak(clean);return}
+  const my=++ttsSeq;$('replay').textContent='🔊 Loading voice…';
+  post(ILA,{action:'tts',session:isession,text:clean,lang:'ml-IN'}).then(r=>{if(my!==ttsSeq)return;player.src='data:audio/wav;base64,'+r.audio;$('replay').textContent='🔊 Hear again';player.play().catch(()=>{$('replay').textContent='🔊 Tap to hear';});})
+  .catch(()=>{if(my===ttsSeq)$('replay').textContent='🔊 Voice busy · read the question';});
+}
+$('replay').onclick=()=>{if(/[ഀ-ൿ]/.test(lastQ)&&player.src&&player.src.length>200&&!/busy/.test($('replay').textContent)){player.currentTime=0;player.play().catch(()=>{});}else speak(lastQ);};
+function setProg(){[...$('prog').children].forEach((b,i)=>b.classList.toggle('on',i<answers));}
+function thinking(on,slow){if(on){$('qt').innerHTML='<span class="typing"><span></span><span></span><span></span></span>';$('i-send').disabled=true;$('mic').disabled=true;$('hint').textContent='Ila is listening to your answer…';
+  clearTimeout(window._slow);window._slow=setTimeout(()=>{$('hint').textContent=slow||'Still thinking… Google is a little slow right now.'},9000);}
+  else{clearTimeout(window._slow);$('i-send').disabled=false;$('mic').disabled=false;$('hint').textContent='';}}
+function showQ(t){lastQ=t;const m=t.match(/(?:Question|ചോദ്യം)\s*(\d)\s*\/\s*6/i);$('qn').textContent=m?'QUESTION '+m[1]+' OF 6':'ILA';$('qt').textContent=t.replace(/\*\*/g,'');
+  $('i-end').classList.toggle('hide',answers<3);speak(t);}
+function showRetry(msg,shown){$('qt').innerHTML='Ila could not start. <button class="icon" id="retry">Try again</button>';$('retry').onclick=()=>iask(msg,shown);}
+function iask(msg,shown,attempt){
+  ibusy=true;thinking(true,answers>=6?'Writing your report… this takes up to a minute.':'');
+  post(ILA,{session:isession,name:S.name,mode:'interview',message:msg,history:ihist,role:role,lang:langName()}).then(r=>{
+    ibusy=false;thinking(false);
+    if(r.flag==='busy'||r.flag==='limit'){$('qt').textContent=lastQ||'';$('hint').textContent=r.flag==='limit'?'Today\'s practice limit is reached. Please come back tomorrow.':'Google is busy right now. Wait a few seconds and tap Send again.';if(shown!=='Start interview'){answers--;setProg();$('ans').value=shown;}if(!lastQ)showRetry(msg,shown);return}
+    ihist.push({role:'user',text:shown},{role:'model',text:r.reply});ihist=ihist.slice(-14);
+    if(/^\s*\**\s*REPORT/i.test(r.reply)){showReport(r.reply);return}showQ(r.reply);
+  }).catch(e=>{const em=String(e.message||e);if(!attempt&&/Failed to fetch|Load failed|NetworkError/i.test(em)){setTimeout(()=>iask(msg,shown,1),2500);return}
+    ibusy=false;thinking(false);$('qt').textContent=lastQ||'';$('hint').textContent=netMsg(e);if(shown!=='Start interview'){answers--;setProg();$('ans').value=shown;}if(!lastQ)showRetry(msg,shown);});
+}
+$('i-go').onclick=()=>{
+  if(role==='')role=$('role').value.trim();if(!role){alert('Please choose or type the job role.');return}
+  isession='IL-'+(Math.random().toString(36).slice(2)+'XXXXXXXX').slice(0,8).toUpperCase();ihist=[];answers=0;idone=false;lastQ='';setProg();
+  $('i-setup').classList.add('hide');$('i-live').classList.remove('hide');$('i-report').classList.add('hide');window.scrollTo(0,0);
+  try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '));}catch(e){}try{player.src=SILENT;player.play().catch(()=>{});}catch(e){}
+  if(!REC&&!SR)$('mic').classList.add('hide');
+  iask(rules()+'\n\nStart now: greet me ('+S.name+') by name in one short line and ask Question 1/6.','Start interview');
+};
+function submit(final){if(ibusy||idone)return;const t=$('ans').value.trim();if(!t&&!final){$('hint').textContent='Say or type your answer first.';return}
+  if(listening){stopMic();return}if(t){answers++;setProg();$('mine').textContent='You: '+t;}$('ans').value='';
+  iask(((answers>=6||final)?reportRules():rules())+'\n\nMY ANSWER: '+(t||'(no answer)'),t||'(ended early)');if(final)answers=6;}
+$('i-send').onclick=()=>submit(false);$('i-end').onclick=()=>{if(confirm('End the interview and get your report now?'))submit(true)};
+let mr=null,chunks=[],stream=null,recT=null,recStart=0;
+function recMime(){for(const m of ['audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm','audio/ogg']){try{if(MediaRecorder.isTypeSupported(m))return m}catch(e){}}return ''}
+$('mic').onclick=()=>{if(ibusy)return;if(listening){stopMic();return}stopVoice();if(!REC){startSR();return}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{stream=st;chunks=[];const mt=recMime();mr=mt?new MediaRecorder(st,{mimeType:mt}):new MediaRecorder(st);
+    mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};mr.onstop=()=>{try{stream.getTracks().forEach(t=>t.stop())}catch(e){}transcribe(new Blob(chunks,{type:mr.mimeType||mt||'audio/mp4'}))};
+    mr.start();listening=true;recStart=Date.now();$('mic').classList.add('on');$('mic').textContent='■';
+    const tick=()=>{const s=Math.floor((Date.now()-recStart)/1000);$('hint').textContent='Recording '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' · tap ■ when you finish';if(s>=120)stopMic();};tick();recT=setInterval(tick,500);
+  }).catch(()=>{$('hint').textContent='Microphone not allowed. Allow it in your browser settings, or use the 🎙 on your keyboard.';});};
+function startSR(){if(!SR){$('hint').textContent='Use the 🎙 on your keyboard.';return}rec=new SR();rec.lang=lang;rec.interimResults=true;rec.continuous=true;const base=$('ans').value?($('ans').value+' '):'';
+  rec.onresult=ev=>{let t='';for(const r of ev.results)t+=r[0].transcript;$('ans').value=base+t;};rec.onerror=()=>{$('hint').textContent='Mic stopped. Use the 🎙 on your keyboard.';stopMic();};rec.onend=()=>{if(listening)stopMic();};
+  try{rec.start();listening=true;$('mic').classList.add('on');$('mic').textContent='■';$('hint').textContent='Listening… tap ■ when you finish.';}catch(e){$('hint').textContent='Use the 🎙 on your keyboard.';}}
+function stopMic(){listening=false;clearInterval(recT);$('mic').classList.remove('on');$('mic').textContent='🎤';if(mr&&mr.state==='recording'){try{mr.stop()}catch(e){}return}try{rec&&rec.stop();}catch(e){}$('hint').textContent='';}
+function transcribe(blob){if(!blob.size||Date.now()-recStart<800){$('hint').textContent='Too short. Tap 🎤 and speak your full answer.';return}
+  ibusy=true;$('i-send').disabled=true;$('mic').disabled=true;$('hint').textContent='Ila is writing down your answer…';
+  const fr=new FileReader();fr.onload=()=>{post(ILA,{action:'stt',session:isession,audio:String(fr.result).split(',')[1],mime:blob.type,lang:lang}).then(r=>{
+    ibusy=false;$('i-send').disabled=false;$('mic').disabled=false;const t=String(r.text||'').trim();
+    if(!t||/^\(no speech\)$/i.test(t)){$('hint').textContent='I could not hear you. Move closer and try again.';return}
+    $('ans').value=($('ans').value?$('ans').value+' ':'')+t;$('hint').textContent='Check your answer, edit if needed, then tap Send answer.';})
+  .catch(e=>{ibusy=false;$('i-send').disabled=false;$('mic').disabled=false;$('hint').textContent=netMsg(e);});};fr.readAsDataURL(blob);}
+function showReport(txt){
+  idone=true;$('i-live').classList.add('hide');stopVoice();
+  const body=txt.replace(/^\s*\**\s*REPORT\**\s*/i,'').replace(/\*\*/g,'').trim();
+  const get=k=>{const re=new RegExp('^\\s*'+k+'\\s*:?\\s*([\\s\\S]*?)(?=^\\s*(SCORE|BEST PART|CORRECTIONS|WORDS|PRACTISE NEXT|PRACTICE NEXT|READY)\\s*:|$(?![\\s\\S]))','im');const m=body.match(re);return m?m[1].trim():''};
+  const nums=(get('SCORE').match(/(\d+(?:\.\d)?)\s*\/\s*10/g)||[]).map(x=>parseFloat(x));const labels=['Communication','Confidence','Content'];
+  let h='<div class="card" style="border-color:var(--g)"><div class="qn">YOUR INTERVIEW REPORT</div><h2 style="margin-top:6px">'+esc(S.name)+' · '+esc(role)+'</h2>';
+  if(nums.length)h+='<div class="score"><b>'+nums[0]+'</b><span>/ 10 overall</span></div><div>'+labels.map((l,i)=>nums[i+1]!=null?'<div class="bar"><em>'+l+'</em><div><i style="width:'+(nums[i+1]*10)+'%"></i></div><span>'+nums[i+1]+'</span></div>':'').join('')+'</div>';
+  const best=get('BEST PART');if(best)h+='<div class="sec"><h4>⭐ BEST PART</h4><p>'+esc(best)+'</p></div>';
+  const cor=get('CORRECTIONS');if(cor)h+='<div class="sec"><h4>✏️ CORRECTIONS</h4>'+cor.split(/\n+/).filter(x=>x.trim()).map(x=>{const p=x.replace(/^\s*[-•\d.]+\s*/,'').split(/=>|→/);return '<div class="fix">'+(p[1]?'<div class="bad">'+esc(p[0].trim())+'</div><div class="good">'+esc(p[1].trim())+'</div>':esc(p[0]))+'</div>'}).join('')+'</div>';
+  const w=get('WORDS');if(w&&!/^none/i.test(w))h+='<div class="sec"><h4>🔤 WORDS &amp; GRAMMAR</h4><p>'+esc(w)+'</p></div>';
+  const pn=get('PRACTISE NEXT')||get('PRACTICE NEXT');if(pn)h+='<div class="sec"><h4>🎯 PRACTISE NEXT</h4><p>'+esc(pn)+'</p></div>';
+  const rd=get('READY');if(rd)h+='<div class="sec"><h4>✅ AM I READY?</h4><p>'+esc(rd)+'</p></div>';
+  if(!nums.length&&!best&&!cor)h+='<div class="sec"><p>'+esc(body)+'</p></div>';
+  h+='<a class="btn green" id="i-wa" target="_blank" rel="noopener">Share on WhatsApp</a><button class="btn alt" id="i-cp">Copy report</button><button class="btn" id="i-again">Practise again</button>'+
+    '<div class="sec" id="i-fb"><h4>BETA · WAS THIS USEFUL?</h4><div class="pills"><button class="pill" data-v="👍">👍 Yes</button><button class="pill" data-v="👎">👎 Not really</button></div><textarea id="i-fbt" rows="2" placeholder="What should we improve? (optional)" style="margin-top:10px"></textarea><button class="btn alt" id="i-fbs">Send feedback</button></div></div>';
+  $('i-report').innerHTML=h;$('i-report').classList.remove('hide');window.scrollTo(0,0);
+  const share='My Accent mock interview report ('+role+')\n\n'+body;$('i-wa').href='https://wa.me/?text='+encodeURIComponent(share);
+  $('i-cp').onclick=()=>copyText(share,$('i-cp'));
+  $('i-again').onclick=()=>{$('i-report').classList.add('hide');$('i-setup').classList.remove('hide');window.scrollTo(0,0);};
+  let rating='';pick($('i-fb').querySelector('.pills'),v=>rating=v);
+  $('i-fbs').onclick=()=>{if(!rating&&!$('i-fbt').value.trim()){$('i-fbt').focus();return}$('i-fbs').disabled=true;$('i-fbs').textContent='Sending…';
+    ila({action:'feedback',product:'Ila interview',rating:rating,comment:$('i-fbt').value.trim(),context:role+' · '+langName()+' · '+(nums[0]!=null?nums[0]+'/10':'')})
+    .then(()=>{$('i-fb').innerHTML='<h4>THANK YOU 🌱</h4><p>Your feedback helps us make Ila better.</p>'}).catch(()=>{$('i-fbs').disabled=false;$('i-fbs').textContent='Try again';});};
+  speak(lang==='ml-IN'?'നന്നായി. നിങ്ങളുടെ റിപ്പോർട്ട് തയ്യാറാണ്.':'Well done '+S.name.split(' ')[0]+'. Your interview report is ready.');
+}
+function copyText(t,b){const ok=()=>b.textContent='Copied ✓';(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(ok).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();ok();});}
+
+/* ---------- kili ---------- */
+let kfile=null;
+function openKili(){show('kili');}
+$('k-drop').onclick=()=>$('k-file').click();
+$('k-file').onchange=()=>{kfile=$('k-file').files[0];$('k-fname').textContent=kfile?kfile.name+' · '+(kfile.size/1048576).toFixed(1)+' MB':'Tap to choose a recording';};
+function kstep(n){['ks1','ks2','ks3'].forEach((s,i)=>{$(s).className='step'+(i<n-1?' ok':i===n-1?' now':'')})}
+function kfail(m){$('k-err').textContent=m;$('k-go').disabled=false;$('k-steps').classList.add('hide');$('k-form').classList.remove('hide');}
+$('k-go').onclick=()=>{$('k-err').textContent='';
+  if(!kfile)return kfail('Choose a recording.');if(kfile.size>30*1048576)return kfail('That file is over 30 MB. Send a shorter or compressed recording.');
+  if(!$('k-ok').checked)return kfail('Please confirm the recording consent.');
+  $('k-go').disabled=true;$('k-form').classList.add('hide');$('k-steps').classList.remove('hide');$('k-result').innerHTML='';kstep(1);
+  const rd=new FileReader();rd.onload=()=>{kstep(2);const t3=setTimeout(()=>kstep(3),8000),t4=setTimeout(()=>{$('k-wait').textContent='Still working on a long call… almost there. Please keep this screen open.'},90000);
+    post(KILI,{action:'review',learner:S.name+' ('+S.wa+')',email:'',type:$('k-type').value,goal:$('k-goal').value,product:$('k-product').value.trim(),language:$('k-lang').value,consent:true,fileName:kfile.name,mime:kfile.type||'audio/mpeg',data:String(rd.result).split(',')[1]})
+    .then(o=>{clearTimeout(t3);clearTimeout(t4);kshow(o);}).catch(e=>{clearTimeout(t3);clearTimeout(t4);kfail(netMsg(e));});};
+  rd.onerror=()=>kfail('Could not read that file.');rd.readAsDataURL(kfile);};
+function kshow(o){
+  $('k-steps').classList.add('hide');$('k-go').disabled=false;
+  const fixes=(o.fixes||[]).map(f=>'<div class="fix">'+(f.moment?'<div class="bad">“'+esc(f.moment)+'”</div>':'')+'<div>'+esc(f.why)+'</div>'+(f.better_line?'<div class="good">Say instead: '+esc(f.better_line)+'</div>':'')+'</div>').join('');
+  const checks=(o.checklist||[]).map(x=>'<li>'+(x.done?'✅':'❌')+' '+esc(x.item)+(x.note?' <span style="color:var(--mute)">· '+esc(x.note)+'</span>':'')+'</li>').join('');
+  const words=(o.words||[]).map(w=>'<li>“'+esc(w.said)+'” → <b>“'+esc(w.use)+'”</b></li>').join('');
+  const objs=(o.objections||[]).filter(x=>x.objection).map(x=>'<li><b>'+esc(x.objection)+'</b>: '+esc(x.better_answer)+'</li>').join('');
+  let h='<div class="card" style="border-color:var(--g)"><div class="qn">KILI CALL REVIEW</div><div class="two" style="margin-top:10px"><div class="bigs"><b>'+esc(o.score10)+'/10</b><span>Course scorecard</span></div><div class="bigs alt"><b>'+esc(o.score100)+'</b><span>Kili score /100</span></div></div>'+
+    (o.verdict?'<p style="font-weight:600;color:var(--f);font-size:16px;margin:14px 0 0">'+esc(o.verdict)+'</p>':'')+
+    '<div class="sec"><h4>SUMMARY</h4><p>'+esc(o.summary)+'</p><p style="margin-top:6px"><b>Buyer interest:</b> '+esc(o.interest)+(o.interestQuote?' · “'+esc(o.interestQuote)+'”':'')+'<br><b>Talk ratio:</b> '+esc(o.talk)+'</p></div>'+
+    (checks?'<div class="sec"><h4>ACCENT CHECKLIST</h4><ul style="list-style:none;padding:0">'+checks+'</ul></div>':'')+
+    (words?'<div class="sec"><h4>WORDS TO CHANGE</h4><ul>'+words+'</ul></div>':'')+
+    '<div class="sec"><h4>WHAT WENT WELL</h4><ul>'+(o.well||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>'+
+    (fixes?'<div class="sec"><h4>FIX NEXT TIME</h4>'+fixes+'</div>':'')+(objs?'<div class="sec"><h4>OBJECTIONS</h4><ul>'+objs+'</ul></div>':'')+
+    ((o.flags||[]).length?'<div class="sec"><h4 style="color:var(--red)">RED FLAGS</h4><ul>'+o.flags.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul></div>':'')+
+    '<div class="sec"><h4>NEXT ACTION</h4><p>'+esc(o.next)+'</p></div><div class="sec"><h4>FOLLOW-UP MESSAGE</h4><div class="fix" id="k-fu">'+esc(o.followup)+'</div><button class="icon" id="k-cp">Copy message</button></div>'+
+    '<div class="sec" id="k-fb"><h4>BETA · WAS THIS USEFUL?</h4><div class="pills"><button class="pill" data-v="👍">👍 Yes</button><button class="pill" data-v="👎">👎 Not really</button></div><textarea id="k-fbt" rows="2" placeholder="What should Kili do better? (optional)" style="margin-top:10px"></textarea><button class="btn alt" id="k-fbs">Send feedback</button></div>'+
+    '<button class="btn" id="k-again">Review another call</button></div>';
+  $('k-result').innerHTML=h;window.scrollTo(0,0);
+  $('k-cp').onclick=()=>copyText($('k-fu').innerText,$('k-cp'));
+  $('k-again').onclick=()=>{$('k-result').innerHTML='';kfile=null;$('k-file').value='';$('k-fname').textContent='Tap to choose a recording';$('k-form').classList.remove('hide');window.scrollTo(0,0);};
+  let rating='';pick($('k-fb').querySelector('.pills'),v=>rating=v);
+  $('k-fbs').onclick=()=>{if(!rating&&!$('k-fbt').value.trim()){$('k-fbt').focus();return}$('k-fbs').disabled=true;$('k-fbs').textContent='Sending…';
+    post(KILI,{action:'feedback',learner:S.name,rating:rating,comment:$('k-fbt').value.trim(),score:o.score100}).then(()=>{$('k-fb').innerHTML='<h4>THANK YOU 🌱</h4><p>Your feedback helps us make Kili better.</p>'}).catch(()=>{$('k-fbs').disabled=false;$('k-fbs').textContent='Try again';});};
+}
+
+/* ---------- start ---------- */
+if(S&&S.session){openHome();const h=location.hash.slice(1);if(h==='interview')openInterview();else if(h==='kili')openKili();}
+else{show('welcome',false);}
+</script></body></html>

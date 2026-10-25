@@ -11,6 +11,17 @@ function doGet(e) {
   }
   return kPage_(ccPage_());
 }
+/** API for the Accent AI app (posts JSON). action: 'review' | 'feedback'. */
+function doPost(e) {
+  var out;
+  try {
+    var req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (req.action === 'feedback') out = ccFeedback(req);
+    else if (req.action === 'review') out = ccReview(req);
+    else throw new Error('Unknown request.');
+  } catch (err) { out = { error: String(err.message || err) }; }
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
 function kPage_(html) {
   return HtmlService.createHtmlOutput(html).setTitle('Kili \u00b7 ACCENT \u00b7 Call feedback')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
