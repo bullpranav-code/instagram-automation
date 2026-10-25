@@ -211,7 +211,10 @@ const WA='919995842727';
 const $=id=>document.getElementById(id);
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 let S=store.get('accent_ai')||null;
-function post(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(r=>r.json()).then(j=>{if(j&&j.error)throw new Error(j.error);return j;});}
+function post(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(r=>r.text().then(t=>{let j;
+  try{j=JSON.parse(t)}catch(e){const s=t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    throw new Error(/sign in|accounts\.google|Sign-in/i.test(t)?'Server needs access set to "Anyone" (status '+r.status+').':/authoriz/i.test(t)?'Server needs authorisation: run refreshCode in Apps Script and Allow.':'Server error ('+r.status+'): '+s.slice(0,140));}
+  if(j&&j.error)throw new Error(j.error);return j;}));}
 function ila(body){body.session=S&&S.session;body.name=S&&S.name;return post(ILA,body);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function netMsg(e){const m=String(e&&e.message||e);return /Failed to fetch|Load failed|NetworkError/i.test(m)?'Connection problem. Check your internet and try again.':m;}
