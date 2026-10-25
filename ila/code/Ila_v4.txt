@@ -65,6 +65,9 @@ function doPost(e) {
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (req.action === 'admin') out = adminData_(req.key);
+    else if (req.action === 'community_links') out = communityLinks_();
+    else if (req.action === 'admin_links') out = adminLinks_(req);
+    else if (req.action === 'admin_posts') out = adminPosts_(req);
     else if (req.action === 'admin_approve') out = adminApprove_(req);
     else if (req.action === 'start') out = startSession(req);
     else if (!/^IL-[A-Z0-9]{8}$/.test(String(req.session || ''))) throw new Error('Session expired. Please sign in again.');
@@ -249,6 +252,52 @@ function adminApprove_(r) {
   else if (r.what === 'refunded') e.sh.getRange(e.row, 9).setValue('Refunded');
   else if (r.what === 'resetpin') { e.sh.getRange(e.row, 14).setValue(''); CacheService.getScriptCache().remove('pinfail_' + waKey_(r.wa)); }
   return { ok: true };
+}
+/* ================= community ================= */
+const GROUPS = [
+  { id: 'main', name: 'Accent Community', emoji: '🌱', who: 'Everyone: updates, launches, Accent Talks' },
+  { id: 'interview', name: 'Interview Prep Club', emoji: '🎤', who: 'Job seekers and freshers practising interviews' },
+  { id: 'sales', name: 'Sales Practice Circle', emoji: '📞', who: 'Sales learners: call challenges and Kili reviews' },
+  { id: 'jobs', name: 'Jobs & Resume', emoji: '💼', who: 'Job seekers: openings, resume and LinkedIn tips' },
+  { id: 'learners', name: 'Sales Basics Learners', emoji: '📚', who: 'Approved course students: lessons, practical dates, doubts' },
+  { id: 'green', name: 'Green Task Club', emoji: '🌳', who: 'Course students: planting photos, Leaf Points, refunds' }
+];
+const DEFAULT_COMMUNITY = 'https://chat.whatsapp.com/HmdSdlbiWd1GPBjl2Xiacs';
+function communityLinks_() {
+  let links = {};
+  try { links = JSON.parse(PropertiesService.getScriptProperties().getProperty('COMMUNITY_LINKS') || '{}'); } catch (e) {}
+  if (!links.main) links.main = DEFAULT_COMMUNITY;
+  return { groups: GROUPS, links: links };
+}
+function adminLinks_(r) {
+  const k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+  if (!k || r.key !== k) throw new Error('Wrong admin key.');
+  const clean = {};
+  Object.keys(r.links || {}).forEach(id => { const v = String(r.links[id] || '').trim(); if (GROUPS.some(g => g.id === id) && (!v || /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(v))) clean[id] = v; });
+  PropertiesService.getScriptProperties().setProperty('COMMUNITY_LINKS', JSON.stringify(clean));
+  return communityLinks_();
+}
+/** Today's ready-to-post messages for each group (written by Ila once a day, then cached). */
+function adminPosts_(r) {
+  const k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+  if (!k || r.key !== k) throw new Error('Wrong admin key.');
+  const day = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyy-MM-dd'), wd = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'EEEE');
+  const c = CacheService.getScriptCache(), ck = 'posts_' + day;
+  if (!r.refresh) { const hit = c.get(ck); if (hit) return JSON.parse(hit); }
+  const theme = { Monday: 'Interview Question of the Day', Tuesday: 'Sales tip', Wednesday: 'Resume fix', Thursday: 'Call challenge', Friday: 'Wins of the week', Saturday: 'Green Task photos', Sunday: 'Accent Talk / webinar invite' }[wd] || 'Tip of the day';
+  const L = communityLinks_().links, app = CONFIG.APP_URL;
+  const ask = 'Today is ' + wd + ' (' + day + '). Weekly theme: ' + theme + '. Write ONE WhatsApp post for EACH of these Accent community groups: ' +
+    GROUPS.map(g => g.id + ' = ' + g.name + ' (' + g.who + ')').join('; ') +
+    '. Rules: Kerala audience, simple English with a little Malayalam (Malayalam script) where natural; 40 to 90 words each; 1 or 2 emojis; one clear action; useful value first, no hype, never say "offer" (say "fee reduction" only if real; do not invent prices, dates, companies or numbers); end with a call to action. ' +
+    'Use these links where they fit: free mock interview ' + app + '#interview , Sales Basics course ' + app + '#course , Accent AI app ' + app + ' . Course facts: Sales Basics in Malayalam, 10 lessons, ₹149 + ₹99 refundable Green Deposit, first 2 lessons free. WhatsApp 99958 42727. ' +
+    'Return ONLY JSON: {"theme": "...", "posts": {"main": "...", "interview": "...", "sales": "...", "jobs": "...", "learners": "...", "green": "..."}}';
+  const raw = gemini_('You write warm, practical community posts for Accent, a Kerala skill and career platform. Tagline: Choice Is Yours.', [{ role: 'user', parts: [{ text: ask }] }],
+    { temperature: 0.8, maxOutputTokens: 1800, responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } });
+  if (BUSY_RE.test(raw)) throw new Error('Ila is busy right now. Try again in a minute.');
+  let d; try { d = JSON.parse(String(raw).replace(/^```json\s*|```\s*$/g, '')); } catch (e) { throw new Error('Ila could not write the posts. Tap refresh.'); }
+  const out = { day: day, weekday: wd, theme: d.theme || theme, posts: d.posts || {}, groups: GROUPS, links: L };
+  try { c.put(ck, JSON.stringify(out), 21600); } catch (e) {}
+  return out;
 }
 function housekeeping_() {
   const c = CacheService.getScriptCache();

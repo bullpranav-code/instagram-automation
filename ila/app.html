@@ -83,7 +83,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
 .hide{display:none!important}
 /* admin */
 #atabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:none;justify-content:space-around;padding:6px 4px;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:6}
-#atabs.on{display:flex}#atabs button{flex:1;border:0;background:none;font:inherit;font-size:11px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0}
+#atabs.on{display:flex}#atabs{overflow-x:auto;justify-content:flex-start}#atabs button{flex:1 0 58px;border:0;background:none;font:inherit;font-size:11px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0}
 #atabs button i{font-style:normal;font-size:20px}#atabs button.on{color:var(--f);font-weight:600}
 #v-admin .wrap{padding-bottom:96px;max-width:900px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
@@ -134,6 +134,7 @@ video{width:100%;border-radius:16px;background:#000;display:block}
     <button class="tile" data-go="chat:career"><span class="e">🧭</span><b>Plan my career</b><span>Roles, skills and a 30/60/90-day plan.</span></button>
     <button class="tile" data-go="chat:resume"><span class="e">📄</span><b>Resume &amp; LinkedIn</b><span>Score, fixes and a better summary.</span></button>
     <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
+    <button class="tile" data-go="community"><span class="e">👥</span><b>Community</b><span>Join Accent WhatsApp groups.</span></button>
     <button class="tile" data-go="human"><span class="e">👤</span><b>Talk to a person</b><span>WhatsApp the Accent team.</span></button>
   </div>
   <p class="foot">Born in Kerala. Built for the World. · <a href="#" id="signout" style="color:var(--mute)">Sign out</a> · <a href="#" class="adminlink" style="color:var(--mute)">Admin</a></p>
@@ -143,16 +144,18 @@ video{width:100%;border-radius:16px;background:#000;display:block}
 <section class="view" id="v-course"><div class="wrap" id="c-wrap"><div class="card"><span class="typing"><span></span><span></span><span></span></span> Loading your course…</div></div></section>
 <section class="view" id="v-lesson"><div class="wrap" id="l-wrap"></div></section>
 
+<section class="view" id="v-community"><div class="wrap" id="cm-wrap"></div></section>
+
 <!-- ADMIN -->
 <section class="view" id="v-admin"><div class="wrap">
   <div id="a-login" class="card"><h2>Admin access</h2><p class="sub">For Accent trainers. Enter the key once on this device.</p>
     <input id="a-key" type="password" placeholder="Admin key"><button class="btn" id="a-go">Open admin</button><div class="err" id="a-err"></div></div>
   <div id="a-body" class="hide">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="sub" id="a-at" style="margin:0"></span><button class="icon" id="a-ref">↻ Refresh</button></div>
-    <div id="a-ov"></div><div id="a-int" class="hide"></div><div id="a-calls" class="hide"></div><div id="a-stu" class="hide"></div><div id="a-crs" class="hide"></div><div id="a-fb" class="hide"></div>
+    <div id="a-ov"></div><div id="a-int" class="hide"></div><div id="a-calls" class="hide"></div><div id="a-stu" class="hide"></div><div id="a-crs" class="hide"></div><div id="a-posts" class="hide"></div><div id="a-fb" class="hide"></div>
   </div>
 </div></section>
-<div id="atabs"><button data-t="ov" class="on"><i>📊</i>Overview</button><button data-t="int"><i>🎤</i>Interviews</button><button data-t="calls"><i>🐦</i>Calls</button><button data-t="stu"><i>👥</i>Students</button><button data-t="crs"><i>📚</i>Course</button><button data-t="fb"><i>💬</i>Feedback</button></div>
+<div id="atabs"><button data-t="ov" class="on"><i>📊</i>Overview</button><button data-t="int"><i>🎤</i>Interviews</button><button data-t="calls"><i>🐦</i>Calls</button><button data-t="stu"><i>👥</i>Students</button><button data-t="crs"><i>📚</i>Course</button><button data-t="fb"><i>💬</i>Feedback</button><button data-t="posts"><i>📣</i>Posts</button></div>
 <div class="sheet" id="sheet"><div class="pan" id="pan"></div></div>
 
 <!-- CHAT -->
@@ -234,7 +237,7 @@ function netMsg(e){const m=String(e&&e.message||e);return /Failed to fetch|Load 
 function pick(box,cb){box.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{box.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');cb(p.dataset.v);});}
 
 /* ---------- navigation ---------- */
-const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review'],admin:['ACCENT AI · ADMIN','Admin'],course:['ACCENT · COURSE','Sales Basics'],lesson:['ACCENT · COURSE','Lesson']};
+const TITLES={welcome:['ACCENT · AI · BETA','Welcome'],home:['ACCENT · AI · BETA','Accent AI'],chat:['ACCENT · ILA','Ila'],interview:['ACCENT · ILA · VOICE','Mock interview'],kili:['ACCENT · KILI','Call review'],admin:['ACCENT AI · ADMIN','Admin'],course:['ACCENT · COURSE','Sales Basics'],community:['ACCENT · COMMUNITY','Community'],lesson:['ACCENT · COURSE','Lesson']};
 let current='';
 function show(v,push){
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
@@ -260,7 +263,7 @@ function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';sh
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone? You will need your course PIN to sign back in.')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
-  if(g==='course'){openCourse();return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g==='community'){openCommunity();return}if(g==='course'){openCourse();return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
@@ -295,6 +298,7 @@ function sendChat(){
   fileObj=null;$('fileTag').style.display='none';$('file').value='';
   ila(req).then(r=>{clearTimeout(slow);typing.innerHTML=fmt(r.reply);hist.push({role:'user',text:t||'(file)'},{role:'model',text:r.reply});hist=hist.slice(-12);
     if(r.flag==='handoff'||r.flag==='crisis')waCard();
+    if(chatMode==='resume'&&!window._jobsJoin){window._jobsJoin=1;setTimeout(()=>{$('chatlog').appendChild(joinBtn('jobs','Get job updates in Jobs & Resume'));},300);}
     if(/Get it done for you/.test(r.reply))upsell(/LinkedIn makeover|LinkedIn score/i.test(r.reply)?'linkedin':'resume');})
   .catch(e=>{clearTimeout(slow);typing.innerHTML=fmt(netMsg(e));}).finally(()=>{busy=false;});
 }
@@ -424,7 +428,7 @@ function showReport(txt){
   if(!nums.length&&!best&&!cor)h+='<div class="sec"><p>'+esc(body)+'</p></div>';
   h+='<a class="btn green" id="i-wa" target="_blank" rel="noopener">Share on WhatsApp</a><button class="btn alt" id="i-cp">Copy report</button><button class="btn" id="i-again">Practise again</button>'+
     '<div class="sec" id="i-fb"><h4>BETA · WAS THIS USEFUL?</h4><div class="pills"><button class="pill" data-v="👍">👍 Yes</button><button class="pill" data-v="👎">👎 Not really</button></div><textarea id="i-fbt" rows="2" placeholder="What should we improve? (optional)" style="margin-top:10px"></textarea><button class="btn alt" id="i-fbs">Send feedback</button></div></div>';
-  $('i-report').innerHTML=h;$('i-report').classList.remove('hide');window.scrollTo(0,0);
+  $('i-report').innerHTML=h;$('i-report').appendChild(joinBtn('interview','Practise more in the Interview Prep Club'));$('i-report').classList.remove('hide');window.scrollTo(0,0);
   const share='My Accent mock interview report ('+role+')\n\n'+body;$('i-wa').href='https://wa.me/?text='+encodeURIComponent(share);
   $('i-cp').onclick=()=>copyText(share,$('i-cp'));
   $('i-again').onclick=()=>{$('i-report').classList.add('hide');$('i-setup').classList.remove('hide');window.scrollTo(0,0);};
@@ -468,7 +472,7 @@ function kshow(o){
     '<div class="sec"><h4>NEXT ACTION</h4><p>'+esc(o.next)+'</p></div><div class="sec"><h4>FOLLOW-UP MESSAGE</h4><div class="fix" id="k-fu">'+esc(o.followup)+'</div><button class="icon" id="k-cp">Copy message</button></div>'+
     '<div class="sec" id="k-fb"><h4>BETA · WAS THIS USEFUL?</h4><div class="pills"><button class="pill" data-v="👍">👍 Yes</button><button class="pill" data-v="👎">👎 Not really</button></div><textarea id="k-fbt" rows="2" placeholder="What should Kili do better? (optional)" style="margin-top:10px"></textarea><button class="btn alt" id="k-fbs">Send feedback</button></div>'+
     '<button class="btn" id="k-again">Review another call</button></div>';
-  $('k-result').innerHTML=h;window.scrollTo(0,0);
+  $('k-result').innerHTML=h;$('k-result').appendChild(joinBtn('sales','Join the Sales Practice Circle'));window.scrollTo(0,0);
   $('k-cp').onclick=()=>copyText($('k-fu').innerText,$('k-cp'));
   $('k-again').onclick=()=>{$('k-result').innerHTML='';kfile=null;$('k-file').value='';$('k-fname').textContent='Tap to choose a recording';$('k-form').classList.remove('hide');window.scrollTo(0,0);};
   let rating='';pick($('k-fb').querySelector('.pills'),v=>rating=v);
@@ -544,6 +548,7 @@ function renderCourse(){
     const g=CS.green||'';
     h+='<div class="card"><b style="color:var(--f)">🌱 Green Task · get your ₹99 back</b><p class="sub" style="margin:6px 0 0">Plant a seed or sapling, post it on Instagram with the Accent Green Task frame tagging @accent_tutors #ChoiceIsYours, then upload the photo here within 30 days.</p>'+
       (g?'<p style="font-weight:600;color:var(--g)">Status: '+esc(g)+'</p>':'')+(/Approved|Refunded/.test(g)?'':'<input id="c-insta" placeholder="Instagram post link (optional)" style="margin-top:8px"><input type="file" id="c-photo" accept="image/*" hidden><button class="btn alt" id="c-gt">'+(g?'Upload a new photo':'Upload planting photo')+'</button>')+'</div>';
+    h+='<div id="c-groups"></div>';
     h+='<div class="card"><b style="color:var(--f)">🤝 Live practical session</b><p class="sub" style="margin:6px 0 0">Role-play lab, offline workshop and a real field task with Accent trainers. Book on WhatsApp.</p><a class="btn alt" target="_blank" href="https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I finished Sales Basics lessons and want to book the practical session. Name: '+S.name)+'">Book practical on WhatsApp</a></div>';
   }
   $('c-wrap').innerHTML=h;
@@ -551,6 +556,7 @@ function renderCourse(){
   if($('c-pay'))$('c-pay').onclick=()=>{window.open(PAY_URL||('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I want to join the Sales Basics course (₹149 + ₹99 Green Deposit). Name: '+S.name+', WhatsApp: '+S.wa+'. Please share the payment link.')),'_blank');};
   if($('c-paid'))$('c-paid').onclick=()=>{const pin=$('c-pin').value.trim();if(!/^\d{4}$/.test(pin)){$('c-err').textContent='Create a 4-digit PIN first.';$('c-pin').focus();return}
     S.pin=pin;store.set('accent_ai',S);$('c-paid').disabled=true;$('c-paid').textContent='Sending…';cpost({action:'course_join',name:S.name,note:$('c-ref').value.trim()}).then(s=>{CS=s;renderCourse();}).catch(e=>{$('c-paid').disabled=false;$('c-paid').textContent='I have paid · request access';$('c-err').textContent=netMsg(e);});};
+  if($('c-groups')){$('c-groups').appendChild(joinBtn('learners','Join the Sales Basics Learners group'));$('c-groups').appendChild(joinBtn('green','Join the Green Task Club'));}
   if($('c-final'))$('c-final').onclick=finalQuiz;if($('c-cert'))$('c-cert').onclick=showCert;
   if($('c-gt')){$('c-gt').onclick=()=>$('c-photo').click();$('c-photo').onchange=()=>{const f=$('c-photo').files[0];if(!f)return;$('c-gt').disabled=true;$('c-gt').textContent='Uploading…';
     const img=new Image(),u=URL.createObjectURL(f);img.onload=()=>{const k=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);
@@ -599,6 +605,35 @@ function showCert(){const c=document.createElement('canvas');c.width=1600;c.heig
     const url=c.toDataURL('image/png');show('lesson');$('title').textContent='Certificate';
     $('l-wrap').innerHTML='<img src="'+url+'" style="width:100%;border-radius:12px;border:1px solid var(--line)"><a class="btn green" download="Accent_Certificate_'+S.name.replace(/\W+/g,'_')+'.png" href="'+url+'">Download certificate</a><a class="btn alt" target="_blank" href="https://wa.me/?text='+encodeURIComponent('I just completed '+COURSE.title+' at Accent Academy! 🎓 Certificate '+(CS.cert||'')+' #ChoiceIsYours')+'">Share on WhatsApp</a><button class="btn alt" onclick="openCourse()">Back to course</button>';}}
 
+
+/* ---------- community ---------- */
+let CM=null;
+function getCM(){return CM?Promise.resolve(CM):post(ILA,{action:'community_links'}).then(r=>{CM=r;return r;});}
+function joinBtn(id,label){const d=document.createElement('div');d.className='card';d.style.borderColor='var(--l)';d.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';
+  getCM().then(c=>{const g=c.groups.find(x=>x.id===id)||c.groups[0],url=c.links[id]||c.links.main;d.innerHTML='<b style="color:var(--f)">'+g.emoji+' '+esc(label||('Join '+g.name))+'</b><p class="sub" style="margin:4px 0 0">'+esc(g.who)+'</p><a class="btn green" target="_blank" href="'+esc(url)+'">Join on WhatsApp</a>';}).catch(()=>d.remove());return d;}
+function openCommunity(){show('community');$('cm-wrap').innerHTML='<div class="card"><span class="typing"><span></span><span></span><span></span></span></div>';
+  getCM().then(c=>{$('cm-wrap').innerHTML='<div class="hero"><small>ACCENT COMMUNITY</small><h2>Learn together 🌱</h2><p>Free daily tips, interview questions, call challenges, job updates and Accent Talks on WhatsApp.</p></div>'+
+    c.groups.filter(g=>g.id!=='learners'&&g.id!=='green').map(g=>'<div class="card"><b style="color:var(--f);font-size:16px">'+g.emoji+' '+esc(g.name)+'</b><p class="sub" style="margin:4px 0 0">'+esc(g.who)+'</p><a class="btn '+(g.id==='main'?'green':'alt')+'" target="_blank" href="'+esc(c.links[g.id]||c.links.main)+'">Join</a></div>').join('')+
+    '<p class="sub" style="text-align:center">Course students get the learners and Green Task groups inside the course page.</p>';})
+  .catch(e=>{$('cm-wrap').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p><a class="btn green" target="_blank" href="https://chat.whatsapp.com/HmdSdlbiWd1GPBjl2Xiacs">Join Accent Community</a></div>';});}
+/* admin posts */
+let PO=null;
+function loadPosts(force){$('a-posts').innerHTML='<div class="card"><span class="typing"><span></span><span></span><span></span></span> Ila is writing today\'s posts… (about 15 seconds)</div>';
+  post(ILA,{action:'admin_posts',key:AK,refresh:!!force}).then(r=>{PO=r;renderPosts();}).catch(e=>{$('a-posts').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p><button class="btn" onclick="loadPosts(true)">Try again</button></div>'+linksEditor();wireLinks();});}
+function renderPosts(){const r=PO;let h='<div class="card" style="border-color:var(--g)"><div class="qn">TODAY · '+esc(r.weekday).toUpperCase()+'</div><b style="color:var(--f);font-size:17px">'+esc(r.theme)+'</b><p class="sub" style="margin:4px 0 0">Ila wrote one post for each group. Copy or share, then post it in the group.</p><button class="icon" id="po-ref" style="margin-top:8px">↻ Write new versions</button></div>';
+  r.groups.forEach(g=>{const t=(r.posts||{})[g.id];if(!t)return;const link=(r.links||{})[g.id];
+    h+='<div class="card"><b style="color:var(--f)">'+g.emoji+' '+esc(g.name)+'</b><div class="fix" style="white-space:pre-wrap;margin-top:8px" id="po-'+g.id+'">'+esc(t)+'</div><div class="row" style="flex-wrap:wrap"><button class="icon" data-cp="'+g.id+'">Copy</button><a class="icon" target="_blank" href="https://wa.me/?text='+encodeURIComponent(t)+'">Share to WhatsApp</a>'+(link?'<a class="icon" target="_blank" href="'+esc(link)+'">Open group</a>':'')+'</div></div>';});
+  $('a-posts').innerHTML=h+linksEditor();
+  $('po-ref').onclick=()=>loadPosts(true);$('a-posts').querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>copyText($('po-'+b.dataset.cp).innerText,b));wireLinks();}
+function linksEditor(){const gs=(PO&&PO.groups)||(CM&&CM.groups)||[{id:'main',name:'Accent Community',emoji:'🌱'},{id:'interview',name:'Interview Prep Club',emoji:'🎤'},{id:'sales',name:'Sales Practice Circle',emoji:'📞'},{id:'jobs',name:'Jobs & Resume',emoji:'💼'},{id:'learners',name:'Sales Basics Learners',emoji:'📚'},{id:'green',name:'Green Task Club',emoji:'🌳'}];
+  const L=(PO&&PO.links)||(CM&&CM.links)||{};
+  return '<div class="card"><b style="color:var(--f)">🔗 WhatsApp group links</b><p class="sub" style="margin:4px 0 8px">Paste each group\'s invite link (WhatsApp → group → Invite via link → Copy). Students see these Join buttons in the app.</p>'+
+    gs.map(g=>'<label>'+g.emoji+' '+esc(g.name).toUpperCase()+'</label><input data-gl="'+g.id+'" placeholder="https://chat.whatsapp.com/…" value="'+esc(L[g.id]||'')+'">').join('')+'<button class="btn" id="gl-save">Save links</button><div class="err" id="gl-err"></div></div>';}
+function wireLinks(){if(!$('gl-save'))return;$('gl-save').onclick=()=>{const links={};document.querySelectorAll('[data-gl]').forEach(i=>links[i.dataset.gl]=i.value.trim());
+  const bad=Object.values(links).find(v=>v&&!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(v));if(bad){$('gl-err').textContent='This is not a WhatsApp group invite link: '+bad;return}
+  $('gl-save').disabled=true;$('gl-save').textContent='Saving…';post(ILA,{action:'admin_links',key:AK,links:links}).then(c=>{CM=c;if(PO)PO.links=c.links;$('gl-save').textContent='Saved ✓';setTimeout(()=>{$('gl-save').disabled=false;$('gl-save').textContent='Save links'},1500);})
+  .catch(e=>{$('gl-save').disabled=false;$('gl-save').textContent='Save links';$('gl-err').textContent=netMsg(e);});};}
+
 /* ---------- admin ---------- */
 let AK=store.get('accent_admin')||'',AD=null,KD=null;
 document.querySelectorAll('.adminlink').forEach(a=>a.onclick=e=>{e.preventDefault();openAdmin();});
@@ -617,7 +652,7 @@ function loadAdmin(first){
     renderAdmin();});
 }
 document.querySelectorAll('#atabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#atabs button').forEach(x=>x.classList.toggle('on',x===b));
-  ['ov','int','calls','stu','crs','fb'].forEach(t=>$('a-'+t).classList.toggle('hide',t!==b.dataset.t));$('title').textContent=b.textContent.replace(/^\S+/,'').trim()||'Admin';window.scrollTo(0,0);});
+  ['ov','int','calls','stu','crs','fb','posts'].forEach(t=>$('a-'+t).classList.toggle('hide',t!==b.dataset.t));if(b.dataset.t==='posts')loadPosts();$('title').textContent=b.textContent.replace(/^\S+/,'').trim()||'Admin';window.scrollTo(0,0);});
 const dkey=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'})};
 const dshow=d=>{const x=new Date(d);return isNaN(x)?'':x.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})};
 function days30(){const o=[];for(let i=29;i>=0;i--){const d=new Date(Date.now()-i*864e5);o.push({k:dkey(d),l:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})});}return o;}
