@@ -385,6 +385,330 @@
    "text": "നിങ്ങളുടെ ടാസ്ക്: ഫോർമുല ഉപയോഗിച്ച് മൂന്ന് പ്രോംപ്റ്റുകൾ എഴുതുക, റെസ്യൂമെ, ഷോപ്പ് റിപ്ലൈ, പഠന നോട്ട്സ്. Accent ആപ്പിൽ Ila-യോട് ടെസ്റ്റ് ചെയ്ത് നോക്കൂ. ബോണസ് അപ്ഡേറ്റ്: കോളേജ് വിദ്യാർത്ഥികൾക്ക് Google AI Plus ഒരു വർഷം ഫ്രീ. ഈ ഫോർമുല ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
    "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
    "voice": "Puck"
+  },
+  {
+   "id": "AI02_S1",
+   "text": "AI-യുടെ ആദ്യ ഉത്തരം ഒരിക്കലും ഏറ്റവും നല്ലതല്ല. മിക്കവരും ഒരു ചോദ്യം ചോദിച്ച് നിർത്തുന്നു. പ്രോ യൂസർമാർ സംസാരം തുടരുന്നു.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI02_S2",
+   "text": "മൂന്ന് മാജിക് ഫോളോ-അപ്പുകൾ പഠിക്കാം. ചെറുതാക്കൂ, ലളിതമാക്കൂ, ഈ ഭാഗം മാറ്റൂ. പിന്നെ ഒന്ന് കൂടി: മൂന്ന് ഓപ്ഷനുകൾ കൂടി തരൂ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI02_S3",
+   "text": "ബേക്കറിക്ക് ഒരു പേര് ചോദിച്ചു. കിട്ടിയത് ഒരു സാധാരണ പേര് മാത്രം. ഇവിടെ മിക്കവരും നിർത്തും.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI02_S4",
+   "text": "ഇനി ഫോളോ-അപ്പ് ചെയ്യാം. അഞ്ച് എണ്ണം കൂടി, മലയാളം ഫീൽ, ചെറുത്, മഞ്ചേരിയിലെ ബേക്കറിക്ക്. ഇപ്പോൾ നല്ല ഓപ്ഷനുകൾ കിട്ടി. ഇഷ്ടമുള്ളത് തിരഞ്ഞെടുക്കാം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI02_S5",
+   "text": "ക്വിസ് ടൈം! AI-യുടെ ഉത്തരം വളരെ നീണ്ടതാണ്. എന്ത് ചെയ്യും? A: പുതിയ ചാറ്റ് തുടങ്ങും. B: മൂന്ന് വരിയാക്കൂ എന്ന് റിപ്ലൈ ചെയ്യും. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. AI നിങ്ങളുടെ മുൻ ചാറ്റ് ഓർക്കും, അത് തിരുത്തിയാൽ മതി.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI02_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: ഒരു കാര്യം ചോദിക്കൂ, പിന്നെ മൂന്ന് ഫോളോ-അപ്പുകൾ കൊണ്ട് മെച്ചപ്പെടുത്തൂ. ബോണസ് ടിപ്പ്: ആദ്യം എന്നോട് ചോദ്യങ്ങൾ ചോദിക്കൂ എന്ന് പറഞ്ഞാൽ, AI ആവശ്യമുള്ളത് ചോദിക്കും. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI03_S1",
+   "text": "ദിവസവും നമ്മൾ ചെറിയ ജോലികൾക്ക് ഒരുപാട് സമയം കളയുന്നു. മെസേജ്, ലെറ്റർ, പ്ലാൻ, ബജറ്റ്. AI കൊണ്ട് ഇത് സെക്കന്റുകളിൽ ചെയ്യാം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI03_S2",
+   "text": "AI-ക്ക് കൊടുക്കാവുന്ന നാല് ദൈനംദിന ജോലികൾ. മെസേജുകൾ, ലെറ്ററുകൾ, യാത്രാ പ്ലാൻ, മാസ ബജറ്റ്. ഓരോന്നിനും RTCF ഫോർമുല ഉപയോഗിക്കുക.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI03_S3",
+   "text": "ഒരു ട്രിപ്പ് പ്ലാൻ ചെയ്യൂ എന്ന് ചോദിച്ചു. കിട്ടിയത് ലോകത്തിലെ പൊതുവായ സ്ഥലങ്ങൾ. നമ്മുടെ ബജറ്റോ സ്ഥലമോ ഒന്നുമില്ല.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI03_S4",
+   "text": "ഇനി വിശദമായി ചോദിക്കാം. മഞ്ചേരിയിൽ നിന്ന് വയനാട്, രണ്ട് ദിവസം, നാല് പേർക്ക് എണ്ണായിരം രൂപ, ദിവസം തിരിച്ച് ടേബിളിൽ. ഇപ്പോൾ ഉപയോഗിക്കാവുന്ന പ്ലാൻ കിട്ടി. വിലകൾ ഒന്ന് ചെക്ക് ചെയ്താൽ മതി.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI03_S5",
+   "text": "ക്വിസ് ടൈം! ബിൽ റിമൈൻഡറിന് ഏറ്റവും നല്ല പ്രോംപ്റ്റ് ഏത്? A: Remind about bill. B: വെള്ളിയാഴ്ച അടയ്ക്കേണ്ട രണ്ടായിരത്തി അഞ്ഞൂറ് രൂപയുടെ ബില്ലിന് മലയാളത്തിൽ മാന്യമായ WhatsApp റിമൈൻഡർ. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. തുക, തീയതി, ഭാഷ, ടോൺ എല്ലാം ഉണ്ട്.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI03_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: ഇന്ന് രണ്ട് യഥാർത്ഥ ജോലികൾക്ക് AI ഉപയോഗിക്കൂ, ഒരു മെസേജ്, ഒരു പ്ലാൻ. ബോണസ് ടിപ്പ്: AI തരുന്ന വിലകളും തീയതികളും നമ്പറുകളും എപ്പോഴും ചെക്ക് ചെയ്യുക. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI04_S1",
+   "text": "ഇരുപത് പേജുള്ള ചാപ്റ്റർ, രണ്ട് മിനിറ്റിൽ പ്രധാന കാര്യങ്ങൾ. AI-ക്ക് നിങ്ങളുടെ പഠന പങ്കാളി ആകാൻ കഴിയും. പക്ഷേ ശരിയായി ചോദിക്കണം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI04_S2",
+   "text": "മൂന്ന് പഠന സൂപ്പർപവറുകൾ. സംഗ്രഹിക്കുക, ഉദാഹരണത്തോടെ വിശദീകരിക്കുക, എന്നെ ടെസ്റ്റ് ചെയ്യുക. പിന്നെ റിവിഷനുള്ള നോട്ട്സ് ടേബിൾ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI04_S3",
+   "text": "ഇൻഫ്ലേഷൻ എന്താണ് എന്ന് ചോദിച്ചു. കിട്ടിയത് ടെക്സ്റ്റ്ബുക്ക് പോലെ ഒരു നിർവചനം. മനസ്സിലാക്കാനും ഓർക്കാനും പ്രയാസം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI04_S4",
+   "text": "ഇനി ഇങ്ങനെ: പതിനഞ്ച് വയസ്സുകാരന്, മലയാളത്തിൽ, ചായക്കടയുടെ ഉദാഹരണത്തോടെ, പിന്നെ രണ്ട് ചോദ്യങ്ങൾ. പണ്ട് ചായ അഞ്ച് രൂപ, ഇന്ന് പതിനഞ്ച്. ഇപ്പോൾ മനസ്സിലായി, ഓർമ്മയിലും നിൽക്കും.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI04_S5",
+   "text": "ക്വിസ് ടൈം! പരീക്ഷയ്ക്ക് തയ്യാറാകാൻ ഏറ്റവും നല്ല വഴി? A: ഉത്തരങ്ങൾ AI-യെക്കൊണ്ട് എഴുതിക്കുക. B: AI നിങ്ങളെ ക്വിസ് ചെയ്യട്ടെ, തെറ്റുകൾ വിശദീകരിക്കട്ടെ. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. കോപ്പി ചെയ്താൽ പഠിക്കില്ല, പ്രാക്ടീസ് ചെയ്താൽ പഠിക്കും.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI04_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: ഒരു ടോപ്പിക്ക് എടുക്കൂ, സംഗ്രഹം, ലളിതമായ ഉദാഹരണം, അഞ്ച് ചോദ്യ ക്വിസ്. ബോണസ് ടിപ്പ്: നിങ്ങളുടെ സ്വന്തം നോട്ട്സ് പേസ്റ്റ് ചെയ്യൂ, അപ്പോൾ AI നിങ്ങളുടെ സിലബസ് തന്നെ വിശദീകരിക്കും. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI05_S1",
+   "text": "ഒരു വാചകം ടൈപ്പ് ചെയ്താൽ, ഒരു ചിത്രം കിട്ടും. പക്ഷേ മിക്കവർക്കും കിട്ടുന്നത് ഒരു റാൻഡം ചിത്രം. രഹസ്യം: വ്യക്തമായി വിവരിക്കുക.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI05_S2",
+   "text": "ചിത്രത്തിനുള്ള ഫോർമുല. സബ്ജക്റ്റ്: എന്താണ് ചിത്രത്തിൽ. സ്ഥലം: എവിടെ. ലൈറ്റ്: മൂഡും സമയവും. സ്റ്റൈൽ: ഫോട്ടോ, പോസ്റ്റർ, ത്രീഡി.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI05_S3",
+   "text": "ഒരു ചായക്കട എന്ന് മാത്രം ടൈപ്പ് ചെയ്തു. കിട്ടിയത് ഏതോ നാട്ടിലെ ഒരു സാധാരണ കട. നമ്മൾ മനസ്സിൽ കണ്ടതല്ല.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI05_S4",
+   "text": "ഇനി ഫോർമുല ഉപയോഗിക്കാം. വയലിനരികിലെ ചെറിയ കേരള ചായക്കട, മഴയുള്ള വൈകുന്നേരം, മഞ്ഞ വെളിച്ചം, ഗ്ലാസിൽ നിന്ന് ആവി, റിയലിസ്റ്റിക് ഫോട്ടോ. ഇപ്പോൾ മനസ്സിൽ കണ്ട ചിത്രം തന്നെ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI05_S5",
+   "text": "ക്വിസ് ടൈം! AI ചിത്രങ്ങളിൽ ടെക്സ്റ്റ് എപ്പോഴും കൃത്യമായി എഴുതുമോ? A: അതെ, എപ്പോഴും. B: എപ്പോഴും ഇല്ല, ടെക്സ്റ്റ് പിന്നീട് Canva-യിൽ ചേർക്കുക. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. ചിത്രം AI-യിൽ, അക്ഷരങ്ങൾ Canva-യിൽ. അതാണ് പ്രോ രീതി.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI05_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: നാല് ഭാഗങ്ങളും ചേർത്ത് ഒരു ചിത്രം ഉണ്ടാക്കൂ. ബോണസ് ടിപ്പ്: യഥാർത്ഥ ആളുകളുടെ AI ചിത്രങ്ങൾ അവരുടെ അനുവാദമില്ലാതെ ഉപയോഗിക്കരുത്. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI06_S1",
+   "text": "നിങ്ങളുടെ ഫോൺ ക്യാമറയ്ക്ക് ഇപ്പോൾ ചിന്തിക്കാൻ കഴിയും. ടൈപ്പ് ചെയ്യേണ്ട ആവശ്യമില്ല. ക്യാമറ കാണിക്കൂ, ശബ്ദത്തിൽ ചോദിക്കൂ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI06_S2",
+   "text": "മൂന്ന് ഫോൺ ട്രിക്കുകൾ. ക്യാമറ കാണിച്ച് ചോദിക്കുക, മലയാളത്തിൽ സംസാരിക്കുക, ഏത് ബോർഡും ട്രാൻസ്‌ലേറ്റ് ചെയ്യുക. പിന്നെ കൈയെഴുത്ത് നോട്ട്സ് ടെക്സ്റ്റ് ആക്കാം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI06_S3",
+   "text": "വീട്ടിനടുത്തുള്ള ഒരു ചെടി, ടൈപ്പ് ചെയ്ത് വിവരിക്കാൻ ശ്രമിച്ചു. AI-ക്ക് മനസ്സിലായില്ല. വിവരിക്കാൻ തന്നെ പ്രയാസം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI06_S4",
+   "text": "ഇനി ക്യാമറ കാണിച്ച്, ശബ്ദത്തിൽ ചോദിച്ചു: ഇത് ഏത് ചെടിയാണ്? ഒറ്റ ഫോട്ടോയിൽ ഉത്തരം. പക്ഷേ ഓർക്കുക, മരുന്നിനോ ഭക്ഷണത്തിനോ മുമ്പ് വിദഗ്ധനോട് ചോദിക്കുക.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI06_S5",
+   "text": "ക്വിസ് ടൈം! വായിക്കാൻ അറിയാത്ത ഹിന്ദി മെനു. എന്ത് ചെയ്യും? A: ഊഹിച്ച് ഓർഡർ ചെയ്യും. B: ക്യാമറ കാണിച്ച് ട്രാൻസ്‌ലേറ്റ് ചെയ്യും. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. ഇത് ഫ്രീ ആണ്, മിക്ക ഫോണുകളിലും ഉണ്ട്.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI06_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: ഇന്ന് മൂന്നും ട്രൈ ചെയ്യൂ, ക്യാമറ ചോദ്യം, മലയാളം വോയ്സ്, ഒരു ബോർഡ് ട്രാൻസ്‌ലേഷൻ. ബോണസ് ടിപ്പ്: Google Lens തുറന്ന് വേഗം തുടങ്ങാം. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI07_S1",
+   "text": "റിക്രൂട്ടർമാർ ഒരു റെസ്യൂമെ നോക്കുന്നത് കുറച്ച് സെക്കന്റുകൾ മാത്രം. ചുമതലകളുടെ ലിസ്റ്റ് ആണെങ്കിൽ സ്കിപ്പ്. റിസൾട്ടുകൾ ആണെങ്കിൽ ഷോർട്ട്‌ലിസ്റ്റ്.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI07_S2",
+   "text": "റിസൾട്ട് ലൈൻ എഴുതാനുള്ള രീതി. ഒരു ആക്ഷൻ വാക്കിൽ തുടങ്ങുക, ഒരു നമ്പർ ചേർക്കുക, ഫലം കാണിക്കുക. ഏറ്റവും പ്രധാനം: സത്യമായ കാര്യങ്ങൾ മാത്രം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI07_S3",
+   "text": "എന്റെ റെസ്യൂമെ എഴുതൂ എന്ന് ചോദിച്ചു. കിട്ടിയത് എല്ലാവരുടെയും പോലെ ഒരു ടെംപ്ലേറ്റ്. റിക്രൂട്ടർ ഇത് നൂറ് തവണ കണ്ടതാണ്.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI07_S4",
+   "text": "ഇനി നമ്മുടെ യഥാർത്ഥ അനുഭവം കൊടുക്കാം. മൊബൈൽ ഷോപ്പിൽ ആറ് മാസം, ദിവസം മുപ്പത് കസ്റ്റമേഴ്സ്. ഇത് രണ്ട് റിസൾട്ട് ലൈനുകളാക്കൂ. ഇപ്പോൾ ശക്തമായ, സത്യമായ ലൈനുകൾ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI07_S5",
+   "text": "ക്വിസ് ടൈം! നിങ്ങൾക്ക് ഇല്ലാത്ത ഒരു സ്കിൽ AI ചേർത്തു. എന്ത് ചെയ്യും? A: നന്നായി തോന്നുന്നു, വെക്കാം. B: ഒഴിവാക്കും. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. ഇന്റർവ്യൂവിൽ ചോദിച്ചാൽ പിടിക്കപ്പെടും. സത്യം മാത്രം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI07_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: റെസ്യൂമെയിലെ മൂന്ന് വരികൾ റിസൾട്ട് ലൈനുകളാക്കൂ. ബോണസ് ടിപ്പ്: പിന്നെ Accent ആപ്പിൽ Ila-യോടൊപ്പം ഇന്റർവ്യൂ പ്രാക്ടീസ് ചെയ്യൂ. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI08_S1",
+   "text": "AI ചിലപ്പോൾ വളരെ ആത്മവിശ്വാസത്തോടെ തെറ്റ് പറയും. കണ്ണടച്ച് വിശ്വസിച്ചാൽ പറ്റിക്കപ്പെടും. മൂന്ന് കാര്യങ്ങൾ ചെക്ക് ചെയ്താൽ സുരക്ഷിതം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI08_S2",
+   "text": "മൂന്ന് ചെക്ക് നിയമം. നമ്പറുകൾ ചെക്ക് ചെയ്യുക, സോഴ്സ് ചോദിക്കുക, വിശ്വസിക്കാൻ പറ്റാത്തത്ര നല്ലതാണെങ്കിൽ സംശയിക്കുക. പിന്നെ ഒരു യഥാർത്ഥ വെബ്സൈറ്റിൽ ഉറപ്പാക്കുക.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI08_S3",
+   "text": "സ്കോളർഷിപ്പിന്റെ അവസാന തീയതി ചോദിച്ചു. AI ഒരു തീയതി ഉറപ്പോടെ പറഞ്ഞു. പക്ഷേ അത് പഴയതോ തെറ്റോ ആകാം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI08_S4",
+   "text": "ഇനി ചോദിക്കാം: തീയതി ഉറപ്പാക്കാൻ ഒഫീഷ്യൽ വെബ്സൈറ്റ് ലിങ്ക് തരൂ. AI തന്നെ പറയുന്നു, ഒഫീഷ്യൽ സൈറ്റിൽ ചെക്ക് ചെയ്യൂ. പ്രധാന തീരുമാനങ്ങൾക്ക് എപ്പോഴും ഇങ്ങനെ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI08_S5",
+   "text": "ക്വിസ് ടൈം! WhatsApp-ൽ ഒരു മെസേജ്: ഫ്രീ ഐഫോൺ, ലിങ്കിൽ ക്ലിക്ക് ചെയ്യൂ! A: തീരുന്നതിന് മുമ്പ് വേഗം ക്ലിക്ക് ചെയ്യും. B: അവഗണിക്കും, ഇത് തട്ടിപ്പാണ്. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. വിശ്വസിക്കാൻ പറ്റാത്തത്ര നല്ലതാണെങ്കിൽ, അത് വ്യാജമാണ്.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI08_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: AI-യോട് മൂന്ന് വസ്തുതകൾ ചോദിക്കൂ, ഓരോന്നും യഥാർത്ഥ വെബ്സൈറ്റിൽ ചെക്ക് ചെയ്യൂ. ബോണസ് ടിപ്പ്: OTP, പാസ്‌വേഡ്, ബാങ്ക് വിവരങ്ങൾ ഒരു ചാറ്റ്ബോട്ടിനും കൊടുക്കരുത്. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI09_S1",
+   "text": "നിങ്ങളുടെ ഷോപ്പിന് ഒരു ഫ്രീ മാർക്കറ്റിങ് ടീം. സമയമില്ലാത്തതിനാൽ പോസ്റ്റുകളും റിപ്ലൈകളും മുടങ്ങുന്നു. AI കൊണ്ട് മിനിറ്റുകളിൽ ചെയ്യാം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI09_S2",
+   "text": "ബിസിനസിനുള്ള നാല് ജോലികൾ. ഇൻസ്റ്റാഗ്രാം ക്യാപ്ഷൻ, കസ്റ്റമർ റിപ്ലൈ, റിവ്യൂകൾക്ക് നന്ദി. പിന്നെ ആഴ്ചയിലെ കണ്ടന്റ് പ്ലാൻ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI09_S3",
+   "text": "എന്റെ ഷോപ്പിന് ഒരു പോസ്റ്റ് എഴുതൂ എന്ന് ചോദിച്ചു. കിട്ടിയത് എല്ലാ കടകൾക്കും ചേരുന്ന ബോറിങ് വാചകം. ആരും നിർത്തി വായിക്കില്ല.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI09_S4",
+   "text": "ഇനി വിശദമായി: മഞ്ചേരി ബേക്കറിയുടെ പുതിയ പഴംപൊരി, മലയാളം ഇംഗ്ലീഷ് മിക്സ്, മൂന്ന് വരി, നാല് മണിക്ക് ശേഷം വരാൻ പറയുക. മഴയും ചായയും പഴംപൊരിയും. ഇപ്പോൾ ആളുകൾ നിർത്തി വായിക്കും.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI09_S5",
+   "text": "ക്വിസ് ടൈം! ദേഷ്യത്തോടെ ഒരു കസ്റ്റമർ റിവ്യൂ. ഏറ്റവും നല്ല പ്രോംപ്റ്റ്? A: എന്റെ ഷോപ്പിനെ ന്യായീകരിച്ച് റിപ്ലൈ എഴുതൂ. B: ശാന്തമായി ക്ഷമ ചോദിച്ച്, പരിഹാരം നൽകുന്ന റിപ്ലൈ എഴുതൂ. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. ശാന്തമായ റിപ്ലൈ മറ്റ് കസ്റ്റമേഴ്സിന്റെ വിശ്വാസം നേടും.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI09_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: അറിയാവുന്ന ഏതെങ്കിലും ഷോപ്പിന് ഏഴ് ദിവസത്തെ പോസ്റ്റ് പ്ലാൻ ഉണ്ടാക്കൂ. ബോണസ് ടിപ്പ്: നിങ്ങളുടെ മൂന്ന് പഴയ പോസ്റ്റുകൾ കൊടുത്താൽ, AI നിങ്ങളുടെ സ്റ്റൈൽ പിന്തുടരും. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI10_S1",
+   "text": "പത്ത് പാഠങ്ങൾ. ഒരു പുതിയ ശീലം. മുമ്പ് AI ഒരു സംശയമായിരുന്നു. ഇപ്പോൾ അത് നിങ്ങളുടെ ദൈനംദിന സഹായി.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI10_S2",
+   "text": "നിങ്ങളുടെ ഫ്രീ ടൂൾകിറ്റ്. ചാറ്റിന് Gemini, ChatGPT, Claude. ചിത്രങ്ങൾ ഈ ആപ്പുകളിൽ തന്നെ. ഡിസൈനിന് Canva, ഫോണിൽ Google Lens.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI10_S3",
+   "text": "ആദ്യ ദിവസം നമ്മൾ ഇങ്ങനെയാണ് ചോദിച്ചത്. ഒരു വരി, പൊതുവായ ഉത്തരം. ഇനി ഇന്നത്തെ നിങ്ങൾ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI10_S4",
+   "text": "ഇന്ന്: RTCF പ്രോംപ്റ്റ്, മൂന്ന് ഫോളോ-അപ്പുകൾ, ഫാക്റ്റ് ചെക്ക്, പിന്നെ Canva-യിൽ ഫൈനൽ. കൃത്യവും സത്യവും നമ്മുടേതുമായ ഫലം. മിനിറ്റുകൾക്കുള്ളിൽ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI10_S5",
+   "text": "ക്വിസ് ടൈം! ഏറ്റവും നല്ല AI ശീലം ഏത്? A: മാസത്തിൽ ഒരിക്കൽ ഉപയോഗിക്കുക. B: ദിവസവും പത്ത് മിനിറ്റ്, യഥാർത്ഥ ജോലികൾക്ക്. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. ദിവസവും പ്രാക്ടീസ് ചെയ്താൽ, നിങ്ങൾ പ്രോ ആകും.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AI10_S6",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: Accent ആപ്പിൽ ഫൈനൽ ക്വിസ് എഴുതി സർട്ടിഫിക്കറ്റ് നേടൂ. ബോണസ് ടിപ്പ്: ആഴ്ചതോറുമുള്ള AI ടിപ്പുകൾക്കും പ്രാക്ടിക്കലുകൾക്കും Accent ലേണേഴ്സ് ഗ്രൂപ്പിൽ ചേരൂ. ഇത് ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace.",
+   "voice": "Puck"
   }
  ]
 }
