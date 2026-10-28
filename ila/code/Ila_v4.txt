@@ -9,6 +9,7 @@ const CONFIG = {
   FREE_VIDEO_BASE: 'https://bullpranav-code.github.io/instagram-automation/course/Accent_SalesBasics_L0',   // free lessons 1-2 (public)
   VIDEO_FOLDER_ID: '1qxBiol7jUuXv34lI8gGs2GwKuT7_MbD-',   // Drive: Accent HQ › 02 Courses › Sales Basics - lesson videos (private)
   FREE_LESSONS: [1, 2],
+  HOSTED_LESSONS: [3, 4, 5, 6, 8, 9],   // served from the Accent site (paid links shown only after approval); 7 and 10 from Drive
   KB_URL: 'https://raw.githubusercontent.com/bullpranav-code/instagram-automation/main/accent/ila/knowledge.json',
   KILI_URL: 'https://script.google.com/macros/s/AKfycbzm5pCgvF4zDj7oGMvGiFY-hl_OHOhJjl8oTl0RrzuayQjeVQpBfyYoYG6DkYZqqspO/exec',
   DAILY_MESSAGE_LIMIT: 40,                                     // per person per day, protects the free quota
@@ -195,7 +196,7 @@ function courseState_(r) {
     if (waKey_(x[1]) !== k) return; if (x[4] === 'watched') done[x[3]] = 1; if (x[4] === 'check') quiz[x[3]] = Number(x[5]) || 0; });
   const videos = {};
   CONFIG.FREE_LESSONS.forEach(n => { videos[n] = CONFIG.FREE_VIDEO_BASE + n + '.mp4'; });
-  if (approved) for (let n = 1; n <= 10; n++) if (!videos[n]) videos[n] = 'private';
+  if (approved) for (let n = 1; n <= 10; n++) if (!videos[n]) videos[n] = CONFIG.HOSTED_LESSONS.indexOf(n) > -1 ? CONFIG.FREE_VIDEO_BASE + (n < 10 ? n : '') + '.mp4' : 'private';
   return { status: status, videos: videos, done: done, checks: quiz, green: e.v ? String(e.v[8] || '') : '', points: e.v ? Number(e.v[9]) || 0 : 0,
     cert: e.v ? String(e.v[10] || '') : '', final: e.v ? String(e.v[11] || '') : '' };
 }
