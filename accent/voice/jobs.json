@@ -343,6 +343,48 @@
    "text": "ഇനി നിങ്ങളുടെ ടാസ്ക്. AI സഹായിക്കാൻ കഴിയുന്ന അഞ്ച് ദിവസേന ജോലികൾ എഴുതുക. പിന്നെ Accent ആപ്പിൽ Ila-യോട് ചോദിച്ച് നോക്കൂ. അടുത്ത ലെസ്സണിൽ: AI-യോട് എങ്ങനെ ശരിയായി ചോദിക്കാം. Choice is yours!",
    "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
    "voice": "Puck"
+  },
+  {
+   "id": "AIP_S1",
+   "text": "ഒരേ AI, രണ്ട് ഉത്തരങ്ങൾ. ഒന്ന് പൊതുവായതും ബോറിങ്ങും, മറ്റേത് നമുക്ക് വേണ്ടത് കൃത്യമായി. വ്യത്യാസം ഒന്ന് മാത്രം: നമ്മൾ എങ്ങനെ ചോദിക്കുന്നു.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AIP_S2",
+   "text": "ഇന്ന് ഒരു ഫോർമുല പഠിക്കാം: Role, Task, Context, Format. Role: AI ആരായി പെരുമാറണം. Task: എന്ത് ചെയ്യണം. Context: നിങ്ങളുടെ സാഹചര്യം. Format: ഉത്തരം എങ്ങനെ വേണം, നീളം, ഭാഷ, രീതി.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AIP_S3",
+   "text": "ആദ്യം സാധാരണ പോലെ ചോദിക്കാം: ഒരു ലീവ് ലെറ്റർ എഴുതൂ. കിട്ടിയത് ഇംഗ്ലീഷിൽ ഒരു നീണ്ട, പൊതുവായ ലെറ്റർ. കാരണം ഇല്ല, ഓഫീസ് ഇല്ല, നമുക്ക് ചേരില്ല.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AIP_S4",
+   "text": "ഇനി ഫോർമുല ഉപയോഗിക്കാം. ഇങ്ങനെ: You are an HR expert. നാളെ ലീവ് വേണം, കുടുംബ ചടങ്ങുണ്ട്, കൊച്ചിയിലെ ഓഫീസ്, മലയാളത്തിൽ, അഞ്ച് വരിയിൽ, മാന്യമായി. ഇപ്പോൾ ഉത്തരം കൃത്യം: ചെറുത്, മലയാളത്തിൽ, നമ്മുടെ കാര്യം തന്നെ.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AIP_S5",
+   "text": "എന്തുകൊണ്ട് ഇത് വർക്ക് ചെയ്യുന്നു? നിങ്ങൾ കൊടുക്കുന്ന വിവരങ്ങൾ വെച്ച് AI ഏറ്റവും നല്ല ഉത്തരം പ്രവചിക്കുന്നു. വിവരം കൃത്യമായാൽ, ഉത്തരവും കൃത്യം.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AIP_S6",
+   "text": "ക്വിസ് ടൈം! ഏത് പ്രോംപ്റ്റിനാണ് നല്ല ഉത്തരം കിട്ടുക? A: Write a resume. B: You are a recruiter. സെയിൽസിലെ ഒരു ഫ്രഷർക്ക് മൂന്ന് വരി റെസ്യൂമെ സമ്മറി എഴുതൂ. ആലോചിക്കൂ… മൂന്ന്… രണ്ട്… ഒന്ന്… ഉത്തരം B. അതിൽ Role, Task, Context, Format എല്ലാം ഉണ്ട്.",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
+  },
+  {
+   "id": "AIP_S7",
+   "text": "നിങ്ങളുടെ ടാസ്ക്: ഫോർമുല ഉപയോഗിച്ച് മൂന്ന് പ്രോംപ്റ്റുകൾ എഴുതുക, റെസ്യൂമെ, ഷോപ്പ് റിപ്ലൈ, പഠന നോട്ട്സ്. Accent ആപ്പിൽ Ila-യോട് ടെസ്റ്റ് ചെയ്ത് നോക്കൂ. ബോണസ് അപ്ഡേറ്റ്: കോളേജ് വിദ്യാർത്ഥികൾക്ക് Google AI Plus ഒരു വർഷം ഫ്രീ. ഈ ഫോർമുല ഒരു സുഹൃത്തിന് അയക്കൂ. Choice is yours!",
+   "style": "Warm, confident and modern, like a premium tech presenter on a Malayalam YouTube channel; clear, friendly, medium-brisk pace, smiling voice.",
+   "voice": "Puck"
   }
  ]
 }
