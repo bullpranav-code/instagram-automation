@@ -281,9 +281,10 @@ const CHAT={mentor:{title:'Sales course mentor',first:'Be my mentor for the Acce
 let chatMode='chat',hist=[],fileObj=null,busy=false;
 function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
 function bubble(cls,html){const d=document.createElement('div');d.className='b '+cls;d.innerHTML=html;$('chatlog').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;}
-function openChat(mode){
-  if(mode!==chatMode||!$('chatlog').children.length){chatMode=mode;hist=[];$('chatlog').innerHTML='';bubble('ila',fmt(CHAT[mode].hello));}
-  $('title').textContent=CHAT[mode].title;show('chat');$('attach').classList.toggle('hide',mode!=='resume');
+let CTXL='';
+function openChat(mode,ctx){ctx=ctx||'';
+  if(mode!==chatMode||ctx!==CTXL||!$('chatlog').children.length){chatMode=mode;CTXL=ctx;hist=[];$('chatlog').innerHTML='';bubble('ila',fmt(ctx&&mode==='mentor'?'Hi! I\'m your '+COURSE.short+' mentor 🌱 We\'re on '+ctx.split(' · ')[1]+'. I can explain it, give you a quick drill, or role-play it with you.':CHAT[mode].hello));}
+  $('title').textContent=ctx&&mode==='mentor'?COURSE.short+' mentor':CHAT[mode].title;show('chat');$('attach').classList.toggle('hide',mode!=='resume');
   setTimeout(()=>{try{$('msg').focus()}catch(e){}},200);
 }
 $('msg').addEventListener('input',()=>{$('msg').style.height='auto';$('msg').style.height=Math.min(120,$('msg').scrollHeight)+'px'});
@@ -301,7 +302,7 @@ function sendChat(){
   const typing=bubble('ila','<span class="typing"><span></span><span></span><span></span></span>');
   const usedFile=!!fileObj,slow=setTimeout(()=>{typing.innerHTML='<span class="typing"><span></span><span></span><span></span></span> '+(usedFile?'Reading your file carefully… up to a minute.':'Still thinking…');},9000);
   const mode=chatMode==='resume'&&!usedFile&&/linkedin/i.test(t)?'linkedin':chatMode;
-  const req={action:'chat',mode:mode==='chat'?'chat':mode,message:t,history:hist,file:fileObj};
+  const req={action:'chat',mode:mode==='chat'?'chat':mode,message:t,history:hist,file:fileObj,ctx:CTXL};
   fileObj=null;$('fileTag').style.display='none';$('file').value='';
   ila(req).then(r=>{clearTimeout(slow);typing.innerHTML=fmt(r.reply);hist.push({role:'user',text:t||'(file)'},{role:'model',text:r.reply});hist=hist.slice(-12);
     if(r.flag==='handoff'||r.flag==='crisis')waCard();
@@ -763,7 +764,7 @@ function openLesson(n){const L=COURSE.lessons[n-1];show('lesson');$('title').tex
   const picked={};$('chk').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const q=+b.dataset.q,j=+b.dataset.j;if(picked[q]!=null)return;picked[q]=j;
     $('chk').querySelectorAll('.opt[data-q="'+q+'"]').forEach(x=>{const k=+x.dataset.j;if(k===L.check[q].a)x.classList.add('right');else if(k===j)x.classList.add('wrong');});
     if(Object.keys(picked).length===L.check.length){const sc=L.check.filter((c,i)=>picked[i]===c.a).length;$('chk-r').textContent=sc===L.check.length?'Perfect! '+sc+'/'+sc+' 🎉':sc+'/'+L.check.length+' · the green answers show the right idea.';cpost({action:'course_event',lesson:n,event:'check',score:sc,name:S.name}).catch(()=>{});}});
-  $('l-prac').onclick=()=>{if(L.practice==='kili')openKili();else if(L.practice==='interview')openInterview();else{openChat('mentor');$('msg').value='I just finished Lesson '+n+': '+L.t+'. Give me a quick drill.';}};
+  $('l-prac').onclick=()=>{if(L.practice==='kili')openKili();else if(L.practice==='interview')openInterview();else{openChat('mentor',COURSE.title+' · Lesson '+n+': '+L.t);$('msg').value='I just finished '+COURSE.short+' Lesson '+n+': '+L.t+'. Give me a quick drill on this.';}};
   $('l-done').onclick=()=>markDone(n,true);
   let tkF=null;$('tk-a').onclick=()=>$('tk-f').click();$('tk-f').onchange=()=>{tkF=$('tk-f').files[0]||null;$('tk-n').textContent=tkF?'📎 '+tkF.name+' ('+Math.round(tkF.size/1024)+' KB)':'';if(tkF&&tkF.size>8*1048576){$('tk-e').textContent='Please choose a file under 8 MB.';tkF=null;}};
   $('tk-s').onclick=async()=>{const t=$('tk-t').value.trim();if(!t&&!tkF){$('tk-e').textContent='Write your answer or attach a file.';return}$('tk-s').disabled=true;$('tk-s').textContent='Sending…';$('tk-e').textContent='';
