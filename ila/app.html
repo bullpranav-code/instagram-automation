@@ -133,7 +133,7 @@ video{width:100%;border-radius:16px;background:#000;display:block}
     <button class="tile big" data-go="course-ie" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🎤</span><div><b>Interview English<span class="tag">₹149</span></b><span>7-day challenge with Ila: tell me about yourself, strengths, STAR, salary, mock interview.</span></div></button>
     <button class="tile big" data-go="interview"><span class="e">🎤</span><div><b>Mock interview<span class="tag">VOICE</span></b><span>Speak with Ila like a real HR round. Get a score and corrections.</span></div></button>
     <button class="tile" data-go="kili"><span class="e">🐦</span><b>Call review</b><span>Upload a sales call. Kili tells you what to fix.</span></button>
-    <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Sales course mentor</b><span>Lesson help, daily drills, role-play.</span></button>
+    <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Ask Ila about my course</b><span>Any course: explain, drill, role-play.</span></button>
     <button class="tile" data-go="chat:career"><span class="e">🧭</span><b>Plan my career</b><span>Roles, skills and a 30/60/90-day plan.</span></button>
     <button class="tile" data-go="chat:resume"><span class="e">📄</span><b>Resume &amp; LinkedIn</b><span>Score, fixes and a better summary.</span></button>
     <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
@@ -274,7 +274,7 @@ document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.datas
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
-const CHAT={mentor:{title:'Sales course mentor',first:'Be my mentor for the Accent sales course.',hello:'Hi! I\'m your sales mentor 🌱 Which lesson are you on? I can explain it, give you a quick drill, or role-play as a customer.'},
+const CHAT={mentor:{title:'Course mentor',first:'Be my mentor for the Accent sales course.',hello:'Hi! I\'m Ila, your course mentor 🌱 Which course do you need help with?'},
   career:{title:'Career mentor',first:'',hello:'Hi! Let\'s plan your career 🧭 Tell me your degree, your interests and the kind of job you want. Malayalam or Manglish is fine.'},
   resume:{title:'Resume & LinkedIn',first:'',hello:'Send me your resume 📄 Tap 📎 to attach a PDF or a photo, or paste your resume / LinkedIn text here. I\'ll score it and show you exactly what to fix.'},
   chat:{title:'Accent courses',first:'',hello:'Ask me anything about Accent courses 🎓: Sales Basics, AI Tools, Hindi Express, the Sales Program, fees or doubts in any lesson.'}};
@@ -283,7 +283,7 @@ function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
 function bubble(cls,html){const d=document.createElement('div');d.className='b '+cls;d.innerHTML=html;$('chatlog').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;}
 let CTXL='';
 function openChat(mode,ctx){ctx=ctx||'';
-  if(mode!==chatMode||ctx!==CTXL||!$('chatlog').children.length){chatMode=mode;CTXL=ctx;hist=[];$('chatlog').innerHTML='';bubble('ila',fmt(ctx&&mode==='mentor'?'Hi! I\'m your '+COURSE.short+' mentor 🌱 We\'re on '+ctx.split(' · ')[1]+'. I can explain it, give you a quick drill, or role-play it with you.':CHAT[mode].hello));}
+  if(mode!==chatMode||ctx!==CTXL||!$('chatlog').children.length){chatMode=mode;CTXL=ctx;hist=[];$('chatlog').innerHTML='';bubble('ila',fmt(ctx&&mode==='mentor'?'Hi! I\'m your '+COURSE.short+' mentor 🌱 '+(ctx.includes(' · ')?'We\'re on '+ctx.split(' · ')[1]+'. ':'Tell me your lesson number, or ask anything. ')+'I can explain it, give you a quick drill, or role-play it with you.':CHAT[mode].hello));if(mode==='mentor'&&!ctx){const w=bubble('ila','');w.innerHTML=Object.keys(COURSES).map(k=>'<button class="chip" data-cc="'+k+'">'+esc(COURSES[k].short)+'</button>').join(' ');w.querySelectorAll('[data-cc]').forEach(b=>b.onclick=()=>{CID=b.dataset.cc;COURSE=COURSES[CID];openChat('mentor',COURSE.title);});}}
   $('title').textContent=ctx&&mode==='mentor'?COURSE.short+' mentor':CHAT[mode].title;show('chat');$('attach').classList.toggle('hide',mode!=='resume');
   setTimeout(()=>{try{$('msg').focus()}catch(e){}},200);
 }
