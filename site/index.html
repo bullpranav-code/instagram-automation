@@ -233,6 +233,16 @@ footer h4{color:#fff;margin:0 0 10px;font-size:14px}footer a{display:block;text-
  </div>
 </div></section>
 
+<section id="gallery" style="display:none"><div class="wrap">
+ <p class="eyebrow">Gallery</p>
+ <h2>Moments from <span class="hl">Accent</span> sessions.</h2>
+ <div id="gal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:20px"></div>
+</div></section>
+<section id="voices" style="display:none;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
+ <p class="eyebrow">Student voices</p>
+ <h2>In their <span class="hl">own</span> words.</h2>
+ <div id="rev" class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"></div>
+</div></section>
 <section id="webinars"><div class="wrap">
  <p class="eyebrow">Free webinars</p>
  <h2>Live sessions for <span class="hl">students</span> and professionals.</h2>
@@ -288,6 +298,9 @@ footer h4{color:#fff;margin:0 0 10px;font-size:14px}footer a{display:block;text-
 (function(){var src='site';try{var q=new URLSearchParams(location.search).get('src');if(q)src='site-'+q.replace(/[^\w-]/g,'').slice(0,30);}catch(e){}
 var APP='../ila/app.html?v=12&src='+encodeURIComponent(src);
 document.querySelectorAll('[data-app]').forEach(function(a){a.href=APP+a.getAttribute('data-app');});
+(function(){var esc=function(t){return String(t||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+fetch('gallery.json?t='+Date.now()).then(function(r){return r.json()}).then(function(G){if(!G||!G.length)return;document.getElementById('gal').innerHTML=G.slice(0,24).map(function(g){return '<figure style="margin:0"><img loading="lazy" src="'+esc(g.src)+'" alt="'+esc(g.caption)+'" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px"><figcaption style="font-size:13px;color:var(--ink-700,#2C3A31);margin-top:6px">'+esc(g.caption)+'</figcaption></figure>'}).join('');document.getElementById('gallery').style.display='block'}).catch(function(){});
+fetch('https://script.google.com/macros/s/AKfycbySQ22N4JmqgdIln_Q7isduxoHO62O1Ah2ZJTlDVRzVZPy7wtKxyWCriFoxIUGHi86J/exec',{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'testimonials'})}).then(function(r){return r.json()}).then(function(R){var L=(R&&R.list)||[];if(!L.length)return;document.getElementById('rev').innerHTML=L.map(function(x){return '<div class="card"><div class="in"><span class="tag">'+'★★★★★'.slice(0,x.r)+'</span><p style="margin:10px 0">“'+esc(x.t)+'”</p><p><b>'+esc(x.n)+'</b>'+(x.town?', '+esc(x.town):'')+' · '+esc(x.course)+'</p></div></div>'}).join('');document.getElementById('voices').style.display='block'}).catch(function(){});})();
 fetch('webinars.json?t='+Date.now()).then(function(r){return r.json()}).then(function(L){var now=new Date().toISOString().slice(0,10);L=(L||[]).filter(function(w){return !w.date||w.date>=now});if(!L.length)return;var esc=function(t){return String(t||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};document.getElementById('wblist').innerHTML=L.map(function(w){return '<a class="card" href="../ila/app.html?v=13&src=site-webinar#webinar-'+esc(w.id)+'"><div class="in"><span class="tag">'+esc(w.for)+'</span><h3>'+esc(w.title)+'</h3><p>'+esc(w.date)+' · '+esc(w.time)+(w.speaker?' · '+esc(w.speaker):'')+'</p><div class="meta"><span class="go">Register free →</span></div></div></a>'}).join('')}).catch(function(){});
 fetch('jobs.json').then(function(r){return r.json()}).then(function(j){var el=document.getElementById('joblist');var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};el.innerHTML=j.jobs.slice(0,12).map(function(x){return '<a class="card" target="_blank" rel="noopener nofollow" href="'+esc(x.u)+'"><div class="in"><span class="tag">'+esc(x.l)+'</span><h3>'+esc(x.t)+'</h3><p>'+esc(x.c)+'</p><div class="meta"><span class="price">Posted '+esc(x.d)+'</span><span class="go">View on '+esc(j.source)+' →</span></div></div></a>'}).join('');document.getElementById('jobsrc').textContent='Source: '+j.source+' · updated '+j.updated+'. Accent is not the employer for these listings.';}).catch(function(){});
 var io='IntersectionObserver' in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12}):null;

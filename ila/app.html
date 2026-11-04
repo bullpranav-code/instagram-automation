@@ -126,6 +126,7 @@ video{width:100%;border-radius:16px;background:#000;display:block}
 <!-- HOME -->
 <section class="view" id="v-home"><div class="wrap">
   <div class="hero"><small>ACCENT AI · BETA</small><h2 id="hello">Hi!</h2><p>What would you like to work on today?</p></div>
+  <div class="card" id="streak"></div>
   <div class="grid">
     <button class="tile big" data-go="course" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">📚</span><div><b>Sales Basics course<span class="tag">₹149</span></b><span id="course-tile">10 Malayalam lessons, quiz, certificate and a live practical.</span></div></button>
     <button class="tile big" data-go="course-ai" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🤖</span><div><b>AI Tools course<span class="tag">₹149</span></b><span>10 practical Malayalam lessons: prompts, images, study, resume, business. Quiz + certificate.</span></div></button>
@@ -137,6 +138,7 @@ video{width:100%;border-radius:16px;background:#000;display:block}
     <button class="tile" data-go="chat:career"><span class="e">🧭</span><b>Plan my career</b><span>Roles, skills and a 30/60/90-day plan.</span></button>
     <button class="tile" data-go="chat:resume"><span class="e">📄</span><b>Resume &amp; LinkedIn</b><span>Score, fixes and a better summary.</span></button>
     <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
+    <button class="tile" data-go="review"><span class="e">⭐</span><b>Share your experience</b><span>Tell us how Accent helped you.</span></button>
     <button class="tile" data-go="invite"><span class="e">🎁</span><b>Invite friends</b><span>+50 🍃 when a friend joins, +100 🍃 when they enrol.</span></button>
     <button class="tile" data-go="webinar"><span class="e">🎙️</span><b>Free webinars</b><span>Live sessions for students and working professionals.</span></button>
     <button class="tile" data-go="leader"><span class="e">🏆</span><b>Leaf Points table</b><span>Top learners this month. Earn points by finishing tasks.</span></button>
@@ -239,7 +241,23 @@ function post(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':
   try{j=JSON.parse(t)}catch(e){const s=t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     throw new Error(/sign in|accounts\.google|Sign-in/i.test(t)?'Server needs access set to "Anyone" (status '+r.status+').':/authoriz/i.test(t)?'Server needs authorisation: run refreshCode in Apps Script and Allow.':'Server error ('+r.status+'): '+s.slice(0,140));}
   if(j&&j.error)throw new Error(j.error);return j;}));}
-function ila(body){body.session=S&&S.session;body.name=S&&S.name;return post(ILA,body);}
+function ila(body){body.session=S&&S.session;body.name=S&&S.name;if(/^(chat|course_event|task_submit|green_submit|course_video)$/.test(body.action))markActive();return post(ILA,body);}
+/* ---------- streak & daily goal (Duolingo-style, on this phone) ---------- */
+function stDay(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function stGet(){try{return JSON.parse(localStorage.getItem('accent_streak')||'{}')}catch(e){return {}}}
+function stSet(o){try{localStorage.setItem('accent_streak',JSON.stringify(o))}catch(e){}}
+function stCalc(){const o=stGet(),days=o.days||[],set={};days.forEach(d=>set[d]=1);(o.frozen||[]).forEach(d=>set[d]=1);
+  let n=0,d=new Date();if(!set[stDay(d)])d.setDate(d.getDate()-1);while(set[stDay(d)]){if((o.days||[]).indexOf(stDay(d))>-1)n++;d.setDate(d.getDate()-1);}
+  return {n:n,today:(o.acts||{})[stDay()]||0,doneToday:!!(o.acts||{})[stDay()],best:Math.max(o.best||0,n)};}
+function markActive(){const o=stGet(),k=stDay();o.days=o.days||[];o.acts=o.acts||{};
+  /* one free streak freeze per week: covers a single missed day */
+  const y=new Date();y.setDate(y.getDate()-1);const y2=new Date();y2.setDate(y2.getDate()-2);const wk=stDay(new Date(Date.now()-6*864e5));
+  if(o.days.indexOf(k)<0&&o.days.indexOf(stDay(y))<0&&o.days.indexOf(stDay(y2))>-1&&!(o.frozen||[]).some(f=>f>=wk)){o.frozen=(o.frozen||[]).concat(stDay(y));}
+  if(o.days.indexOf(k)<0)o.days.push(k);o.days=o.days.slice(-120);o.acts[k]=(o.acts[k]||0)+1;
+  Object.keys(o.acts).forEach(d=>{if(d<stDay(new Date(Date.now()-30*864e5)))delete o.acts[d]});const c=stCalc.call(null);o.best=Math.max(o.best||0,c.n);stSet(o);renderStreak();}
+function renderStreak(){const el=$('streak');if(!el)return;const c=stCalc(),goal=3,pct=Math.min(100,Math.round(c.today/goal*100));
+  el.innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="font-size:30px">'+(c.n?'🔥':'🌱')+'</div><div style="flex:1"><b>'+(c.n?c.n+'-day streak':'Start your streak today')+'</b><div class="sub" style="margin:2px 0 6px">'+(c.doneToday?(c.today>=goal?'Daily goal done! See you tomorrow 🌟':'Nice! '+(goal-c.today)+' more step'+(goal-c.today===1?'':'s')+' for today\'s goal.'):(c.n?'Do one lesson, activity or Ila practice today to keep it.':'One lesson, activity or Ila practice a day builds the habit.'))+'</div><div style="height:6px;background:var(--line,#DCE5DE);border-radius:6px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--g,#16A34A)"></div></div></div></div>'+(c.best>c.n&&c.best>1?'<div class="sub" style="margin-top:6px">Best: '+c.best+' days · 1 free streak freeze every week</div>':'<div class="sub" style="margin-top:6px">1 free streak freeze every week</div>');}
+
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function netMsg(e){const m=String(e&&e.message||e);return /Failed to fetch|Load failed|NetworkError/i.test(m)?'Connection problem. Check your internet and try again.':m;}
 function pick(box,cb){box.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{box.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');cb(p.dataset.v);});}
@@ -268,11 +286,11 @@ $('w-go').onclick=()=>{
   post(ILA,f).then(r=>{S={session:r.session,name:f.name,wa:f.whatsapp};store.set('accent_ai',S);openHome();if(/^course/.test(H0))openCourse(H0.split('-')[1]);else if(H0==='interview')openInterview();else if(H0==='kili')openKili();else if(/^webinar/.test(H0))openWebinars(H0.slice(8));})
   .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
 };
-function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
+function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';renderStreak();show('home');}
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone? You will need your course PIN to sign back in.')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
-  if(g==='community'){openCommunity();return}if(g==='leader'){openLeader();return}if(g==='invite'){openInvite();return}if(g==='webinar'){openWebinars();return}if(g==='profile'){window.open('https://27yoc-recrui-7ncdcc53.manus.space/candidate/login','_blank');return}if(g==='site'){window.open('../site/','_blank');return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='course-ie'){openCourse('ie');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g==='community'){openCommunity();return}if(g==='leader'){openLeader();return}if(g==='invite'){openInvite();return}if(g==='review'){openReview();return}if(g==='webinar'){openWebinars();return}if(g==='profile'){window.open('https://27yoc-recrui-7ncdcc53.manus.space/candidate/login','_blank');return}if(g==='site'){window.open('../site/','_blank');return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='course-ie'){openCourse('ie');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
@@ -759,6 +777,11 @@ function openWebinars(pick){show('lesson');$('title').textContent='Webinars';$('
     h+='<button class="btn alt" onclick="show(\'home\')">Back to home</button>';$('l-wrap').innerHTML=h;
     $('l-wrap').querySelectorAll('[data-wb]').forEach(b=>b.onclick=()=>{b.disabled=true;b.textContent='Saving…';
       ila({action:'webinar_reg',webinar:b.dataset.wb,wa:S.wa,name:S.name,session:S.session,src:(function(){try{return localStorage.getItem('accent_src')||'app'}catch(e){return 'app'}})()}).then(r=>{b.textContent=r.already?'Already registered ✓':'Registered ✓ · link on WhatsApp';}).catch(e=>{b.disabled=false;b.textContent='Try again';alert(netMsg(e));});});});}
+function openReview(){show('lesson');$('title').textContent='Your experience';
+  $('l-wrap').innerHTML='<div class="hero"><small>ACCENT · FEEDBACK</small><h2>⭐ How was Accent for you?</h2><p>Your words help other students decide. We check every review before showing it.</p></div><div class="card"><b>Rating</b><div id="rv-st" style="font-size:30px;margin:6px 0;cursor:pointer">'+[1,2,3,4,5].map(i=>'<span data-r="'+i+'">☆</span>').join('')+'</div><b>Which course or service?</b><select id="rv-c" style="width:100%;margin:6px 0 10px;padding:10px;border-radius:10px;border:1px solid var(--line,#DCE5DE)">'+Object.keys(COURSES).map(k=>'<option>'+esc(COURSES[k].title)+'</option>').join('')+'<option>Ila / mock interview</option><option>Webinar</option><option>Other</option></select><b>Your experience</b><textarea id="rv-t" rows="5" maxlength="600" placeholder="What did you learn? What changed for you?" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid var(--line,#DCE5DE)"></textarea><b>Your town</b><input id="rv-town" maxlength="40" placeholder="e.g. Manjeri" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid var(--line,#DCE5DE)"><label class="sub" style="display:flex;gap:8px;align-items:flex-start;margin:8px 0"><input type="checkbox" id="rv-ok"> Accent may show my first name, town and this review on its website and social media.</label><button class="btn" id="rv-go">Send review</button><p class="sub" id="rv-m"></p></div><button class="btn alt" onclick="show(\'home\')">Back to home</button>';
+  let R=0;$('rv-st').querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>{R=+x.dataset.r;$('rv-st').querySelectorAll('[data-r]').forEach(y=>y.textContent=+y.dataset.r<=R?'★':'☆');});
+  $('rv-go').onclick=()=>{const t=$('rv-t').value.trim();if(!R||t.length<15){$('rv-m').textContent='Please pick a rating and write at least one sentence.';return}$('rv-go').disabled=true;$('rv-m').textContent='Sending…';
+    ila({action:'testimonial',wa:S.wa,rating:R,course:$('rv-c').value,text:t,town:$('rv-town').value.trim(),consent:$('rv-ok').checked}).then(()=>{$('rv-m').textContent='Thank you! 🌱 We\'ll review it soon.';}).catch(e=>{$('rv-go').disabled=false;$('rv-m').textContent=netMsg(e);});};}
 function openWorkbook(){const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to open the workbook.');return}
   const L=COURSE.lessons,sp='<div style="border-bottom:1px solid #cfd8d2;height:30px"></div>';
   w.document.write('<!doctype html><meta charset="utf-8"><title>'+esc(COURSE.title)+' · Workbook</title><style>body{font-family:Poppins,Arial,sans-serif;color:#2C3A31;max-width:760px;margin:30px auto;padding:0 20px}h1{color:#0B3D1E}h2{color:#0B3D1E;font-size:18px;margin-top:30px;page-break-inside:avoid}.t{background:#E9F5EA;border-radius:10px;padding:10px 14px}.b{position:fixed;right:20px;top:20px;background:#0B3D1E;color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:600}@media print{.b{display:none}}</style><button class="b" onclick="print()">Print / Save PDF</button><h1>'+esc(COURSE.title)+'</h1><p>Name: ____________________ &nbsp; WhatsApp: ______________ &nbsp; Start date: ________</p>'+
