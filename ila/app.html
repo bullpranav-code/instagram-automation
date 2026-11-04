@@ -31,6 +31,10 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
 .hero{background:var(--f);color:#fff;border-radius:20px;padding:20px;margin-bottom:14px}
 .hero small{color:var(--l);letter-spacing:3px;font-size:10px;font-weight:600}.hero h2{color:#fff;margin-top:6px}.hero p{color:var(--m);font-size:14px;margin:6px 0 0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#v-home .grid.courses .tile.big{grid-column:auto;flex-direction:column;align-items:flex-start;gap:4px}
+.gh{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:22px 2px 10px;font-weight:600}
+@media(min-width:900px){#v-home .wrap{max-width:1120px;padding:24px 32px 48px}#v-home .top{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:stretch}#v-home .top>*{margin:0}
+#v-home .grid{grid-template-columns:repeat(3,1fr)}#v-home .grid.courses{grid-template-columns:repeat(4,1fr)}#v-home .grid.courses .tile.big{flex-direction:column;align-items:flex-start}#v-home .grid .tile.big{grid-column:auto}#v-course .wrap,#v-lesson .wrap,#v-community .wrap{max-width:820px}}
 .tile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;min-height:132px;display:flex;flex-direction:column}
 .tile .e{font-size:28px}.tile b{display:block;color:var(--f);font-size:15px;margin-top:8px}.tile span{font-size:12px;color:var(--mute);line-height:1.45;margin-top:4px}
 .tile.big{grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;min-height:0;border-color:var(--g)}
@@ -125,24 +129,34 @@ video{width:100%;border-radius:16px;background:#000;display:block}
 
 <!-- HOME -->
 <section class="view" id="v-home"><div class="wrap">
-  <div class="hero"><small>ACCENT AI · BETA</small><h2 id="hello">Hi!</h2><p>What would you like to work on today?</p></div>
-  <div class="card" id="streak"></div>
-  <div class="grid">
+  <div class="top"><div class="hero"><small>ACCENT AI · BETA</small><h2 id="hello">Hi!</h2><p>What would you like to work on today?</p></div>
+  <div class="card" id="streak"></div></div>
+  <h3 class="gh">Your courses</h3>
+  <div class="grid courses">
     <button class="tile big" data-go="course" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">📚</span><div><b>Sales Basics course<span class="tag">₹149</span></b><span id="course-tile">10 Malayalam lessons, quiz, certificate and a live practical.</span></div></button>
     <button class="tile big" data-go="course-ai" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🤖</span><div><b>AI Tools course<span class="tag">₹149</span></b><span>10 practical Malayalam lessons: prompts, images, study, resume, business. Quiz + certificate.</span></div></button>
     <button class="tile big" data-go="course-hi" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🗣️</span><div><b>Hindi Express<span class="tag">₹149</span></b><span>19 short Hindi lessons with captions: script, daily talk, grammar, shopping. Quiz + certificate.</span></div></button>
     <button class="tile big" data-go="course-ie" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🎤</span><div><b>Interview English<span class="tag">₹149</span></b><span>7-day challenge with Ila: tell me about yourself, strengths, STAR, salary, mock interview.</span></div></button>
+  </div>
+  <h3 class="gh">Practise with AI</h3>
+  <div class="grid">
     <button class="tile big" data-go="interview"><span class="e">🎤</span><div><b>Mock interview<span class="tag">VOICE</span></b><span>Speak with Ila like a real HR round. Get a score and corrections.</span></div></button>
     <button class="tile" data-go="kili"><span class="e">🐦</span><b>Call review</b><span>Upload a sales call. Kili tells you what to fix.</span></button>
     <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Ask Ila about my course</b><span>Any course: explain, drill, role-play.</span></button>
     <button class="tile" data-go="chat:career"><span class="e">🧭</span><b>Plan my career</b><span>Roles, skills and a 30/60/90-day plan.</span></button>
     <button class="tile" data-go="chat:resume"><span class="e">📄</span><b>Resume &amp; LinkedIn</b><span>Score, fixes and a better summary.</span></button>
-    <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
-    <button class="tile" data-go="review"><span class="e">⭐</span><b>Share your experience</b><span>Tell us how Accent helped you.</span></button>
-    <button class="tile" data-go="invite"><span class="e">🎁</span><b>Invite friends</b><span>+50 🍃 when a friend joins, +100 🍃 when they enrol.</span></button>
+  </div>
+  <h3 class="gh">Grow with Accent</h3>
+  <div class="grid">
     <button class="tile" data-go="webinar"><span class="e">🎙️</span><b>Free webinars</b><span>Live sessions for students and working professionals.</span></button>
+    <button class="tile" data-go="invite"><span class="e">🎁</span><b>Invite friends</b><span>+50 🍃 when a friend joins, +100 🍃 when they enrol.</span></button>
     <button class="tile" data-go="leader"><span class="e">🏆</span><b>Leaf Points table</b><span>Top learners this month. Earn points by finishing tasks.</span></button>
     <button class="tile" data-go="profile"><span class="e">💼</span><b>My profile &amp; jobs</b><span>Create your Accent profile, see jobs.</span></button>
+  </div>
+  <h3 class="gh">More</h3>
+  <div class="grid">
+    <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
+    <button class="tile" data-go="review"><span class="e">⭐</span><b>Share your experience</b><span>Tell us how Accent helped you.</span></button>
     <button class="tile" data-go="site"><span class="e">🌐</span><b>Accent website</b><span>Courses, blog, internships, Kerala jobs.</span></button>
     <button class="tile" data-go="community"><span class="e">👥</span><b>Community</b><span>Join Accent WhatsApp groups.</span></button>
     <button class="tile" data-go="human"><span class="e">👤</span><b>Talk to a person</b><span>WhatsApp the Accent team.</span></button>
