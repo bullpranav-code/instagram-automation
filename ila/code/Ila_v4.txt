@@ -38,6 +38,7 @@ const TABS = {
   reports:  ['Ila Interview Reports', ['Timestamp', 'Session', 'Name', 'Role', 'Language', 'Overall /10', 'Report']],
   enroll:   ['Course Enrolments', ['Timestamp', 'Name', 'WhatsApp', 'Course', 'Status', 'Payment note', 'Approved at', 'Green Task photo', 'Green status', 'Leaf Points', 'Certificate ID', 'Final score', 'Last session', 'PIN']],
   progress: ['Course Progress', ['Timestamp', 'WhatsApp', 'Name', 'Lesson', 'Event', 'Score', 'Course']],
+  tasks:    ['Course Tasks', ['Timestamp', 'WhatsApp', 'Name', 'Course', 'Lesson', 'Answer', 'File', 'Status', 'Points']],
   feedback: ['Beta Feedback', ['Timestamp', 'Product', 'Session', 'Name', 'Rating', 'Comment', 'Context']]
 };
 
@@ -85,6 +86,8 @@ function doPost(e) {
     else if (req.action === 'course_join') out = courseJoin_(req);
     else if (req.action === 'course_event') out = courseEvent_(req);
     else if (req.action === 'green_submit') out = greenSubmit_(req);
+    else if (req.action === 'task_submit') out = taskSubmit_(req);
+    else if (req.action === 'admin_task') out = adminTask_(req);
     else if (req.action === 'course_video') out = courseVideo_(req);
     else if (req.action === 'feedback') out = saveFeedback_(req);
     else if (req.action === 'tts') { if (overCap_(req.session, 'tts', 40)) throw new Error('Voice limit reached for today'); out = { audio: ilaTts_(String(req.text || '').slice(0, 600), req.lang) }; }
@@ -173,7 +176,8 @@ function adminData_(key) {
   const enr = anAll_(sh('enroll'), 14).map(r => ({ hasPin: !!r[13], course: String(r[3] || 'Sales Basics'), c: ({ 'AI Tools': 'ai', 'Hindi Express': 'hi', 'Interview English': 'ie' })[String(r[3] || '')] || 'sb', t: iso(r[0]), name: r[1], wa: String(r[2]), status: r[4], note: r[5], approvedAt: iso(r[6]), photo: r[7], green: r[8], points: r[9], cert: r[10], final: r[11] }));
   const prog = {}; anAll_(sh('progress'), 7).forEach(r => { const kk = waKey_(r[1]) + '|' + String(r[6] || 'Sales Basics'); if (!r[1]) return; prog[kk] = prog[kk] || { watched: {}, checks: 0 }; if (r[4] === 'watched') prog[kk].watched[r[3]] = 1; if (r[4] === 'check') prog[kk].checks++; });
   enr.forEach(x => { const p = prog[waKey_(x.wa) + '|' + x.course]; x.lessons = p ? Object.keys(p.watched).length : 0; });
-  return { ok: true, at: new Date().toISOString(), sheet: ss.getUrl(), enrol: enr, leads: leads, reports: reps, feedback: fbs, services: svcs, chatDaily: daily, chatModes: modes, chatTotal: chats.length, flagged: flagged.slice(-30) };
+  const tks = anAll_(sh('tasks'), 9).map((r, i) => ({ row: i + 2, t: iso(r[0]), wa: String(r[1]), name: r[2], course: r[3], lesson: r[4], text: r[5], file: r[6], status: r[7] }));
+  return { ok: true, at: new Date().toISOString(), sheet: ss.getUrl(), tasks: tks.slice(-200), enrol: enr, leads: leads, reports: reps, feedback: fbs, services: svcs, chatDaily: daily, chatModes: modes, chatTotal: chats.length, flagged: flagged.slice(-30) };
 }
 /* ================= course portal ================= */
 function waKey_(w) { const d = String(w || '').replace(/\D/g, ''); return d.slice(-10); }
@@ -209,7 +213,9 @@ function courseState_(r) {
   const videos = {};
   C.free.forEach(n => { videos[n] = vidUrl_(C, n); });
   if (approved) for (let n = 1; n <= (C.ids ? C.ids.length : 10); n++) if (!videos[n]) videos[n] = C.hosted.indexOf(n) > -1 ? vidUrl_(C, n) : 'private';
-  return { course: C.name, status: status, videos: videos, done: done, checks: quiz, green: e.v ? String(e.v[8] || '') : '', points: e.v ? Number(e.v[9]) || 0 : 0,
+  const tasks = {}; const ts = ss_().getSheetByName(TABS.tasks[0]);
+  if (ts && ts.getLastRow() > 1 && k) ts.getRange(2, 1, ts.getLastRow() - 1, 8).getValues().forEach(x => { if (waKey_(x[1]) === k && String(x[3]) === C.name) tasks[x[4]] = String(x[7]); });
+  return { tasks: tasks, course: C.name, status: status, videos: videos, done: done, checks: quiz, green: e.v ? String(e.v[8] || '') : '', points: e.v ? Number(e.v[9]) || 0 : 0,
     cert: e.v ? String(e.v[10] || '') : '', final: e.v ? String(e.v[11] || '') : '' };
 }
 /** Private lesson video from Drive, only for approved learners. File names must contain L03, L04 … L10. */
@@ -247,6 +253,36 @@ function courseEvent_(r) {
     }
   }
   return courseState_(r);
+}
+/** A learner's task answer for one lesson: typed text and/or a file (photo, PDF, audio). Saved to Drive + the Course Tasks tab. */
+function taskSubmit_(r) {
+  const C = course_(r), n = Number(r.lesson) || 0, e = enrollRow_(r.wa, r); checkPin_(e, r);
+  if (C.free.indexOf(n) < 0 && !(e.v && e.v[4] === 'Approved')) throw new Error('This lesson unlocks after approval.');
+  const text = String(r.text || '').slice(0, 3000);
+  let url = '';
+  if (r.file) {
+    const bytes = Utilities.base64Decode(String(r.file));
+    if (bytes.length > 8 * 1048576) throw new Error('Please upload a file under 8 MB.');
+    const nm = waKey_(r.wa) + '_L' + n + '_' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyyMMdd_HHmm') + '_' + String(r.fname || 'task').replace(/[^\w.\-]/g, '_').slice(-60);
+    url = folder_('Course Tasks - ' + C.name).createFile(Utilities.newBlob(bytes, String(r.mime || 'application/octet-stream'), nm)).getUrl();
+  }
+  if (!text && !url) throw new Error('Write your answer or attach a file.');
+  tab_(ss_(), 'tasks').appendRow([new Date(), String(r.wa || ''), String(r.name || '').slice(0, 80), C.name, n, text, url, 'Submitted', 0]);
+  return courseState_(r);
+}
+function adminTask_(r) {
+  const k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+  if (!k || r.key !== k) throw new Error('Wrong admin key.');
+  const sh = tab_(ss_(), 'tasks'), row = Number(r.row) || 0;
+  if (row < 2 || row > sh.getLastRow()) throw new Error('Task not found.');
+  const v = sh.getRange(row, 1, 1, 9).getValues()[0];
+  if (r.what === 'approve' && v[7] !== 'Approved') {
+    sh.getRange(row, 8, 1, 2).setValues([['Approved', 10]]);   // Leaf Points: approved lesson task = 10
+    const C = Object.keys(COURSES).map(x => COURSES[x]).filter(x => x.name === String(v[3]))[0];
+    const e = enrollRow_(v[1], { c: Object.keys(COURSES).filter(x => COURSES[x] === C)[0] });
+    if (e.row) e.sh.getRange(e.row, 10).setValue((Number(e.v[9]) || 0) + 10);
+  } else if (r.what === 'redo') sh.getRange(row, 8).setValue('Please redo');
+  return { ok: true };
 }
 function greenSubmit_(r) {
   const e = enrollRow_(r.wa, r); checkPin_(e, r);
