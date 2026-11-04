@@ -254,7 +254,7 @@ $('back').onclick=()=>{if(current==='lesson'){openCourse();return}if(history.sta
 
 /* ---------- welcome ---------- */
 $('w-go').onclick=()=>{
-  $('w-err').textContent='';const f={action:'start',name:$('w-name').value.trim(),whatsapp:$('w-wa').value.trim(),iam:$('w-iam').value,district:$('w-dist').value,consent:$('w-ok').checked};
+  $('w-err').textContent='';const f={action:'start',name:$('w-name').value.trim(),whatsapp:$('w-wa').value.trim(),iam:$('w-iam').value,district:$('w-dist').value,consent:$('w-ok').checked,src:(function(){try{return localStorage.getItem('accent_src')||'direct'}catch(e){return 'direct'}})()};
   if(!f.name)return $('w-err').textContent='Please enter your name.';
   if(f.whatsapp.replace(/\D/g,'').length<10)return $('w-err').textContent='Please enter a valid WhatsApp number.';
   if(!f.consent)return $('w-err').textContent='Please tick the box to continue.';
@@ -798,7 +798,11 @@ function loadPosts(force){$('a-posts').innerHTML='<div class="card"><span class=
 function renderPosts(){const r=PO;let h='<div class="card" style="border-color:var(--g)"><div class="qn">TODAY · '+esc(r.weekday).toUpperCase()+'</div><b style="color:var(--f);font-size:17px">'+esc(r.theme)+'</b><p class="sub" style="margin:4px 0 0">Ila wrote one post for each group. Copy or share, then post it in the group.</p><button class="icon" id="po-ref" style="margin-top:8px">↻ Write new versions</button></div>';
   r.groups.forEach(g=>{const t=(r.posts||{})[g.id];if(!t)return;const link=(r.links||{})[g.id];
     h+='<div class="card"><b style="color:var(--f)">'+g.emoji+' '+esc(g.name)+'</b><div class="fix" style="white-space:pre-wrap;margin-top:8px" id="po-'+g.id+'">'+esc(t)+'</div><div class="row" style="flex-wrap:wrap"><button class="icon" data-cp="'+g.id+'">Copy</button><a class="icon" target="_blank" href="https://wa.me/?text='+encodeURIComponent(t)+'">Share to WhatsApp</a>'+(link?'<a class="icon" target="_blank" href="'+esc(link)+'">Open group</a>':'')+'</div></div>';});
+  const CQ=((AD&&AD.content)||[]).slice().reverse();
+  h+='<h3 style="color:var(--f);font-size:15px;margin-top:18px">✍️ Content drafts by Ila ('+CQ.filter(c=>c.status==='Pending').length+' to review)</h3><p class="sub">Ila writes up to 2 drafts a day when the app is quiet. Check facts, fill any [ADD REAL FACT], then post.</p>'+(CQ.slice(0,30).map(c=>'<div class="card"><div class="qn">'+esc(c.type).toUpperCase()+' · '+esc(c.status)+' · '+dshow(c.t)+'</div><b style="color:var(--f)">'+esc(c.topic)+'</b><details style="margin-top:6px"><summary class="sub" style="cursor:pointer">Read draft</summary><div class="fix" style="white-space:pre-wrap;margin-top:8px" id="cq-'+c.row+'">'+esc(c.draft)+'</div></details><div class="row" style="flex-wrap:wrap"><button class="icon" data-cqc="'+c.row+'">Copy</button>'+(c.status==='Pending'?'<button class="icon" data-cq="'+c.row+'" data-w="approve" style="border-color:var(--g);color:var(--g)">✓ Approve</button><button class="icon" data-cq="'+c.row+'" data-w="reject">✕ Reject</button>':c.status==='Approved'?'<button class="icon" data-cq="'+c.row+'" data-w="posted">📣 Mark posted</button>':'')+'</div></div>').join('')||'<p class="sub">No drafts yet. They start after the 5-minute timer is on.</p>');
   $('a-posts').innerHTML=h+linksEditor();
+  $('a-posts').querySelectorAll('[data-cqc]').forEach(b=>b.onclick=()=>copyText($('cq-'+b.dataset.cqc).innerText,b));
+  $('a-posts').querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{b.disabled=true;post(ILA,{action:'admin_content',key:AK,row:+b.dataset.cq,what:b.dataset.w}).then(()=>{const c=AD.content.find(x=>x.row===+b.dataset.cq);if(c)c.status=b.dataset.w==='approve'?'Approved':b.dataset.w==='posted'?'Posted':'Rejected';renderPosts();}).catch(e=>{b.disabled=false;alert(netMsg(e));});});
   $('po-ref').onclick=()=>loadPosts(true);$('a-posts').querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>copyText($('po-'+b.dataset.cp).innerText,b));wireLinks();}
 function linksEditor(){const gs=(PO&&PO.groups)||(CM&&CM.groups)||[{id:'main',name:'Accent Community',emoji:'🌱'},{id:'interview',name:'Interview Prep Club',emoji:'🎤'},{id:'sales',name:'Sales Practice Circle',emoji:'📞'},{id:'jobs',name:'Jobs & Resume',emoji:'💼'},{id:'learners',name:'Sales Basics Learners',emoji:'📚'},{id:'green',name:'Green Task Club',emoji:'🌳'}];
   const L=(PO&&PO.links)||(CM&&CM.links)||{};
@@ -861,6 +865,7 @@ function renderAdmin(){
   o+='<div class="card"><b style="color:var(--f)">Calls reviewed · last 30 days</b>'+chart(D.map(d=>d.l),ci.map(a=>a.length),ci.map(a=>avg(a.map(c=>c.s100).filter(x=>x>0))),100,'Calls','Avg score /100')+'</div>';
   const cd=(AD&&AD.chatDaily)||{};o+='<div class="card"><b style="color:var(--f)">Ila chat messages · last 30 days</b>'+chart(D.map(d=>d.l),D.map(d=>cd[d.k]||0),null,0,'Messages','')+'</div>';
   o+='<div class="card"><b style="color:var(--f)">What students use</b>'+hbars((AD&&AD.chatModes)||{},7)+'</div>';
+  const srcM={};((AD&&AD.leads)||[]).forEach(l=>{const k=l.src||'direct';srcM[k]=(srcM[k]||0)+1;});o+='<div class="card"><b style="color:var(--f)">Where students come from</b><p class="sub" style="margin:4px 0 8px">Share links like app.html<b>?src=yt-ai1</b>, ?src=insta, ?src=portal to track each channel.</p>'+hbars(srcM,8)+'</div>';
   if(AD)o+='<p class="sub" style="text-align:center"><a href="'+esc(AD.sheet)+'" target="_blank" style="color:var(--g)">Open Ila sheet</a>'+(KD?' · <a href="'+esc(KD.sheet)+'" target="_blank" style="color:var(--g)">Open Kili sheet</a>':'')+'</p>';
   $('a-ov').innerHTML=o;
   // interviews
@@ -920,6 +925,7 @@ function callDetail(c){const s=(t,v)=>v?'<div class="sec"><h4>'+t+'</h4><p>'+esc
 
 /* ---------- start ---------- */
 const H0=location.hash.slice(1);
+try{const q=new URLSearchParams(location.search).get('src');if(q&&!localStorage.getItem('accent_src'))localStorage.setItem('accent_src',q.slice(0,40));}catch(e){}
 if(H0==='admin'){if(S&&S.session)openHome();openAdmin();}
 else if(S&&S.session){openHome();if(H0==='interview')openInterview();else if(H0==='kili')openKili();else if(H0==='course')openCourse();}
 else{show('welcome',false);}
