@@ -22,6 +22,12 @@ const CONFIG = {
   ]
 };
 
+const COURSES = {   // every course in the Accent app
+  sb: { name: 'Sales Basics', base: CONFIG.FREE_VIDEO_BASE, pad: false, free: [1, 2], hosted: [3, 4, 5, 6, 8, 9], drive: true, cert: 'ACC-SB' },
+  ai: { name: 'AI Tools', base: 'https://bullpranav-code.github.io/instagram-automation/course/Accent_AITools_L', pad: true, free: [1], hosted: [2, 3, 4, 5, 6, 7, 8, 9, 10], drive: false, cert: 'ACC-AI' }
+};
+function course_(r) { return COURSES[r && r.c] || COURSES.sb; }
+function vidUrl_(C, n) { return C.base + (C.pad ? (n < 10 ? '0' + n : n) : (n < 10 ? n : '')) + '.mp4'; }
 const TABS = {
   leads:    ['Ila Leads', ['Timestamp', 'Session', 'Name', 'WhatsApp', 'Email', 'I am', 'District', 'Consent']],
   chats:    ['Ila Chats', ['Timestamp', 'Session', 'Name', 'Mode', 'Message', 'Ila reply', 'Flag', 'File link']],
@@ -29,7 +35,7 @@ const TABS = {
   know:     ['Ila Knowledge', ['Topic', 'What Ila should know']],
   reports:  ['Ila Interview Reports', ['Timestamp', 'Session', 'Name', 'Role', 'Language', 'Overall /10', 'Report']],
   enroll:   ['Course Enrolments', ['Timestamp', 'Name', 'WhatsApp', 'Course', 'Status', 'Payment note', 'Approved at', 'Green Task photo', 'Green status', 'Leaf Points', 'Certificate ID', 'Final score', 'Last session', 'PIN']],
-  progress: ['Course Progress', ['Timestamp', 'WhatsApp', 'Name', 'Lesson', 'Event', 'Score']],
+  progress: ['Course Progress', ['Timestamp', 'WhatsApp', 'Name', 'Lesson', 'Event', 'Score', 'Course']],
   feedback: ['Beta Feedback', ['Timestamp', 'Product', 'Session', 'Name', 'Rating', 'Comment', 'Context']]
 };
 
@@ -162,48 +168,53 @@ function adminData_(key) {
   chats.forEach(r => { try { const d = Utilities.formatDate(new Date(r[0]), 'Asia/Kolkata', 'yyyy-MM-dd'); daily[d] = (daily[d] || 0) + 1; } catch (e) {}
     const m = r[3] || 'chat'; modes[m] = (modes[m] || 0) + 1; });
   tail(chats, 400).forEach(r => { if (/handoff|crisis/.test(r[6])) flagged.push({ t: iso(r[0]), name: r[2], flag: r[6], msg: String(r[4]).slice(0, 200) }); });
-  const enr = anAll_(sh('enroll'), 14).map(r => ({ hasPin: !!r[13], t: iso(r[0]), name: r[1], wa: String(r[2]), status: r[4], note: r[5], approvedAt: iso(r[6]), photo: r[7], green: r[8], points: r[9], cert: r[10], final: r[11] }));
-  const prog = {}; anAll_(sh('progress'), 6).forEach(r => { const kk = waKey_(r[1]); if (!kk) return; prog[kk] = prog[kk] || { watched: {}, checks: 0 }; if (r[4] === 'watched') prog[kk].watched[r[3]] = 1; if (r[4] === 'check') prog[kk].checks++; });
-  enr.forEach(x => { const p = prog[waKey_(x.wa)]; x.lessons = p ? Object.keys(p.watched).length : 0; });
+  const enr = anAll_(sh('enroll'), 14).map(r => ({ hasPin: !!r[13], course: String(r[3] || 'Sales Basics'), c: String(r[3] || '') === 'AI Tools' ? 'ai' : 'sb', t: iso(r[0]), name: r[1], wa: String(r[2]), status: r[4], note: r[5], approvedAt: iso(r[6]), photo: r[7], green: r[8], points: r[9], cert: r[10], final: r[11] }));
+  const prog = {}; anAll_(sh('progress'), 7).forEach(r => { const kk = waKey_(r[1]) + '|' + String(r[6] || 'Sales Basics'); if (!r[1]) return; prog[kk] = prog[kk] || { watched: {}, checks: 0 }; if (r[4] === 'watched') prog[kk].watched[r[3]] = 1; if (r[4] === 'check') prog[kk].checks++; });
+  enr.forEach(x => { const p = prog[waKey_(x.wa) + '|' + x.course]; x.lessons = p ? Object.keys(p.watched).length : 0; });
   return { ok: true, at: new Date().toISOString(), sheet: ss.getUrl(), enrol: enr, leads: leads, reports: reps, feedback: fbs, services: svcs, chatDaily: daily, chatModes: modes, chatTotal: chats.length, flagged: flagged.slice(-30) };
 }
 /* ================= course portal ================= */
 function waKey_(w) { const d = String(w || '').replace(/\D/g, ''); return d.slice(-10); }
-function enrollRow_(wa) {
-  const sh = tab_(ss_(), 'enroll'), k = waKey_(wa);
-  if (!k || sh.getLastRow() < 2) return { sh: sh, row: 0, v: null };
+function enrollRow_(wa, r) {
+  const sh = tab_(ss_(), 'enroll'), k = waKey_(wa), name = course_(r).name;
+  const out = { sh: sh, row: 0, v: null, pin: '' };
+  if (!k || sh.getLastRow() < 2) return out;
   const vals = sh.getRange(2, 1, sh.getLastRow() - 1, 14).getValues();
-  for (let i = vals.length - 1; i >= 0; i--) if (waKey_(vals[i][2]) === k) return { sh: sh, row: i + 2, v: vals[i] };
-  return { sh: sh, row: 0, v: null };
+  for (let i = vals.length - 1; i >= 0; i--) if (waKey_(vals[i][2]) === k) {
+    if (!out.pin && vals[i][13]) out.pin = vals[i][13];   // one PIN per learner, shared across courses
+    if (!out.row && String(vals[i][3] || 'Sales Basics') === name) { out.row = i + 2; out.v = vals[i]; }
+  }
+  return out;
 }
 function pinHash_(wa, pin) {
   return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'accent|' + waKey_(wa) + '|' + String(pin || ''), Utilities.Charset.UTF_8));
 }
 /** Throws unless the PIN matches (only when the learner has set one). */
 function checkPin_(e, r) {
-  if (!e.v || !e.v[13]) return;
+  const h = (e.v && e.v[13]) || e.pin; if (!h) return;
   const c = CacheService.getScriptCache(), k = 'pinfail_' + waKey_(r.wa), fails = Number(c.get(k) || 0);
   if (fails >= 5) throw new Error('PIN_LOCKED');
   if (!r.pin) throw new Error('PIN_REQUIRED');
-  if (pinHash_(r.wa, r.pin) !== e.v[13]) { c.put(k, String(fails + 1), 3600); throw new Error('PIN_WRONG'); }
+  if (pinHash_(r.wa, r.pin) !== h) { c.put(k, String(fails + 1), 3600); throw new Error('PIN_WRONG'); }
 }
 function courseState_(r) {
-  const e = enrollRow_(r.wa); checkPin_(e, r);
-  const status = e.v ? String(e.v[4]) : 'none', approved = status === 'Approved';
+  const e = enrollRow_(r.wa, r); checkPin_(e, r);
+  const C = course_(r), status = e.v ? String(e.v[4]) : 'none', approved = status === 'Approved';
   const k = waKey_(r.wa), done = {}, quiz = {};
   const ps = ss_().getSheetByName(TABS.progress[0]);
-  if (ps && ps.getLastRow() > 1 && k) ps.getRange(2, 1, ps.getLastRow() - 1, 6).getValues().forEach(x => {
-    if (waKey_(x[1]) !== k) return; if (x[4] === 'watched') done[x[3]] = 1; if (x[4] === 'check') quiz[x[3]] = Number(x[5]) || 0; });
+  if (ps && ps.getLastRow() > 1 && k) ps.getRange(2, 1, ps.getLastRow() - 1, Math.max(6, Math.min(7, ps.getLastColumn()))).getValues().forEach(x => {
+    if (waKey_(x[1]) !== k || String(x[6] || 'Sales Basics') !== C.name) return; if (x[4] === 'watched') done[x[3]] = 1; if (x[4] === 'check') quiz[x[3]] = Number(x[5]) || 0; });
   const videos = {};
-  CONFIG.FREE_LESSONS.forEach(n => { videos[n] = CONFIG.FREE_VIDEO_BASE + n + '.mp4'; });
-  if (approved) for (let n = 1; n <= 10; n++) if (!videos[n]) videos[n] = CONFIG.HOSTED_LESSONS.indexOf(n) > -1 ? CONFIG.FREE_VIDEO_BASE + (n < 10 ? n : '') + '.mp4' : 'private';
-  return { status: status, videos: videos, done: done, checks: quiz, green: e.v ? String(e.v[8] || '') : '', points: e.v ? Number(e.v[9]) || 0 : 0,
+  C.free.forEach(n => { videos[n] = vidUrl_(C, n); });
+  if (approved) for (let n = 1; n <= 10; n++) if (!videos[n]) videos[n] = C.hosted.indexOf(n) > -1 ? vidUrl_(C, n) : 'private';
+  return { course: C.name, status: status, videos: videos, done: done, checks: quiz, green: e.v ? String(e.v[8] || '') : '', points: e.v ? Number(e.v[9]) || 0 : 0,
     cert: e.v ? String(e.v[10] || '') : '', final: e.v ? String(e.v[11] || '') : '' };
 }
 /** Private lesson video from Drive, only for approved learners. File names must contain L03, L04 … L10. */
 function courseVideo_(r) {
-  const n = Number(r.lesson) || 0, e = enrollRow_(r.wa); checkPin_(e, r);
+  const n = Number(r.lesson) || 0, e = enrollRow_(r.wa, r); checkPin_(e, r);
   if (!(e.v && e.v[4] === 'Approved')) throw new Error('This lesson unlocks after approval.');
+  if (!course_(r).drive) throw new Error('Video not found.');
   const tag = 'L' + (n < 10 ? '0' + n : n), it = DriveApp.getFolderById(CONFIG.VIDEO_FOLDER_ID).getFiles();
   let best = null;
   while (it.hasNext()) { const f = it.next(), nm = f.getName(); if (nm.indexOf(tag) > -1 && /\.(mp4|m4v|mov)$/i.test(nm)) { if (!best || f.getLastUpdated() > best.getLastUpdated()) best = f; } }
@@ -212,30 +223,31 @@ function courseVideo_(r) {
   return { mime: best.getMimeType() || 'video/mp4', data: Utilities.base64Encode(best.getBlob().getBytes()) };
 }
 function courseJoin_(r) {
-  const e = enrollRow_(r.wa);
+  const e = enrollRow_(r.wa, r);
   if (e.v && /Pending|Approved/.test(e.v[4])) { if (!e.v[13] && /^\d{4}$/.test(String(r.pin))) e.sh.getRange(e.row, 14).setValue(pinHash_(r.wa, r.pin)); return courseState_(r); }
   if (!/^\d{4}$/.test(String(r.pin || ''))) throw new Error('Choose a 4-digit PIN.');
-  tab_(ss_(), 'enroll').appendRow([new Date(), String(r.name || '').slice(0, 80), String(r.wa || ''), 'Sales Basics', 'Pending', String(r.note || '').slice(0, 300), '', '', '', 0, '', '', r.session || '', pinHash_(r.wa, r.pin)]);
+  if (e.pin && pinHash_(r.wa, r.pin) !== e.pin) throw new Error('Use the same PIN as your other Accent course.');
+  tab_(ss_(), 'enroll').appendRow([new Date(), String(r.name || '').slice(0, 80), String(r.wa || ''), course_(r).name, 'Pending', String(r.note || '').slice(0, 300), '', '', '', 0, '', '', r.session || '', pinHash_(r.wa, r.pin)]);
   return courseState_(r);
 }
 function courseEvent_(r) {
   const n = Number(r.lesson) || 0, ev = String(r.event || '');
   if (!/^(watched|check|final)$/.test(ev)) throw new Error('Unknown event');
-  const e = enrollRow_(r.wa); checkPin_(e, r);
-  if (n > 2 && ev !== 'final' && !(e.v && e.v[4] === 'Approved')) throw new Error('This lesson unlocks after approval.');
-  tab_(ss_(), 'progress').appendRow([new Date(), String(r.wa || ''), String(r.name || ''), n, ev, Number(r.score) || 0]);
+  const e = enrollRow_(r.wa, r); checkPin_(e, r);
+  if (course_(r).free.indexOf(n) < 0 && ev !== 'final' && !(e.v && e.v[4] === 'Approved')) throw new Error('This lesson unlocks after approval.');
+  tab_(ss_(), 'progress').appendRow([new Date(), String(r.wa || ''), String(r.name || ''), n, ev, Number(r.score) || 0, course_(r).name]);
   if (ev === 'final' && e.row) {
     const sc = Math.max(0, Math.min(10, Number(r.score) || 0));
     e.sh.getRange(e.row, 12).setValue(sc + '/10');
     if (sc >= 7 && !e.v[10]) {
-      const id = 'ACC-SB-' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyMMdd') + '-' + Utilities.getUuid().slice(0, 4).toUpperCase();
+      const id = course_(r).cert + '-' + Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyMMdd') + '-' + Utilities.getUuid().slice(0, 4).toUpperCase();
       e.sh.getRange(e.row, 10, 1, 2).setValues([[(Number(e.v[9]) || 0) + 200, id]]);   // Leaf Points: finish a short course = 200
     }
   }
   return courseState_(r);
 }
 function greenSubmit_(r) {
-  const e = enrollRow_(r.wa); checkPin_(e, r);
+  const e = enrollRow_(r.wa, r); checkPin_(e, r);
   if (!e.row) throw new Error('Join the course first.');
   const bytes = Utilities.base64Decode(String(r.photo || ''));
   if (!bytes.length || bytes.length > 6 * 1048576) throw new Error('Send a photo under 6 MB.');
@@ -246,7 +258,7 @@ function greenSubmit_(r) {
 function adminApprove_(r) {
   const k = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
   if (!k || r.key !== k) throw new Error('Wrong admin key.');
-  const e = enrollRow_(r.wa);
+  const e = enrollRow_(r.wa, r);
   if (!e.row) throw new Error('Learner not found.');
   if (r.what === 'access') e.sh.getRange(e.row, 5, 1, 3).setValues([['Approved', e.v[5], new Date()]]);
   else if (r.what === 'green') e.sh.getRange(e.row, 9, 1, 2).setValues([['Approved · refund due', (Number(e.v[9]) || 0) + 50]]);   // Green Task planting post = 50 LP
