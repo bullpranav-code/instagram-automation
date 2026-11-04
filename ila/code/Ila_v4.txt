@@ -24,10 +24,11 @@ const CONFIG = {
 
 const COURSES = {   // every course in the Accent app
   sb: { name: 'Sales Basics', base: CONFIG.FREE_VIDEO_BASE, pad: false, free: [1, 2], hosted: [3, 4, 5, 6, 8, 9], drive: true, cert: 'ACC-SB' },
+  hi: { name: 'Hindi Express', base: 'https://bullpranav-code.github.io/instagram-automation/course/hindi/', ids: ['devanagari-vowels', 'consonants', 'greetings', 'numbers', 'family', 'directions', 'food', 'grammar-gender', 'grammar-verbs', 'shopping-basics', 'shopping-price', 'shopping-want', 'shopping-bargain', 'shopping-pay', 'shopping-thanks', 'shopping-vegetables', 'shopping-clothes', 'shopping-stall', 'shopping-recap'], free: [1, 2], hosted: Array.from({ length: 19 }, (_, i) => i + 1), drive: false, cert: 'ACC-HI' },
   ai: { name: 'AI Tools', base: 'https://bullpranav-code.github.io/instagram-automation/course/Accent_AITools_L', pad: true, free: [1], hosted: [2, 3, 4, 5, 6, 7, 8, 9, 10], drive: false, cert: 'ACC-AI' }
 };
 function course_(r) { return COURSES[r && r.c] || COURSES.sb; }
-function vidUrl_(C, n) { return C.base + (C.pad ? (n < 10 ? '0' + n : n) : (n < 10 ? n : '')) + '.mp4'; }
+function vidUrl_(C, n) { if (C.ids) return C.base + C.ids[n - 1] + '.mp4'; return C.base + (C.pad ? (n < 10 ? '0' + n : n) : (n < 10 ? n : '')) + '.mp4'; }
 const TABS = {
   leads:    ['Ila Leads', ['Timestamp', 'Session', 'Name', 'WhatsApp', 'Email', 'I am', 'District', 'Consent']],
   chats:    ['Ila Chats', ['Timestamp', 'Session', 'Name', 'Mode', 'Message', 'Ila reply', 'Flag', 'File link']],
@@ -168,7 +169,7 @@ function adminData_(key) {
   chats.forEach(r => { try { const d = Utilities.formatDate(new Date(r[0]), 'Asia/Kolkata', 'yyyy-MM-dd'); daily[d] = (daily[d] || 0) + 1; } catch (e) {}
     const m = r[3] || 'chat'; modes[m] = (modes[m] || 0) + 1; });
   tail(chats, 400).forEach(r => { if (/handoff|crisis/.test(r[6])) flagged.push({ t: iso(r[0]), name: r[2], flag: r[6], msg: String(r[4]).slice(0, 200) }); });
-  const enr = anAll_(sh('enroll'), 14).map(r => ({ hasPin: !!r[13], course: String(r[3] || 'Sales Basics'), c: String(r[3] || '') === 'AI Tools' ? 'ai' : 'sb', t: iso(r[0]), name: r[1], wa: String(r[2]), status: r[4], note: r[5], approvedAt: iso(r[6]), photo: r[7], green: r[8], points: r[9], cert: r[10], final: r[11] }));
+  const enr = anAll_(sh('enroll'), 14).map(r => ({ hasPin: !!r[13], course: String(r[3] || 'Sales Basics'), c: ({ 'AI Tools': 'ai', 'Hindi Express': 'hi' })[String(r[3] || '')] || 'sb', t: iso(r[0]), name: r[1], wa: String(r[2]), status: r[4], note: r[5], approvedAt: iso(r[6]), photo: r[7], green: r[8], points: r[9], cert: r[10], final: r[11] }));
   const prog = {}; anAll_(sh('progress'), 7).forEach(r => { const kk = waKey_(r[1]) + '|' + String(r[6] || 'Sales Basics'); if (!r[1]) return; prog[kk] = prog[kk] || { watched: {}, checks: 0 }; if (r[4] === 'watched') prog[kk].watched[r[3]] = 1; if (r[4] === 'check') prog[kk].checks++; });
   enr.forEach(x => { const p = prog[waKey_(x.wa) + '|' + x.course]; x.lessons = p ? Object.keys(p.watched).length : 0; });
   return { ok: true, at: new Date().toISOString(), sheet: ss.getUrl(), enrol: enr, leads: leads, reports: reps, feedback: fbs, services: svcs, chatDaily: daily, chatModes: modes, chatTotal: chats.length, flagged: flagged.slice(-30) };
@@ -206,7 +207,7 @@ function courseState_(r) {
     if (waKey_(x[1]) !== k || String(x[6] || 'Sales Basics') !== C.name) return; if (x[4] === 'watched') done[x[3]] = 1; if (x[4] === 'check') quiz[x[3]] = Number(x[5]) || 0; });
   const videos = {};
   C.free.forEach(n => { videos[n] = vidUrl_(C, n); });
-  if (approved) for (let n = 1; n <= 10; n++) if (!videos[n]) videos[n] = C.hosted.indexOf(n) > -1 ? vidUrl_(C, n) : 'private';
+  if (approved) for (let n = 1; n <= (C.ids ? C.ids.length : 10); n++) if (!videos[n]) videos[n] = C.hosted.indexOf(n) > -1 ? vidUrl_(C, n) : 'private';
   return { course: C.name, status: status, videos: videos, done: done, checks: quiz, green: e.v ? String(e.v[8] || '') : '', points: e.v ? Number(e.v[9]) || 0 : 0,
     cert: e.v ? String(e.v[10] || '') : '', final: e.v ? String(e.v[11] || '') : '' };
 }

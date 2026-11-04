@@ -129,6 +129,7 @@ video{width:100%;border-radius:16px;background:#000;display:block}
   <div class="grid">
     <button class="tile big" data-go="course" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">📚</span><div><b>Sales Basics course<span class="tag">₹149</span></b><span id="course-tile">10 Malayalam lessons, quiz, certificate and a live practical.</span></div></button>
     <button class="tile big" data-go="course-ai" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🤖</span><div><b>AI Tools course<span class="tag">₹149</span></b><span>10 practical Malayalam lessons: prompts, images, study, resume, business. Quiz + certificate.</span></div></button>
+    <button class="tile big" data-go="course-hi" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🗣️</span><div><b>Hindi Express<span class="tag">₹149</span></b><span>19 short Hindi lessons with captions: script, daily talk, grammar, shopping. Quiz + certificate.</span></div></button>
     <button class="tile big" data-go="interview"><span class="e">🎤</span><div><b>Mock interview<span class="tag">VOICE</span></b><span>Speak with Ila like a real HR round. Get a score and corrections.</span></div></button>
     <button class="tile" data-go="kili"><span class="e">🐦</span><b>Call review</b><span>Upload a sales call. Kili tells you what to fix.</span></button>
     <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Sales course mentor</b><span>Lesson help, daily drills, role-play.</span></button>
@@ -264,7 +265,7 @@ function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';sh
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone? You will need your course PIN to sign back in.')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
-  if(g==='community'){openCommunity();return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g==='community'){openCommunity();return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
@@ -555,7 +556,42 @@ const COURSE_AI={id:'ai-tools',short:'AI Tools',title:'AI Tools in Malayalam',fe
   {q:'A message promises a free prize if you click fast. It is…',o:['Probably a scam','Always true','Government news'],a:0},
   {q:'Never type into a chatbot…',o:['Your OTP or bank password','A study question','A recipe request'],a:0}
  ]};
-const COURSES={sb:COURSE_SB,ai:COURSE_AI};let CID='sb',COURSE=COURSE_SB;
+const COURSE_HI={id:'hindi-express',short:'Hindi',title:'Hindi Express',fee:'₹149',deposit:'',practical:false,vtt:true,
+ blurb:'19 bite-size Hindi video lessons with captions: the Hindi script, greetings, numbers, family, directions, food, basic grammar and a full shopping module. A quick check after every lesson, a final quiz (pass 7/10) and a certificate.',
+ lessons:[
+ {n:1,id:'devanagari-vowels',t:'Devanagari Vowels',free:true,task:'Write the 10 vowels (अ to औ) three times each and say them aloud.',practice:'mentor',check:[{q:'The Hindi script is called…',o:['Devanagari','Malayalam','Roman'],a:0}]},
+ {n:2,id:'consonants',t:'Consonant Groups: क to ञ',free:true,task:'Say the ka group (क ख ग घ ङ) and the cha group (च छ ज झ ञ) once each.',practice:'mentor',check:[{q:'The first consonant group is the…',o:['ka group','ta group','pa group'],a:0}]},
+ {n:3,t:'Greetings & Essential Phrases',id:'greetings',task:'Greet 3 people today in Hindi and say "mera naam … hai".',practice:'mentor',check:[{q:'"Dhanyavaad" means…',o:['Hello','Thank you','Good night'],a:1}]},
+ {n:4,t:'Numbers 1–10',id:'numbers',task:'Count from 1 to 10 and back from 10 to 1 in Hindi.',practice:'mentor',check:[{q:'"Paanch" is…',o:['3','5','8'],a:1}]},
+ {n:5,t:'Family & Relationships',id:'family',task:'Introduce 3 family members: "Yeh meri maata ji hain…"',practice:'mentor',check:[{q:'"Dadi ji" means…',o:['Grandmother','Sister','Daughter'],a:0}]},
+ {n:6,t:'Asking for Directions',id:'directions',task:'Practise: "Please tell me the way to the hotel" in Hindi.',practice:'mentor',check:[{q:'"Go straight, then turn left" is about…',o:['Food','Directions','Family'],a:1}]},
+ {n:7,t:'Food & Dining',id:'food',task:'Order a tea and water in Hindi: "Mujhe ek chai chahiye. Kripya paani dijiye."',practice:'mentor',check:[{q:'"Mujhe ek chai chahiye" means…',o:['I want a tea','Tea is hot','No tea'],a:0}]},
+ {n:8,t:'Masculine & Feminine Nouns',id:'grammar-gender',task:'Make 3 sentences with achha (masculine) and achhi (feminine).',practice:'mentor',check:[{q:'"Ladki" is feminine, so "good" becomes…',o:['achha','achhi','achhe'],a:1}]},
+ {n:9,t:'Present Tense Verbs',id:'grammar-verbs',task:'Say "Main har din Hindi padhta/padhti hoon" and 2 more sentences.',practice:'mentor',check:[{q:'A girl says "I study" as…',o:['Main padhta hoon','Main padhti hoon','Hum padhte hain'],a:1}]},
+ {n:10,t:'Market Basics',id:'shopping-basics',task:'Say the Hindi for price (daam) and discount (chhoot) in a sentence.',practice:'mentor',check:[{q:'"Daam" means…',o:['Price','Shop','Discount'],a:0}]},
+ {n:11,t:'Asking the Price',id:'shopping-price',task:'Ask the price of 3 things at home in Hindi.',practice:'mentor',check:[{q:'"How much is this?" is used to…',o:['Ask the price','Say goodbye','Ask directions'],a:0}]},
+ {n:12,t:'Saying What You Need',id:'shopping-want',task:'Say 3 things you need in Hindi: "Mujhe … chahiye."',practice:'mentor',check:[{q:'"Mujhe … chahiye" means…',o:['I need …','I sold …','I like you'],a:0}]},
+ {n:13,t:'Bargaining Politely',id:'shopping-bargain',task:'Practise: "This is very expensive. Please reduce it a little."',practice:'mentor',check:[{q:'The polite way to bargain is to…',o:['Shout','Ask them to reduce it a little','Walk away angry'],a:1}]},
+ {n:14,t:'Paying and Change',id:'shopping-pay',task:'Ask for the total and the change in Hindi.',practice:'mentor',check:[{q:'"Please give me the change" is said…',o:['When paying','When greeting','When ordering food'],a:0}]},
+ {n:15,t:'Saying Goodbye',id:'shopping-thanks',task:'End a role-play shop visit with thank you and see you again.',practice:'mentor',check:[{q:'A shopkeeper says "Please come again". This is…',o:['A goodbye','A price','A complaint'],a:0}]},
+ {n:16,t:'Vegetables and Fruit',id:'shopping-vegetables',task:'Name 3 vegetables and 3 fruits in Hindi.',practice:'mentor',check:[{q:'"Aam" is…',o:['Potato','Mango','Onion'],a:1}]},
+ {n:17,t:'Clothes and Sizes',id:'shopping-clothes',task:'Ask for a large size kameez in Hindi.',practice:'mentor',check:[{q:'Kameez, pant and saree are…',o:['Clothes','Fruits','Numbers'],a:0}]},
+ {n:18,t:'Shopping at a Street Stall',id:'shopping-stall',task:'Ask: "Is this fresh? Please give one kilo."',practice:'mentor',check:[{q:'"Half a kilo" is…',o:['500 grams','2 kilos','10 grams'],a:0}]},
+ {n:19,t:'Full Shopping Dialogue',id:'shopping-recap',task:'Act out a full shop visit in Hindi with a friend, then take the final quiz.',practice:'mentor',check:[{q:'A full shop visit ends with…',o:['Thank you, please come again','Ek, do, teen','Namaste only'],a:0}]}
+ ],
+ final:[
+  {q:'"Namaste" means…',o:['Hello','Thank you','Goodbye forever'],a:0},
+  {q:'"Aap kaise hain?" means…',o:['How are you?','What is your name?','Where are you?'],a:0},
+  {q:'"Das" is the number…',o:['6','10','2'],a:1},
+  {q:'"Woh mere pita ji hain" means…',o:['That is my father','This is my brother','She is my mother'],a:0},
+  {q:'"Kripya paani dijiye" means…',o:['Please give water','Tea is ready','No water'],a:0},
+  {q:'For more than one, use…',o:['hai','hain','hoon'],a:1},
+  {q:'A boy says "I study" as…',o:['Main padhta hoon','Main padhti hoon','Woh padhti hai'],a:0},
+  {q:'"Chhoot" means…',o:['Discount','Price','Money'],a:0},
+  {q:'"Seb" is…',o:['Apple','Banana','Tomato'],a:0},
+  {q:'"Mujhe do kilo aloo chahiye" means…',o:['I need 2 kilos of potatoes','I sold 2 potatoes','Potatoes are cheap'],a:0}
+ ]};
+const COURSES={sb:COURSE_SB,ai:COURSE_AI,hi:COURSE_HI};let CID='sb',COURSE=COURSE_SB;
 /* ---------- course ---------- */
 const PAY_URL='';   // Razorpay payment link goes here when ready
 let CS=null;
@@ -571,7 +607,7 @@ function pinCard(code){
 function doneCount(){return Object.keys((CS&&CS.done)||{}).length;}
 function renderCourse(){
   const st=CS.status,app=st==='Approved',dc=doneCount();let h='<div class="row" style="margin-bottom:12px">'+Object.keys(COURSES).map(k=>'<button class="btn '+(k===CID?'':'alt')+'" style="margin:0;flex:1" onclick="openCourse(\''+k+'\')">'+COURSES[k].short+'</button>').join('')+'</div><div class="hero"><small>ACCENT ACADEMY · BETA</small><h2>'+esc(COURSE.title)+'</h2><p>'+esc(COURSE.blurb)+'</p>'+
-    (app?'<div class="progbar"><i style="width:'+(dc*10)+'%"></i></div><p style="margin-top:6px">'+dc+' of 10 lessons done · 🍃 '+(CS.points||0)+' Leaf Points</p>':'')+'</div>';
+    (app?'<div class="progbar"><i style="width:'+(dc*100/COURSE.lessons.length)+'%"></i></div><p style="margin-top:6px">'+dc+' of '+COURSE.lessons.length+' lessons done · 🍃 '+(CS.points||0)+' Leaf Points</p>':'')+'</div>';
   if(st==='none')h+='<div class="card"><h2 style="font-size:18px">Join the course</h2><p class="sub">'+COURSE.fee+' course fee'+(COURSE.deposit?' + '+COURSE.deposit+' Green Deposit (fully refunded when you complete the Green Task)':'')+'. '+(COURSE.lessons.filter(l=>l.free).length>1?'Lessons 1–2 are':'Lesson 1 is')+' free to watch now.</p>'+
     '<button class="btn green" id="c-pay">1 · Pay & join</button><p class="sub" style="margin:14px 0 0"><b>2 · After paying</b>, create a 4-digit PIN (you\'ll use it on any new phone) and request access.</p>'+
     '<input id="c-pin" inputmode="numeric" maxlength="4" placeholder="Create 4-digit PIN" style="letter-spacing:6px;text-align:center;font-size:18px;margin-top:8px"><input id="c-ref" placeholder="Payment reference / UPI ID (optional)" style="margin-top:8px"><button class="btn alt" id="c-paid">I have paid · request access</button><div class="err" id="c-err"></div></div>';
@@ -580,9 +616,9 @@ function renderCourse(){
   COURSE.lessons.forEach(l=>{const open=!!(CS.videos&&CS.videos[l.n]),done=CS.done&&CS.done[l.n];
     h+='<div class="lesson '+(done?'done':'')+(open?'':' lock')+'" data-n="'+l.n+'"><div class="n">'+(done?'✓':l.n)+'</div><div class="m"><b>'+esc(l.t)+'</b><span>'+(open?(done?'Done · watch again':(l.free?'Free lesson':'Ready to watch')):'🔒 Unlocks after joining')+'</span></div>›</div>';});
   if(app){
-    const allDone=dc>=10;
+    const NL=COURSE.lessons.length,allDone=dc>=NL;
     h+='<div class="card" style="margin-top:14px"><b style="color:var(--f)">🎓 Final quiz & certificate</b>'+(CS.cert?'<p class="sub" style="margin:6px 0 0">Passed '+esc(CS.final)+' · Certificate '+esc(CS.cert)+'</p><button class="btn green" id="c-cert">View certificate</button>':
-      '<p class="sub" style="margin:6px 0 0">10 questions · pass with 7/10 · earn your certificate and 🍃 200 Leaf Points.'+(CS.final?' Last try: '+esc(CS.final)+'.':'')+'</p><button class="btn" id="c-final" '+(allDone?'':'disabled')+'>'+(allDone?'Start final quiz':'Finish all 10 lessons first ('+dc+'/10)')+'</button>')+'</div>';
+      '<p class="sub" style="margin:6px 0 0">10 questions · pass with 7/10 · earn your certificate and 🍃 200 Leaf Points.'+(CS.final?' Last try: '+esc(CS.final)+'.':'')+'</p><button class="btn" id="c-final" '+(allDone?'':'disabled')+'>'+(allDone?'Start final quiz':'Finish all '+NL+' lessons first ('+dc+'/'+NL+')')+'</button>')+'</div>';
     if(COURSE.deposit){const g=CS.green||'';
     h+='<div class="card"><b style="color:var(--f)">🌱 Green Task · get your ₹99 back</b><p class="sub" style="margin:6px 0 0">Plant a seed or sapling, post it on Instagram with the Accent Green Task frame tagging @accent_tutors #ChoiceIsYours, then upload the photo here within 30 days.</p>'+
       (g?'<p style="font-weight:600;color:var(--g)">Status: '+esc(g)+'</p>':'')+(/Approved|Refunded/.test(g)?'':'<input id="c-insta" placeholder="Instagram post link (optional)" style="margin-top:8px"><input type="file" id="c-photo" accept="image/*" hidden><button class="btn alt" id="c-gt">'+(g?'Upload a new photo':'Upload planting photo')+'</button>')+'</div>';}
@@ -602,13 +638,13 @@ function renderCourse(){
 }
 let blobUrl='';
 function openLesson(n){const L=COURSE.lessons[n-1];show('lesson');$('title').textContent='Lesson '+n;
-  let h='<div class="qn">LESSON '+n+' OF 10</div><h2 style="margin:4px 0 12px">'+esc(L.t)+'</h2><div class="vbox" id="vbox">Loading video…</div>'+
+  let h='<div class="qn">LESSON '+n+' OF '+COURSE.lessons.length+'</div><h2 style="margin:4px 0 12px">'+esc(L.t)+'</h2><div class="vbox" id="vbox">Loading video…</div>'+
     '<div class="card" style="margin-top:14px"><b style="color:var(--f)">📝 Your task</b><p style="margin:6px 0 0;font-size:15px;line-height:1.55">'+esc(L.task)+'</p></div>'+
     '<div class="card" id="chk"><b style="color:var(--f)">✅ Quick check</b>'+L.check.map((q,i)=>'<p style="margin:12px 0 4px;font-weight:600;color:var(--f);font-size:14px">'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map((o,j)=>'<button class="opt" data-q="'+i+'" data-j="'+j+'">'+esc(o)+'</button>').join('')).join('')+'<div class="hint" id="chk-r"></div></div>'+
     '<div class="card"><b style="color:var(--f)">💪 Practise it now</b><p class="sub" style="margin:6px 0 0">'+(L.practice==='kili'?'Record a practice call and get feedback from Kili.':L.practice==='interview'?'Try a full mock interview with Ila.':'Ask Ila to explain, drill or role-play this lesson.')+'</p><button class="btn alt" id="l-prac">'+(L.practice==='kili'?'🐦 Open Kili call review':L.practice==='interview'?'🎤 Start mock interview':'🌱 Practise with Ila')+'</button></div>'+
-    '<button class="btn" id="l-done">'+(n<10?'Mark done & next lesson →':'Mark done · go to final quiz')+'</button>';
+    '<button class="btn" id="l-done">'+(n<COURSE.lessons.length?'Mark done & next lesson →':'Mark done · go to final quiz')+'</button>';
   $('l-wrap').innerHTML=h;
-  const src=CS.videos[n];const put=u=>{$('vbox').innerHTML='<video controls playsinline preload="metadata" src="'+u+'"></video>';$('vbox').querySelector('video').onended=()=>markDone(n,false);};
+  const src=CS.videos[n];const put=u=>{$('vbox').innerHTML='<video controls playsinline preload="metadata" src="'+u+'">'+(COURSE.vtt?'<track default kind="captions" srclang="en" label="English" src="'+u.replace(/\.mp4$/,'.en.vtt')+'">':'')+'</video>';$('vbox').querySelector('video').onended=()=>markDone(n,false);};
   if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl='';}
   if(src&&src!=='private')put(src);
   else{$('vbox').innerHTML='<span><span class="typing"><span></span><span></span><span></span></span><br>Loading your lesson… (about 10 seconds)</span>';
@@ -622,7 +658,7 @@ function openLesson(n){const L=COURSE.lessons[n-1];show('lesson');$('title').tex
 }
 function markDone(n,go){CS.done=CS.done||{};const was=CS.done[n];CS.done[n]=1;
   if(!was)cpost({action:'course_event',lesson:n,event:'watched',name:S.name}).then(s=>{CS=s;}).catch(()=>{});
-  if(!go)return;if(n<10&&CS.videos[n+1])openLesson(n+1);else{openCourse();}}
+  if(!go)return;if(n<COURSE.lessons.length&&CS.videos[n+1])openLesson(n+1);else{openCourse();}}
 function finalQuiz(){show('lesson');$('title').textContent='Final quiz';const Q=COURSE.final,pk={};
   $('l-wrap').innerHTML='<div class="qn">FINAL QUIZ · PASS 7/10</div><h2 style="margin:4px 0 12px">'+esc(COURSE.title)+'</h2>'+Q.map((q,i)=>'<div class="card"><p style="margin:0 0 6px;font-weight:600;color:var(--f)">'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map((o,j)=>'<button class="opt" data-q="'+i+'" data-j="'+j+'">'+esc(o)+'</button>').join('')+'</div>').join('')+'<button class="btn" id="fq-go">Submit answers</button><div class="err" id="fq-err"></div>';
   $('l-wrap').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const q=+b.dataset.q;pk[q]=+b.dataset.j;$('l-wrap').querySelectorAll('.opt[data-q="'+q+'"]').forEach(x=>x.classList.toggle('right',x===b));});
