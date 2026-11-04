@@ -99,7 +99,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--l);border-color:
 .seg{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .lesson{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
 .lesson .n{width:40px;height:40px;border-radius:12px;background:var(--m);color:var(--f);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
-.lesson.done .n{background:var(--g);color:#fff}.lesson.lock{opacity:.55}.lesson .m{flex:1}.lesson .m b{display:block;color:var(--f);font-size:15px}.lesson .m span{font-size:12px;color:var(--mute)}
+.lesson.done .n{background:var(--g);color:#fff}.lesson.lock{opacity:.55}.lesson .m{flex:1;min-width:0}.lesson .m b{display:block;color:var(--f);font-size:15px}.lesson .m span{font-size:12px;color:var(--mute)}
 video{width:100%;border-radius:16px;background:#000;display:block}
 .vbox{position:relative;border-radius:16px;overflow:hidden;background:#0A0F0C;min-height:200px;display:flex;align-items:center;justify-content:center;color:#E9F5EA;font-size:14px;text-align:center;padding:0}
 .opt{display:block;width:100%;text-align:left;padding:12px 14px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
@@ -130,6 +130,7 @@ video{width:100%;border-radius:16px;background:#000;display:block}
     <button class="tile big" data-go="course" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">📚</span><div><b>Sales Basics course<span class="tag">₹149</span></b><span id="course-tile">10 Malayalam lessons, quiz, certificate and a live practical.</span></div></button>
     <button class="tile big" data-go="course-ai" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🤖</span><div><b>AI Tools course<span class="tag">₹149</span></b><span>10 practical Malayalam lessons: prompts, images, study, resume, business. Quiz + certificate.</span></div></button>
     <button class="tile big" data-go="course-hi" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🗣️</span><div><b>Hindi Express<span class="tag">₹149</span></b><span>19 short Hindi lessons with captions: script, daily talk, grammar, shopping. Quiz + certificate.</span></div></button>
+    <button class="tile big" data-go="course-ie" style="border-color:var(--l);background:linear-gradient(135deg,#fff,#E9F5EA)"><span class="e">🎤</span><div><b>Interview English<span class="tag">₹149</span></b><span>7-day challenge with Ila: tell me about yourself, strengths, STAR, salary, mock interview.</span></div></button>
     <button class="tile big" data-go="interview"><span class="e">🎤</span><div><b>Mock interview<span class="tag">VOICE</span></b><span>Speak with Ila like a real HR round. Get a score and corrections.</span></div></button>
     <button class="tile" data-go="kili"><span class="e">🐦</span><b>Call review</b><span>Upload a sales call. Kili tells you what to fix.</span></button>
     <button class="tile" data-go="chat:mentor"><span class="e">🌱</span><b>Sales course mentor</b><span>Lesson help, daily drills, role-play.</span></button>
@@ -265,7 +266,7 @@ function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';sh
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone? You will need your course PIN to sign back in.')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
-  if(g==='community'){openCommunity();return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g==='community'){openCommunity();return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='course-ie'){openCourse('ie');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
@@ -483,7 +484,7 @@ function kshow(o){
 }
 
 
-const COURSE_SB={id:'sales-basics',short:'Sales Basics',practical:true,title:'Sales Basics in Malayalam',fee:'₹149',deposit:'₹99',
+const COURSE_SB={id:'sales-basics',short:'Sales',practical:true,title:'Sales Basics in Malayalam',fee:'₹149',deposit:'₹99',
  blurb:'10 short video lessons in Malayalam (sales terms in English) for students, freshers and job seekers. Worksheets, a final quiz (pass 7/10), a certificate, and a live practical with Accent trainers.',
  lessons:[
  {n:1,t:'What sales really is',free:true,task:'Write down 3 things someone "sold" you this week, and what made you say yes.',practice:'mentor',
@@ -591,7 +592,39 @@ const COURSE_HI={id:'hindi-express',short:'Hindi',title:'Hindi Express',fee:'₹
   {q:'"Seb" is…',o:['Apple','Banana','Tomato'],a:0},
   {q:'"Mujhe do kilo aloo chahiye" means…',o:['I need 2 kilos of potatoes','I sold 2 potatoes','Potatoes are cheap'],a:0}
  ]};
-const COURSES={sb:COURSE_SB,ai:COURSE_AI,hi:COURSE_HI};let CID='sb',COURSE=COURSE_SB;
+const COURSE_IE={id:'interview-english',tk:'ie',short:'Interview',title:'7-Day Interview English Challenge',fee:'₹149',deposit:'',practical:false,
+ blurb:'7 days, 7 videos (about 3 minutes each) with Ila as your mentor: the most common interview questions, a simple formula for each, model answers, phrases to repeat, a daily task and a full mock interview on Day 7. Explained in Malayalam, answers in English.',
+ lessons:[
+ {n:1,t:'Tell me about yourself',free:true,task:'Write your answer with Present → Past → Strengths → Future, record it in 60 seconds and send it as a WhatsApp voice note.',practice:'interview',
+  check:[{q:'The 4-step formula for "Tell me about yourself" is…',o:['Present → Past → Strengths → Future','Name → Family → Hobbies → Salary','School → College → Marks → Job'],a:0},{q:'Keep your answer under…',o:['60 seconds','5 minutes','10 seconds'],a:0}]},
+ {n:2,t:'Strengths and weaknesses',task:'Write 1 strength + 1 example, and 1 weakness + your action. Send a 60-second voice note.',practice:'interview',
+  check:[{q:'Strength + …',o:['Example','Salary','Excuse'],a:0},{q:'Best weakness answer?',o:['"I am a perfectionist."','A real, small weakness and how you are fixing it','"I have no weakness."'],a:1}]},
+ {n:3,t:'Why should we hire you?',task:'Pick a real job post. Write Need → Skill → Proof → Promise in 45 seconds and send a voice note.',practice:'interview',
+  check:[{q:'The formula is…',o:['Need → Skill → Proof → Promise','Need a job → Please → Thanks','Compare with others'],a:0},{q:'Instead of "I am the best candidate", say…',o:['Proof: one real example','"Trust me"','Nothing'],a:0}]},
+ {n:4,t:'The STAR method',task:'Pick one real experience, write it in STAR order and send a 90-second voice note.',practice:'interview',
+  check:[{q:'STAR stands for…',o:['Situation · Task · Action · Result','Start · Talk · Answer · Rest','Smile · Thank · Ask · Repeat'],a:0},{q:'Always end your story with…',o:['The result','A long background','"We did everything"'],a:0}]},
+ {n:5,t:'Phone, Gulf and salary questions',task:'Prepare your 4 answers (salary, notice, relocation, documents), do a mock phone call with a friend and record it.',practice:'kili',
+  check:[{q:'"What is your expected salary?" Best answer?',o:['"Any salary is okay."','A researched range, open to discussion','"As much as possible."'],a:1},{q:'If you miss a word on a call, say…',o:['"What?"','"Could you please repeat that?"','Nothing'],a:1}]},
+ {n:6,t:'Finish the interview strong',task:'Write 2 questions for the interviewer and a short thank-you message. Send both as a voice note.',practice:'interview',
+  check:[{q:'"Do you have any questions for us?" Wrong answer?',o:['"No, nothing."','"What does a typical day look like?"','"What is the next step?"'],a:0},{q:'The strong finish is…',o:['Ask → Thank → Confirm → Follow up','Salary → Leave → Bye','Silence'],a:0}]},
+ {n:7,t:'Your full mock interview',task:'Record your full 5-question mock interview, get it scored, then plant a seed and tag @accent_tutors.',practice:'interview',
+  check:[{q:'Your interview-day plan is…',o:['Before → Start → During → End','Late → Fast → Leave','Read from paper'],a:0},{q:'If you make a mistake while answering…',o:['Stop and give up','Correct it and continue','Laugh it off'],a:1}]}
+ ],
+ final:[
+  {q:'"Tell me about yourself" should include…',o:['Only what is relevant to the job','Your full family history','Your hobbies only'],a:0},
+  {q:'"Myself Anjali" should be said as…',o:['"My name is Anjali."','"Me Anjali."','"Anjali myself only."'],a:0},
+  {q:'A good strength answer has…',o:['A real example','Big words only','Nothing specific'],a:0},
+  {q:'For an accounts job, never say your weakness is…',o:['Public speaking','Maths','Time management in groups'],a:1},
+  {q:'"Why should we hire you?" starts with…',o:['The company\'s need','"Because I need a job"','Comparing other candidates'],a:0},
+  {q:'In STAR, "A" is…',o:['What you did','What the team did','The award'],a:0},
+  {q:'On a phone interview, you should…',o:['Find a quiet place','Talk from a busy road','Eat while talking'],a:0},
+  {q:'Asked about relocation to Dubai, a good answer is…',o:['"Yes, I am ready to relocate."','"Maybe, I will see."','"Why?"'],a:0},
+  {q:'Your first question to the interviewer should be about…',o:['The role','Salary','Leave days'],a:0},
+  {q:'On interview day, you should…',o:['Pause before each answer','Read answers from paper','Speak very fast'],a:0}
+ ]};
+COURSE_SB.tk='sb';COURSE_AI.tk='ai';COURSE_HI.tk='hi';
+const COURSES={sb:COURSE_SB,ai:COURSE_AI,hi:COURSE_HI,ie:COURSE_IE};
+function thumb(n){return '../course/thumbs/'+COURSE.tk+'_'+n+'.jpg';}let CID='sb',COURSE=COURSE_SB;
 /* ---------- course ---------- */
 const PAY_URL='';   // Razorpay payment link goes here when ready
 let CS=null;
@@ -606,7 +639,7 @@ function pinCard(code){
 }
 function doneCount(){return Object.keys((CS&&CS.done)||{}).length;}
 function renderCourse(){
-  const st=CS.status,app=st==='Approved',dc=doneCount();let h='<div class="row" style="margin-bottom:12px">'+Object.keys(COURSES).map(k=>'<button class="btn '+(k===CID?'':'alt')+'" style="margin:0;flex:1" onclick="openCourse(\''+k+'\')">'+COURSES[k].short+'</button>').join('')+'</div><div class="hero"><small>ACCENT ACADEMY · BETA</small><h2>'+esc(COURSE.title)+'</h2><p>'+esc(COURSE.blurb)+'</p>'+
+  const st=CS.status,app=st==='Approved',dc=doneCount();let h='<div class="row" style="margin-bottom:12px">'+Object.keys(COURSES).map(k=>'<button class="btn '+(k===CID?'':'alt')+'" style="margin:0;flex:1;padding:10px 4px;font-size:13px" onclick="openCourse(\''+k+'\')">'+COURSES[k].short+'</button>').join('')+'</div><div class="hero"><small>ACCENT ACADEMY · BETA</small><h2>'+esc(COURSE.title)+'</h2><p>'+esc(COURSE.blurb)+'</p>'+
     (app?'<div class="progbar"><i style="width:'+(dc*100/COURSE.lessons.length)+'%"></i></div><p style="margin-top:6px">'+dc+' of '+COURSE.lessons.length+' lessons done · 🍃 '+(CS.points||0)+' Leaf Points</p>':'')+'</div>';
   if(st==='none')h+='<div class="card"><h2 style="font-size:18px">Join the course</h2><p class="sub">'+COURSE.fee+' course fee'+(COURSE.deposit?' + '+COURSE.deposit+' Green Deposit (fully refunded when you complete the Green Task)':'')+'. '+(COURSE.lessons.filter(l=>l.free).length>1?'Lessons 1–2 are':'Lesson 1 is')+' free to watch now.</p>'+
     '<button class="btn green" id="c-pay">1 · Pay & join</button><p class="sub" style="margin:14px 0 0"><b>2 · After paying</b>, create a 4-digit PIN (you\'ll use it on any new phone) and request access.</p>'+
@@ -614,7 +647,7 @@ function renderCourse(){
   else if(st==='Pending')h+='<div class="card" style="border-color:var(--warn)"><b style="color:var(--f)">⏳ Waiting for approval</b><p class="sub" style="margin:6px 0 0">We\'re checking your payment. Lessons unlock as soon as the Accent team approves (usually the same day). Questions? WhatsApp 99958 42727.</p><button class="btn alt" onclick="openCourse()">Check again</button></div>';
   h+='<h3 style="margin:18px 0 10px;color:var(--f);font-size:15px">Lessons</h3>';
   COURSE.lessons.forEach(l=>{const open=!!(CS.videos&&CS.videos[l.n]),done=CS.done&&CS.done[l.n];
-    h+='<div class="lesson '+(done?'done':'')+(open?'':' lock')+'" data-n="'+l.n+'"><div class="n">'+(done?'✓':l.n)+'</div><div class="m"><b>'+esc(l.t)+'</b><span>'+(open?(done?'Done · watch again':(l.free?'Free lesson':'Ready to watch')):'🔒 Unlocks after joining')+'</span></div>›</div>';});
+    h+='<div class="lesson '+(done?'done':'')+(open?'':' lock')+'" data-n="'+l.n+'"><div class="n" style="position:relative;width:96px;height:54px;padding:0;overflow:hidden"><img src="'+thumb(l.n)+'" loading="lazy" alt="" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><b style="position:absolute;left:4px;bottom:4px;background:'+(done?'var(--g)':'rgba(11,61,30,.85)')+';color:#fff;border-radius:6px;padding:1px 7px;font-size:12px">'+(done?'✓':l.n)+'</b></div><div class="m"><b>'+esc(l.t)+'</b><span>'+(open?(done?'Done · watch again':(l.free?'Free lesson':'Ready to watch')):'🔒 Unlocks after joining')+'</span></div>›</div>';});
   if(COURSE.id==='hindi-express')h+='<div class="card" style="margin-top:14px"><b style="color:var(--f)">🎯 Practice activities</b><p class="sub" style="margin:6px 0 0">Flashcards, listen & pick, translate, sentence builder, match pairs, role-play and a 60-second speed round.</p><button class="btn green" id="c-act">Open activities</button></div>';
   if(app){
     const NL=COURSE.lessons.length,allDone=dc>=NL;
@@ -690,7 +723,7 @@ function openLesson(n){const L=COURSE.lessons[n-1];show('lesson');$('title').tex
     '<div class="card"><b style="color:var(--f)">💪 Practise it now</b><p class="sub" style="margin:6px 0 0">'+(L.practice==='kili'?'Record a practice call and get feedback from Kili.':L.practice==='interview'?'Try a full mock interview with Ila.':'Ask Ila to explain, drill or role-play this lesson.')+'</p><button class="btn alt" id="l-prac">'+(L.practice==='kili'?'🐦 Open Kili call review':L.practice==='interview'?'🎤 Start mock interview':'🌱 Practise with Ila')+'</button></div>'+
     '<button class="btn" id="l-done">'+(n<COURSE.lessons.length?'Mark done & next lesson →':'Mark done · go to final quiz')+'</button>';
   $('l-wrap').innerHTML=h;
-  const src=CS.videos[n];const put=u=>{$('vbox').innerHTML='<video controls playsinline preload="metadata" src="'+u+'">'+(COURSE.vtt?'<track default kind="captions" srclang="en" label="English" src="'+u.replace(/\.mp4$/,'.en.vtt')+'">':'')+'</video>';$('vbox').querySelector('video').onended=()=>markDone(n,false);};
+  const src=CS.videos[n];const put=u=>{$('vbox').innerHTML='<video controls playsinline preload="metadata" poster="'+thumb(n)+'" src="'+u+'">'+(COURSE.vtt?'<track default kind="captions" srclang="en" label="English" src="'+u.replace(/\.mp4$/,'.en.vtt')+'">':'')+'</video>';$('vbox').querySelector('video').onended=()=>markDone(n,false);};
   if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl='';}
   if(src&&src!=='private')put(src);
   else{$('vbox').innerHTML='<span><span class="typing"><span></span><span></span><span></span></span><br>Loading your lesson… (about 10 seconds)</span>';
