@@ -137,6 +137,8 @@ video{width:100%;border-radius:16px;background:#000;display:block}
     <button class="tile" data-go="chat:career"><span class="e">🧭</span><b>Plan my career</b><span>Roles, skills and a 30/60/90-day plan.</span></button>
     <button class="tile" data-go="chat:resume"><span class="e">📄</span><b>Resume &amp; LinkedIn</b><span>Score, fixes and a better summary.</span></button>
     <button class="tile" data-go="chat:chat"><span class="e">🎓</span><b>Accent courses</b><span>Sales Program, fees, batches.</span></button>
+    <button class="tile" data-go="invite"><span class="e">🎁</span><b>Invite friends</b><span>+50 🍃 when a friend joins, +100 🍃 when they enrol.</span></button>
+    <button class="tile" data-go="webinar"><span class="e">🎙️</span><b>Free webinars</b><span>Live sessions for students and working professionals.</span></button>
     <button class="tile" data-go="leader"><span class="e">🏆</span><b>Leaf Points table</b><span>Top learners this month. Earn points by finishing tasks.</span></button>
     <button class="tile" data-go="profile"><span class="e">💼</span><b>My profile &amp; jobs</b><span>Create your Accent profile, see jobs.</span></button>
     <button class="tile" data-go="site"><span class="e">🌐</span><b>Accent website</b><span>Courses, blog, internships, Kerala jobs.</span></button>
@@ -258,19 +260,19 @@ $('back').onclick=()=>{if(current==='lesson'){openCourse();return}if(history.sta
 
 /* ---------- welcome ---------- */
 $('w-go').onclick=()=>{
-  $('w-err').textContent='';const f={action:'start',name:$('w-name').value.trim(),whatsapp:$('w-wa').value.trim(),iam:$('w-iam').value,district:$('w-dist').value,consent:$('w-ok').checked,src:(function(){try{return localStorage.getItem('accent_src')||'direct'}catch(e){return 'direct'}})()};
+  $('w-err').textContent='';const f={action:'start',name:$('w-name').value.trim(),whatsapp:$('w-wa').value.trim(),iam:$('w-iam').value,district:$('w-dist').value,consent:$('w-ok').checked,src:(function(){try{return localStorage.getItem('accent_src')||'direct'}catch(e){return 'direct'}})(),ref:(function(){try{return localStorage.getItem('accent_ref')||''}catch(e){return ''}})()};
   if(!f.name)return $('w-err').textContent='Please enter your name.';
   if(f.whatsapp.replace(/\D/g,'').length<10)return $('w-err').textContent='Please enter a valid WhatsApp number.';
   if(!f.consent)return $('w-err').textContent='Please tick the box to continue.';
   $('w-go').disabled=true;$('w-go').textContent='Setting up…';
-  post(ILA,f).then(r=>{S={session:r.session,name:f.name,wa:f.whatsapp};store.set('accent_ai',S);openHome();if(/^course/.test(H0))openCourse(H0.split('-')[1]);else if(H0==='interview')openInterview();else if(H0==='kili')openKili();})
+  post(ILA,f).then(r=>{S={session:r.session,name:f.name,wa:f.whatsapp};store.set('accent_ai',S);openHome();if(/^course/.test(H0))openCourse(H0.split('-')[1]);else if(H0==='interview')openInterview();else if(H0==='kili')openKili();else if(/^webinar/.test(H0))openWebinars(H0.slice(8));})
   .catch(e=>{$('w-err').textContent=netMsg(e);}).finally(()=>{$('w-go').disabled=false;$('w-go').textContent='Continue';});
 };
 function openHome(){$('hello').textContent='Hi '+S.name.split(' ')[0]+' 👋';show('home');}
 $('signout').onclick=e=>{e.preventDefault();if(confirm('Sign out of Accent AI on this phone? You will need your course PIN to sign back in.')){store.del('accent_ai');location.hash='';location.reload();}};
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>{const g=t.dataset.go;
   if(g==='human'){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('Hi Accent, I would like to talk to a person. My name is '+S.name+'.'),'_blank');return}
-  if(g==='community'){openCommunity();return}if(g==='leader'){openLeader();return}if(g==='profile'){window.open('https://27yoc-recrui-7ncdcc53.manus.space/candidate/login','_blank');return}if(g==='site'){window.open('../site/','_blank');return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='course-ie'){openCourse('ie');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
+  if(g==='community'){openCommunity();return}if(g==='leader'){openLeader();return}if(g==='invite'){openInvite();return}if(g==='webinar'){openWebinars();return}if(g==='profile'){window.open('https://27yoc-recrui-7ncdcc53.manus.space/candidate/login','_blank');return}if(g==='site'){window.open('../site/','_blank');return}if(g==='course'){openCourse('sb');return}if(g==='course-ai'){openCourse('ai');return}if(g==='course-hi'){openCourse('hi');return}if(g==='course-ie'){openCourse('ie');return}if(g==='interview'){openInterview();return}if(g==='kili'){openKili();return}
   if(g.startsWith('chat:'))openChat(g.slice(5));});
 
 /* ---------- chat ---------- */
@@ -743,6 +745,20 @@ function openLeader(){show('lesson');$('title').textContent='Leaf Points';$('l-w
   ila({action:'leaderboard',wa:S.wa}).then(r=>{let h='<div class="hero"><small>ACCENT · LEAF POINTS</small><h2>🏆 Top learners</h2><p>Earn 🍃 points: +10 for every approved lesson task, +50 for the Green Task, +200 for a course certificate.</p>'+(r.me?'<p style="margin-top:8px"><b>Your rank: #'+r.me.r+' · '+r.me.p+' 🍃</b></p>':'<p style="margin-top:8px">Finish a task to join the table.</p>')+'</div>';
     h+=(r.top||[]).map(x=>'<div class="lesson'+(x.me?' done':'')+'" style="cursor:default"><div class="n">'+(x.r<4?['🥇','🥈','🥉'][x.r-1]:x.r)+'</div><div class="m"><b>'+esc(x.n)+(x.me?' (you)':'')+'</b><span>'+x.c+' course'+(x.c===1?'':'s')+'</span></div><b style="color:var(--g)">'+x.p+' 🍃</b></div>').join('')||'<p class="sub">No points yet. Be the first!</p>';
     h+='<button class="btn alt" onclick="show(\'home\')">Back to home</button>';$('l-wrap').innerHTML=h;}).catch(e=>{$('l-wrap').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p></div>';});}
+function openInvite(){show('lesson');$('title').textContent='Invite friends';$('l-wrap').innerHTML='<div class="card"><span class="typing"><span></span><span></span><span></span></span> Loading…</div>';
+  ila({action:'my_refs',wa:S.wa}).then(r=>{const link='https://bullpranav-code.github.io/instagram-automation/ila/app.html?ref='+r.code;const msg='I am learning on Accent AI: free lessons in Malayalam, Ila the AI mentor and mock interviews. Join with my link: '+link;
+    let h='<div class="hero"><small>ACCENT · INVITE</small><h2>🎁 Grow together</h2><p>Share your link. You get <b>+50 🍃</b> when a friend joins and <b>+100 🍃</b> more when they enrol in a course.</p></div>'+
+    '<div class="card"><b>Your link</b><p class="sub" style="word-break:break-all;margin:6px 0">'+esc(link)+'</p><a class="btn" style="display:block;text-align:center;text-decoration:none" target="_blank" href="https://wa.me/?text='+encodeURIComponent(msg)+'">Share on WhatsApp</a><button class="btn alt" id="iv-copy">Copy link</button></div>'+
+    '<div class="card"><b>Your invites</b><p class="sub">'+r.joined+' joined · '+r.paid+' enrolled · '+r.points+' 🍃 earned</p>'+(r.list||[]).map(x=>'<div class="sub">• '+esc(x.n)+(x.paid?' ✅ enrolled':' · joined')+'</div>').join('')+'</div><button class="btn alt" onclick="show(\'home\')">Back to home</button>';
+    $('l-wrap').innerHTML=h;$('iv-copy').onclick=()=>{try{navigator.clipboard.writeText(link);$('iv-copy').textContent='Copied ✓'}catch(e){}};}).catch(e=>{$('l-wrap').innerHTML='<div class="card"><p>'+esc(netMsg(e))+'</p></div>';});}
+function openWebinars(pick){show('lesson');$('title').textContent='Webinars';$('l-wrap').innerHTML='<div class="card"><span class="typing"><span></span><span></span><span></span></span> Loading…</div>';
+  fetch('../site/webinars.json?t='+Date.now()).then(r=>r.json()).catch(()=>[]).then(list=>{const now=new Date().toISOString().slice(0,10);const up=(list||[]).filter(w=>!w.date||w.date>=now);
+    let h='<div class="hero"><small>ACCENT · WEBINARS</small><h2>🎙️ Free live sessions</h2><p>For students and working professionals. Register once and we\'ll send you the joining link on WhatsApp.</p></div>';
+    h+=up.map(w=>'<div class="card'+(pick===w.id?' done':'')+'"><small style="color:var(--g);font-weight:600">'+esc(w.for||'')+'</small><h3 style="margin:4px 0">'+esc(w.title)+'</h3><p class="sub">📅 '+esc(w.date||'')+' · ⏰ '+esc(w.time||'')+(w.speaker?' · 🎤 '+esc(w.speaker):'')+'</p>'+(w.desc?'<p class="sub">'+esc(w.desc)+'</p>':'')+'<button class="btn" data-wb="'+esc(w.id)+'">Register free</button></div>').join('')||
+      '<div class="card"><b>New webinars are coming soon.</b><p class="sub">Tap below and we\'ll tell you on WhatsApp when the next one is announced.</p><button class="btn" data-wb="notify-next">Notify me</button></div>';
+    h+='<button class="btn alt" onclick="show(\'home\')">Back to home</button>';$('l-wrap').innerHTML=h;
+    $('l-wrap').querySelectorAll('[data-wb]').forEach(b=>b.onclick=()=>{b.disabled=true;b.textContent='Saving…';
+      ila({action:'webinar_reg',webinar:b.dataset.wb,wa:S.wa,name:S.name,session:S.session,src:(function(){try{return localStorage.getItem('accent_src')||'app'}catch(e){return 'app'}})()}).then(r=>{b.textContent=r.already?'Already registered ✓':'Registered ✓ · link on WhatsApp';}).catch(e=>{b.disabled=false;b.textContent='Try again';alert(netMsg(e));});});});}
 function openWorkbook(){const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to open the workbook.');return}
   const L=COURSE.lessons,sp='<div style="border-bottom:1px solid #cfd8d2;height:30px"></div>';
   w.document.write('<!doctype html><meta charset="utf-8"><title>'+esc(COURSE.title)+' · Workbook</title><style>body{font-family:Poppins,Arial,sans-serif;color:#2C3A31;max-width:760px;margin:30px auto;padding:0 20px}h1{color:#0B3D1E}h2{color:#0B3D1E;font-size:18px;margin-top:30px;page-break-inside:avoid}.t{background:#E9F5EA;border-radius:10px;padding:10px 14px}.b{position:fixed;right:20px;top:20px;background:#0B3D1E;color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:600}@media print{.b{display:none}}</style><button class="b" onclick="print()">Print / Save PDF</button><h1>'+esc(COURSE.title)+'</h1><p>Name: ____________________ &nbsp; WhatsApp: ______________ &nbsp; Start date: ________</p>'+
@@ -939,8 +955,9 @@ function callDetail(c){const s=(t,v)=>v?'<div class="sec"><h4>'+t+'</h4><p>'+esc
 
 /* ---------- start ---------- */
 const H0=location.hash.slice(1);
+try{const rq=new URLSearchParams(location.search).get('ref');if(rq&&!localStorage.getItem('accent_ref'))localStorage.setItem('accent_ref',rq.slice(0,8));if(rq&&!localStorage.getItem('accent_src'))localStorage.setItem('accent_src','referral');}catch(e){}
 try{const q=new URLSearchParams(location.search).get('src');if(q&&!localStorage.getItem('accent_src'))localStorage.setItem('accent_src',q.slice(0,40));}catch(e){}
 if(H0==='admin'){if(S&&S.session)openHome();openAdmin();}
-else if(S&&S.session){openHome();if(H0==='interview')openInterview();else if(H0==='kili')openKili();else if(/^course/.test(H0))openCourse(H0.split('-')[1]);}
+else if(S&&S.session){openHome();if(H0==='interview')openInterview();else if(H0==='kili')openKili();else if(/^course/.test(H0))openCourse(H0.split('-')[1]);else if(/^webinar/.test(H0))openWebinars(H0.slice(8));}
 else{show('welcome',false);}
 </script></body></html>
